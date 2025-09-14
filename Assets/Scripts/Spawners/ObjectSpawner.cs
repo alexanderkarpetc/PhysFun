@@ -21,7 +21,7 @@ public class ObjectSpawner : MonoBehaviour
 
     private void Start()
     {
-        var sprites = Resources.LoadAll<Sprite>("Sprites").ToList();
+        var sprites = Resources.LoadAll<Sprite>("SpawnImages").ToList();
         _lodText.text = $"Simplification level {_slider.value}";
 
         foreach (var s in sprites)

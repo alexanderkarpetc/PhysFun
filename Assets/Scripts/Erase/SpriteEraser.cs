@@ -31,19 +31,8 @@ public class SpriteEraser : MonoBehaviour
             foreach (var h in hits)
                 EraseOnObject(h.gameObject, wp);
 
-            // if (Time.time - _lastColliderUpdate > colliderUpdateInterval)
-            // {
-            // _lastColliderUpdate = Time.time;
-            // }
-
             foreach (var h in hits)
             {
-                // var go = h.gameObject;
-                // Destroy(go.GetComponent<Collider2D>());
-                // var poly = go.AddComponent<PolygonCollider2D>();
-                // ColliderSimplifier2D.Simplify(poly, 3);
-                // var tex = go.GetComponent<SpriteRenderer>().sprite.texture;
-                // SpriteSplitUtil.TrySplit(go, tex, 100, 0.1f, 10, out var list);
                 RebuildAndMaybeSplit(h.gameObject, simplifyLevel: 2);
             }
         }

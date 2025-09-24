@@ -1,57 +1,55 @@
-﻿using UnityEditor.Animations;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Player
 {
     public class PlayerMovement : MonoBehaviour
     {
-        [SerializeField] private Transform _body;
+        [Header("Refs")] [SerializeField] private Transform _body;
         [SerializeField] private Rigidbody2D _rigidbody;
-        [SerializeField] private float maxSpeed = 6f;
-        [SerializeField] private Animator _animatorController;
+        [SerializeField] private Animator _animator;
+        [SerializeField] private Transform _groundCheck;
+        [SerializeField] private LayerMask _groundMask;
+
+        [Header("Move")] [SerializeField] private float maxSpeed = 2f;
+
+        [Header("Jump")] [SerializeField] private float jumpVelocity = 2f;
 
         private float _moveX;
-        private static readonly int Walk = Animator.StringToHash("Walk");
-        private static readonly int Idle = Animator.StringToHash("Idle");
-        private int _currentAnim;
+        private Camera _cam;
+
+        // Animator params
+        private static readonly int SpeedAbs = Animator.StringToHash("SpeedAbs");
+        private static readonly int IsGrounded = Animator.StringToHash("IsGrounded");
+        private static readonly int YVel = Animator.StringToHash("YVel");
+        private static readonly int JumpTrig = Animator.StringToHash("Jump"); // optional one-shot
+
+        private void Awake()
+        {
+            _cam = Camera.main;
+        }
 
         private void Update()
         {
-            HandleMove();
-            HandleTurn();
-        }
-
-        private void HandleMove()
-        {
+            // horizontal input
             _moveX = Mathf.Clamp(Input.GetAxisRaw("Horizontal"), -1f, 1f);
-            if (Mathf.Abs(_moveX) > 0.1f)
+
+            // jump press
+            if (Input.GetKeyDown(KeyCode.Space) && IsOnGround())
             {
-                if (_currentAnim != Walk)
-                {
-                    _currentAnim = Walk;
-                    _animatorController.SetTrigger(Walk);
-                    Debug.Log("WALK");
-                }
+                var v = _rigidbody.linearVelocity;
+                v.y = jumpVelocity;
+                _rigidbody.linearVelocity = v;
+                if (_animator) _animator.SetTrigger(JumpTrig); // optional
             }
-            else
-            {
-                if (_currentAnim != Idle)
-                {
-                    _currentAnim = Idle;
-                    _animatorController.SetTrigger(Idle);
-                    Debug.Log("IDLE");
-                }
-            }
+
+            HandleTurn();
+            UpdateAnimator();
         }
 
         private void FixedUpdate()
         {
-            HandleMoveRB();
-        }
-
-        private void HandleMoveRB()
-        {
-            // instant horizontal speed
+            // instant horizontal speed (no smoothing)
             var v = _rigidbody.linearVelocity;
             v.x = _moveX * maxSpeed;
             _rigidbody.linearVelocity = v;
@@ -59,15 +57,28 @@ namespace Player
 
         private void HandleTurn()
         {
-            var mouseW = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            var mouseW = _cam.ScreenToWorldPoint(Input.mousePosition);
             SetFlip(mouseW.x - transform.position.x >= 0f ? 1f : -1f);
         }
 
         private void SetFlip(float sign)
         {
-            var s = transform.localScale;
+            var s = _body.localScale;
             s.x = sign >= 0f ? 1f : -1f;
             _body.localScale = s;
+        }
+
+        private bool IsOnGround()
+        {
+            return Physics2D.OverlapCircle(_groundCheck.position, 0.1f, _groundMask) != null;
+        }
+
+        private void UpdateAnimator()
+        {
+            if (!_animator) return;
+            _animator.SetFloat(SpeedAbs, Mathf.Abs(_rigidbody.linearVelocity.x));
+            _animator.SetBool(IsGrounded, IsOnGround());
+            _animator.SetFloat(YVel, _rigidbody.linearVelocity.y);
         }
     }
 }

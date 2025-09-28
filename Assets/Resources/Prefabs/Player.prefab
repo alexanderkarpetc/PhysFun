@@ -494,7 +494,7 @@ Transform:
   m_GameObject: {fileID: 4083771863950017084}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -0.07, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -862,7 +862,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7023651406520220666}
-  - component: {fileID: 7257289404919192097}
   - component: {fileID: 9013860082252455183}
   - component: {fileID: 2144323039976591610}
   - component: {fileID: 6477744581142097718}
@@ -892,18 +891,6 @@ Transform:
   - {fileID: 8098042041537852405}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7257289404919192097
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6955944223260610957}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c33c1d1b18f64f689c8942d2a5ae52e5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!95 &9013860082252455183
 Animator:
   serializedVersion: 7

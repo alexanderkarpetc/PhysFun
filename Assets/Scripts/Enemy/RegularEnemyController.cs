@@ -19,9 +19,6 @@ namespace Enemy
         [SerializeField] private float fovDegrees = 150f;
         [SerializeField] private LayerMask obstacleMask;   // walls/ground
 
-        [Header("Shooting")]
-        [SerializeField] private float shootCooldown = 0.5f; // seconds
-
         // Animator triggers
         private static readonly int IdleTrig  = Animator.StringToHash("Idle");
         private static readonly int WalkTrig  = Animator.StringToHash("Walk");

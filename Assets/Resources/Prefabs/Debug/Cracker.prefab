@@ -48,7 +48,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2767b87e396c49e9ae350f1ef4545d58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  crackEnabled: 1
+  crackEnabled: 0
   radius: 2
   targetLayer:
     serializedVersion: 2

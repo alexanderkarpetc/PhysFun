@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Spawners;
 using UnityEngine;
 
 namespace Cracker
@@ -186,9 +187,9 @@ namespace Cracker
 
             var go = sr.gameObject;
             Object.DestroyImmediate(go.GetComponent<PolygonCollider2D>());
-            go.AddComponent<PolygonCollider2D>();
+            var poly = go.AddComponent<PolygonCollider2D>();
             ColliderSimplifier2D.Simplify(go.GetComponent<PolygonCollider2D>(), simplifyLevel);
-            // go.GetComponent<Rigidbody2D>().simulated = false;
+            MassRecalculator.SetMass(null, go.GetComponent<Rigidbody2D>(), poly);
         }
     }
 }

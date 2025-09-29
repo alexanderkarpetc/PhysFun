@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Spawners;
 using UnityEngine;
 
 public class SpriteEraser : MonoBehaviour
@@ -134,6 +135,7 @@ public class SpriteEraser : MonoBehaviour
         var poly = go.AddComponent<PolygonCollider2D>();
 
         ColliderSimplifier2D.Simplify(poly, simplifyLevel);
+        MassRecalculator.SetMass(null, go.GetComponent<Rigidbody2D>(), poly);
     }
     
     void ApplyPartToObject(GameObject go, SpriteRenderer sr, Texture2D partTex, RectInt subRect, float ppu, int simplifyLevel)
@@ -148,5 +150,6 @@ public class SpriteEraser : MonoBehaviour
         var poly = go.AddComponent<PolygonCollider2D>();
 
         ColliderSimplifier2D.Simplify(poly, simplifyLevel);
+        MassRecalculator.SetMass(null, go.GetComponent<Rigidbody2D>(), poly);
     }
 }

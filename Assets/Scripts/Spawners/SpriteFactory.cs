@@ -17,8 +17,9 @@ namespace Spawners
             var poly = go.AddComponent<PolygonCollider2D>();
             poly.isTrigger = isTrigger;
 
-            go.AddComponent<Rigidbody2D>();
+            var rb = go.AddComponent<Rigidbody2D>();
             go.transform.localScale = new Vector3(allScale, allScale, allScale);
+            MassRecalculator.SetMass(sprite, rb, poly);
 
             // simplify after collider is created from sprite physics shape
             ColliderSimplifier2D.Simplify(poly, simplifyLevel);

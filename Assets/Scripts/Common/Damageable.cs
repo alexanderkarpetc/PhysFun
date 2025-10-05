@@ -24,10 +24,12 @@ namespace Common
             if ((targetLayers.value & (1 << c.collider.gameObject.layer)) == 0)
                 return;
             
-            float relSpeed = c.relativeVelocity.magnitude;
+            var playerRb = GetComponent<Rigidbody2D>();
+            float relSpeed = c.relativeVelocity.magnitude - playerRb.linearVelocity.magnitude; // will calculate how fast other object hit us
+            // todo we shouldn't subtract player's speed, because if player has speed it can be withdrawn twice
             
             if (relSpeed < 2f) return; // too slow
-            if (c.rigidbody.linearVelocity.magnitude < 2f) return; // object stays, it's player
+            // if (c.rigidbody.linearVelocity.magnitude < 2f) return; // not needed but leave
             
             var playerIsBelow = c.transform.position.y > transform.position.y;
 

@@ -257,7 +257,7 @@ HingeJoint2D:
   m_UseMotor: 1
   m_Motor:
     m_MotorSpeed: 200
-    m_MaximumMotorForce: 300
+    m_MaximumMotorForce: 1000
   m_UseLimits: 0
   m_AngleLimits:
     m_LowerAngle: 0

@@ -1,0 +1,1865 @@
+fileFormatVersion: 2
+guid: f91bab901c84c34428e6343fb09ef844
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 20
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 1024
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: altar_torch.png
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 392
+        width: 14
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c2e241225ade2e542911b06cdd8b0d46
+      internalID: -1292526922
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: altar_torch_midas.png
+      rect:
+        serializedVersion: 2
+        x: 17
+        y: 392
+        width: 14
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fc462e4a1cb38354eba7405f661ae17f
+      internalID: -390049166
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: barrel.png
+      rect:
+        serializedVersion: 2
+        x: 33
+        y: 420
+        width: 10
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 12c3f3ea05d590441ad20c1f1a68fe1b
+      internalID: 1066262201
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: barrel_broken.png
+      rect:
+        serializedVersion: 2
+        x: 45
+        y: 420
+        width: 10
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3654f25bf10c632479480914d61f45ad
+      internalID: -747463538
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: barrel_burning.png
+      rect:
+        serializedVersion: 2
+        x: 57
+        y: 420
+        width: 10
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 39035e39befd640439bf2ea81ae640c2
+      internalID: -1058113070
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: barrel_radioactive.png
+      rect:
+        serializedVersion: 2
+        x: 69
+        y: 420
+        width: 10
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 83b9530785f209b4aae6f785d2f2d8bb
+      internalID: -1636200433
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: barrel_small.png
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 420
+        width: 10
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4540ed970c462ee4a9dbab3752018fe3
+      internalID: 1834026611
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: barrel_unstable.png
+      rect:
+        serializedVersion: 2
+        x: 93
+        y: 420
+        width: 10
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 739b7063ef90f504abdb3ac51641a490
+      internalID: 1896247150
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: barrel_water.png
+      rect:
+        serializedVersion: 2
+        x: 105
+        y: 420
+        width: 11
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8045ee8ed246143419598084782ab7d6
+      internalID: -162655273
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bed.png
+      rect:
+        serializedVersion: 2
+        x: 118
+        y: 423
+        width: 24
+        height: 9
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1c4e983c19db11648813b3d87212003c
+      internalID: -886577805
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bottle_green.png
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 422
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 11d0bb82bef908a43ae242a8e6d2b122
+      internalID: 74192407
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bottle_red.png
+      rect:
+        serializedVersion: 2
+        x: 153
+        y: 422
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a1f4c8d9e3c566542a1743f818e3f6ca
+      internalID: -119438905
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bottle_yellow.png
+      rect:
+        serializedVersion: 2
+        x: 162
+        y: 422
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3113d957cd13a4f41bb18d11e9cd11c6
+      internalID: 693264536
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: box.png
+      rect:
+        serializedVersion: 2
+        x: 171
+        y: 421
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e7631ea95e345884aa97583763d81858
+      internalID: 388729759
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: box_small.png
+      rect:
+        serializedVersion: 2
+        x: 184
+        y: 423
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 690d3cd0859928c46a95193a6b118e69
+      internalID: 1227864126
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: brewing_stand.png
+      rect:
+        serializedVersion: 2
+        x: 195
+        y: 400
+        width: 24
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f37c7a955b5ff484c89145b836e2cc25
+      internalID: 1350584761
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bucket.png
+      rect:
+        serializedVersion: 2
+        x: 221
+        y: 420
+        width: 10
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c81e52a37c25e40428de1b92aab038ac
+      internalID: 836113747
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cart_top.png
+      rect:
+        serializedVersion: 2
+        x: 233
+        y: 419
+        width: 27
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9f51b90225e437f4ba91e35c6ed7f578
+      internalID: -1566276538
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cart_wheel.png
+      rect:
+        serializedVersion: 2
+        x: 262
+        y: 419
+        width: 27
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6d30b39da0b4e4241a4a1507b287e03b
+      internalID: 820144522
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chair_2.png
+      rect:
+        serializedVersion: 2
+        x: 291
+        y: 419
+        width: 8
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2dd7c7c4622a15647b2847f76500165f
+      internalID: 420234361
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coalmine_large_structure_background_01.png
+      rect:
+        serializedVersion: 2
+        x: 301
+        y: 382
+        width: 60
+        height: 50
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1aee69ac97495f04bbb842e9adef3559
+      internalID: 793837097
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coalmine_large_structure_background_02.png
+      rect:
+        serializedVersion: 2
+        x: 363
+        y: 382
+        width: 60
+        height: 50
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e4328c88072e8964c86377de5495196d
+      internalID: 549049631
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coalmine_structure_background_01.png
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 330
+        width: 50
+        height: 50
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aeecd59e29e08c74899028ffe0128f27
+      internalID: 692953350
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coalmine_structure_background_02.png
+      rect:
+        serializedVersion: 2
+        x: 53
+        y: 330
+        width: 50
+        height: 50
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cfd5b599eedb4e8468947cbf3285baa2
+      internalID: 52453423
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crate.png
+      rect:
+        serializedVersion: 2
+        x: 425
+        y: 408
+        width: 24
+        height: 24
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 385a4a351b28f6f478afdeea65ceedd5
+      internalID: -980617581
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crystal_green.png
+      rect:
+        serializedVersion: 2
+        x: 33
+        y: 383
+        width: 16
+        height: 23
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 96d8a2c7b386808449da6e69fdbcb6eb
+      internalID: -1862495931
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crystal_pink.png
+      rect:
+        serializedVersion: 2
+        x: 51
+        y: 389
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: be6e27e46215cd1409668d3260b9dec5
+      internalID: 963114727
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crystal_red.png
+      rect:
+        serializedVersion: 2
+        x: 69
+        y: 383
+        width: 14
+        height: 23
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d79b193986310ca4c882718bfa9422fd
+      internalID: 567651602
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: excavationsite_machine_3b.png
+      rect:
+        serializedVersion: 2
+        x: 105
+        y: 255
+        width: 150
+        height: 125
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9c1d8b315572a3f4892692218efac6f5
+      internalID: -218906768
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: excavationsite_machine_3b_wheel_1.png
+      rect:
+        serializedVersion: 2
+        x: 257
+        y: 255
+        width: 150
+        height: 125
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5f4cd0df17e5675458a621259e766bc2
+      internalID: -1334936792
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: excavationsite_machine_3b_wheel_2.png
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 128
+        width: 150
+        height: 125
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fe8508a4833f15841ad9e584deaaa1e6
+      internalID: -896124149
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: excavationsite_machine_3b_wheel_3.png
+      rect:
+        serializedVersion: 2
+        x: 153
+        y: 128
+        width: 150
+        height: 125
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7a1627fab8e362f42b60cd111f09e9c1
+      internalID: 1273516011
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: excavationsite_machine_3c.png
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 1
+        width: 150
+        height: 125
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ec614abf36628c343a1a8ada3552d96a
+      internalID: 2002097881
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: excavationsite_machine_3c_wheel_1.png
+      rect:
+        serializedVersion: 2
+        x: 153
+        y: 1
+        width: 150
+        height: 125
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4d8833e66b0b556478baa47788423c25
+      internalID: -794234143
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: forcefield_generator.png
+      rect:
+        serializedVersion: 2
+        x: 85
+        y: 390
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f1092c1bae3908a4f8f023a88f9a9a83
+      internalID: -1521341350
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture_bed.png
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 398
+        width: 24
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 37820b7181202174d9db43bdfab650ba
+      internalID: 278936105
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture_bunk_bed.png
+      rect:
+        serializedVersion: 2
+        x: 129
+        y: 384
+        width: 22
+        height: 22
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6394affa067d227488227e37c75b0934
+      internalID: -1821179638
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture_bunk_leg_l.png
+      rect:
+        serializedVersion: 2
+        x: 153
+        y: 384
+        width: 22
+        height: 22
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 10cc9888cb65e7748a96e3481e11a5a3
+      internalID: -164918480
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture_bunk_leg_r.png
+      rect:
+        serializedVersion: 2
+        x: 221
+        y: 384
+        width: 22
+        height: 22
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f475ea8e2d5b22743b49fd25e914cd6d
+      internalID: -241250872
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture_castle_chair.png
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 388
+        width: 10
+        height: 18
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 63ee67e456e7039458ce8e1a7d78a9f6
+      internalID: 1983223173
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture_castle_divan.png
+      rect:
+        serializedVersion: 2
+        x: 245
+        y: 394
+        width: 25
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5ef49e49235cfc54c85702fa3ab7c85f
+      internalID: -1199793764
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture_castle_statue.png
+      rect:
+        serializedVersion: 2
+        x: 272
+        y: 383
+        width: 11
+        height: 23
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b76885bbc98c2214d82c0b8ff7dfd3a2
+      internalID: 1180466237
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture_castle_table.png
+      rect:
+        serializedVersion: 2
+        x: 425
+        y: 396
+        width: 23
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9feacd2cb28599e4dbc8b7ef122b5981
+      internalID: -533732306
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture_castle_wardrobe.png
+      rect:
+        serializedVersion: 2
+        x: 425
+        y: 365
+        width: 21
+        height: 29
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: be0946a9351ef1e48aba56655eefff6f
+      internalID: -422680143
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture_cryopod.png
+      rect:
+        serializedVersion: 2
+        x: 409
+        y: 340
+        width: 16
+        height: 23
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 503a637aaaad8d5409be0dbcf464badf
+      internalID: -1464379204
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture_cryopod_door.png
+      rect:
+        serializedVersion: 2
+        x: 427
+        y: 340
+        width: 16
+        height: 23
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6bebc39cfcd12094da0bdac654d56b50
+      internalID: 490423189
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture_dresser.png
+      rect:
+        serializedVersion: 2
+        x: 409
+        y: 327
+        width: 23
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 30a958adc05e46949b6d6bb028817bff
+      internalID: -1281065444
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture_footlocker.png
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 384
+        width: 21
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0dbcb1e0912cf7045a4e45800c3a84ed
+      internalID: 76760656
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture_locker_door.png
+      rect:
+        serializedVersion: 2
+        x: 434
+        y: 312
+        width: 11
+        height: 26
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 645395d5fa445844bb15fb1ade1ee471
+      internalID: 2066078835
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture_locker_frame.png
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 284
+        width: 11
+        height: 26
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 539c4cbccbe341a4aa1d354a2eb27468
+      internalID: 875311429
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture_rocking_chair.png
+      rect:
+        serializedVersion: 2
+        x: 285
+        y: 392
+        width: 14
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 64741cb986117af47bdc584f2666834e
+      internalID: -1455403097
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture_stool.png
+      rect:
+        serializedVersion: 2
+        x: 189
+        y: 384
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e33666c5e065053459fe66266566ac2f
+      internalID: -714583761
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture_tombstone_02.png
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 294
+        width: 12
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 046af62c3686b2a4592eeb8b7f0f038f
+      internalID: -1012950435
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture_wardrobe.png
+      rect:
+        serializedVersion: 2
+        x: 28
+        y: 300
+        width: 19
+        height: 25
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7d1928cc0c8327b4294e4e385a7bd834
+      internalID: -1888524356
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: furniture_wood_table.png
+      rect:
+        serializedVersion: 2
+        x: 49
+        y: 300
+        width: 27
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 517a130b0a15a364389be11c0e880402
+      internalID: -1751748730
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gem.png
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 294
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: eb05880d60f15ea4ab329bda82241c56
+      internalID: 1601341178
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pata.png
+      rect:
+        serializedVersion: 2
+        x: 409
+        y: 278
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9bc3389856fe14d4ab97f95813a4fa16
+      internalID: -1813367357
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: perk_reroll.png
+      rect:
+        serializedVersion: 2
+        x: 409
+        y: 236
+        width: 20
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 644a825e2f60b49408422056c175c642
+      internalID: 438192448
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pressure_tank.png
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 260
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 303ea7d67edf6c345bcd0ec18d06303f
+      internalID: 294548521
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: propane_tank.png
+      rect:
+        serializedVersion: 2
+        x: 19
+        y: 260
+        width: 9
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9f3205dbac83b6b47be39f6d789bbe16
+      internalID: -902314621
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpkin_01.png
+      rect:
+        serializedVersion: 2
+        x: 30
+        y: 256
+        width: 20
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f78659cee37391a4e9bb060678b6f195
+      internalID: 403634188
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pumpkin_02.png
+      rect:
+        serializedVersion: 2
+        x: 52
+        y: 256
+        width: 20
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3e956c37e007dee448006244c1202aad
+      internalID: -351422687
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: seamine.png
+      rect:
+        serializedVersion: 2
+        x: 74
+        y: 256
+        width: 20
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fd37fc75c667b744c879a596ea80ff25
+      internalID: -672473699
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: suspended_tank_acid.png
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 313
+        width: 22
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 131368b44a643934b9a625655f33c290
+      internalID: 669721843
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: suspended_tank_radioactive.png
+      rect:
+        serializedVersion: 2
+        x: 49
+        y: 313
+        width: 22
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 459b670f3673f0a47a7676eaf1ea2f3e
+      internalID: 2049157683
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: temple_door_wheel.png
+      rect:
+        serializedVersion: 2
+        x: 451
+        y: 320
+        width: 279
+        height: 112
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: df7c851fdf5180343973d4aada635749
+      internalID: -1292962506
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tnt_box_big.png
+      rect:
+        serializedVersion: 2
+        x: 447
+        y: 299
+        width: 19
+        height: 19
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 597c90d29bc19d040995381f5c70bc9b
+      internalID: -2135041027
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: trap_01.png
+      rect:
+        serializedVersion: 2
+        x: 468
+        y: 303
+        width: 15
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cc9ef6f0317f1e24698ff0915bc6de66
+      internalID: 920673316
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vase2.png
+      rect:
+        serializedVersion: 2
+        x: 485
+        y: 298
+        width: 21
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c2acb9ff1ad2b4b4c9dfc0f29b8376f1
+      internalID: -1281159528
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vault_apparatus_01.png
+      rect:
+        serializedVersion: 2
+        x: 508
+        y: 298
+        width: 30
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ea25c383c1b9174489aaa55b15c24a99
+      internalID: 773753155
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wheel.png
+      rect:
+        serializedVersion: 2
+        x: 540
+        y: 258
+        width: 60
+        height: 60
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6974f7325f2d7694c8b4cbe87236588e
+      internalID: 994012576
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wheel_small.png
+      rect:
+        serializedVersion: 2
+        x: 602
+        y: 278
+        width: 40
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bb1ba3a0ac1b02d49a7129abba016a2d
+      internalID: -1129597677
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wheel_stand_wheel_01.png
+      rect:
+        serializedVersion: 2
+        x: 644
+        y: 248
+        width: 70
+        height: 70
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1644feabcb3429a4c9502ee404c94024
+      internalID: 687376461
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wheel_stand_wheel_02.png
+      rect:
+        serializedVersion: 2
+        x: 305
+        y: 176
+        width: 70
+        height: 70
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 119fa68e628dd3f4fa2b24b79da91313
+      internalID: -2017919735
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wheel_stand_wheel_03.png
+      rect:
+        serializedVersion: 2
+        x: 431
+        y: 176
+        width: 70
+        height: 70
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dd512199c33dc6749bb34f76fb117ae3
+      internalID: -391273433
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: wheel_tiny.png
+      rect:
+        serializedVersion: 2
+        x: 377
+        y: 224
+        width: 22
+        height: 22
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a82a7c072baee3b4286d271e477f662b
+      internalID: -890747970
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: f1960709b7334c2438e0ab34e8649751
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      altar_torch.png: -1292526922
+      altar_torch_midas.png: -390049166
+      barrel.png: 1066262201
+      barrel_broken.png: -747463538
+      barrel_burning.png: -1058113070
+      barrel_radioactive.png: -1636200433
+      barrel_small.png: 1834026611
+      barrel_unstable.png: 1896247150
+      barrel_water.png: -162655273
+      bed.png: -886577805
+      bottle_green.png: 74192407
+      bottle_red.png: -119438905
+      bottle_yellow.png: 693264536
+      box.png: 388729759
+      box_small.png: 1227864126
+      brewing_stand.png: 1350584761
+      bucket.png: 836113747
+      cart_top.png: -1566276538
+      cart_wheel.png: 820144522
+      chair_2.png: 420234361
+      coalmine_large_structure_background_01.png: 793837097
+      coalmine_large_structure_background_02.png: 549049631
+      coalmine_structure_background_01.png: 692953350
+      coalmine_structure_background_02.png: 52453423
+      crate.png: -980617581
+      crystal_green.png: -1862495931
+      crystal_pink.png: 963114727
+      crystal_red.png: 567651602
+      excavationsite_machine_3b.png: -218906768
+      excavationsite_machine_3b_wheel_1.png: -1334936792
+      excavationsite_machine_3b_wheel_2.png: -896124149
+      excavationsite_machine_3b_wheel_3.png: 1273516011
+      excavationsite_machine_3c.png: 2002097881
+      excavationsite_machine_3c_wheel_1.png: -794234143
+      forcefield_generator.png: -1521341350
+      furniture_bed.png: 278936105
+      furniture_bunk_bed.png: -1821179638
+      furniture_bunk_leg_l.png: -164918480
+      furniture_bunk_leg_r.png: -241250872
+      furniture_castle_chair.png: 1983223173
+      furniture_castle_divan.png: -1199793764
+      furniture_castle_statue.png: 1180466237
+      furniture_castle_table.png: -533732306
+      furniture_castle_wardrobe.png: -422680143
+      furniture_cryopod.png: -1464379204
+      furniture_cryopod_door.png: 490423189
+      furniture_dresser.png: -1281065444
+      furniture_footlocker.png: 76760656
+      furniture_locker_door.png: 2066078835
+      furniture_locker_frame.png: 875311429
+      furniture_rocking_chair.png: -1455403097
+      furniture_stool.png: -714583761
+      furniture_tombstone_02.png: -1012950435
+      furniture_wardrobe.png: -1888524356
+      furniture_wood_table.png: -1751748730
+      gem.png: 1601341178
+      pata.png: -1813367357
+      perk_reroll.png: 438192448
+      pressure_tank.png: 294548521
+      propane_tank.png: -902314621
+      pumpkin_01.png: 403634188
+      pumpkin_02.png: -351422687
+      seamine.png: -672473699
+      suspended_tank_acid.png: 669721843
+      suspended_tank_radioactive.png: 2049157683
+      temple_door_wheel.png: -1292962506
+      tnt_box_big.png: -2135041027
+      trap_01.png: 920673316
+      vase2.png: -1281159528
+      vault_apparatus_01.png: 773753155
+      wheel.png: 994012576
+      wheel_small.png: -1129597677
+      wheel_stand_wheel_01.png: 687376461
+      wheel_stand_wheel_02.png: -2017919735
+      wheel_stand_wheel_03.png: -391273433
+      wheel_tiny.png: -890747970
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

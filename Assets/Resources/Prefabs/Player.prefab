@@ -935,6 +935,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 375
   maxSpeed: 2
+  accel: 20
+  airControl: 0.3
+  friction: 10
   jumpVelocity: 4
 --- !u!50 &6477744581142097718
 Rigidbody2D:
@@ -959,9 +962,9 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 4
 --- !u!114 &2328669934994851753
 MonoBehaviour:

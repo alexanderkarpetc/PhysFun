@@ -11,8 +11,12 @@ namespace Player
         [SerializeField] private Transform _groundCheck;
         [SerializeField] private LayerMask _groundMask;
 
-        [Header("Move")]  [SerializeField] private float maxSpeed = 2f;
-        [Header("Jump")]  [SerializeField] private float jumpVelocity = 2f;
+        [Header("Move")]  
+        [SerializeField] private float maxSpeed = 2f;
+        [SerializeField] private float accel = 20f;       // ground acceleration
+        [SerializeField] private float airControl = 0.3f;
+        [SerializeField] private float friction = 10f;  
+        [SerializeField] private float jumpVelocity = 2f;
 
         private float _moveX;
         private Camera _cam;
@@ -73,7 +77,24 @@ namespace Player
         private void FixedUpdate()
         {
             var v = _rigidbody.linearVelocity;
-            v.x = _moveX * maxSpeed;
+            float target = _moveX * maxSpeed;
+
+            // Choose accel based on grounded
+            float a = _grounded ? accel : accel * airControl;
+
+            if (Mathf.Abs(_moveX) > 0.01f)
+            {
+                // Move toward target speed without nuking external impulses
+                v.x = Mathf.MoveTowards(v.x, target, a * Time.fixedDeltaTime);
+            }
+            else
+            {
+                if (_grounded)
+                    // Ground friction (let player stop); keep airborne velocity/impulses
+                    v.x = Mathf.MoveTowards(v.x, 0f, friction * Time.fixedDeltaTime);
+                // else: do not touch v.x in air -> impulses persist
+            }
+
             _rigidbody.linearVelocity = v;
         }
 

@@ -16,7 +16,6 @@ public class BridgeBuilder2D : MonoBehaviour
     [Min(2)] public int segmentCount = 12;
     public bool autoSegmentLength = true;
     [Min(0.01f)] public float segmentLength = 1.0f; // used if autoSegmentLength=false
-    [Range(0f, 0.5f)] public float interSegmentGap = 0.0f; // small gap to усилить провис
 
     [Header("Hinge setup")]
     public Vector2 localAnchorA = new Vector2(-0.5f, 0f); // левый край
@@ -93,7 +92,6 @@ public class BridgeBuilder2D : MonoBehaviour
         Vector2 dirN = dir.normalized;
 
         float segLen = autoSegmentLength ? (totalLen / segmentCount) : segmentLength;
-        float step = segLen + interSegmentGap;
 
         Rigidbody2D[] rbs = new Rigidbody2D[segmentCount];
 
@@ -101,7 +99,7 @@ public class BridgeBuilder2D : MonoBehaviour
         Vector2 start = A;
         for (int i = 0; i < segmentCount; i++)
         {
-            Vector2 pos = start + dirN * (step * (i + 0.5f));
+            Vector2 pos = start + dirN * (segLen * (i + 0.5f));
             var go = Instantiate(segmentPrefab, pos, Quaternion.FromToRotation(Vector3.right, dirN), segmentsRoot);
             var rb = go.GetComponent<Rigidbody2D>();
             if (!rb)

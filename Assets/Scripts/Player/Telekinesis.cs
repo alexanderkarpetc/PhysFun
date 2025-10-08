@@ -7,11 +7,13 @@ namespace Player
         [Header("Refs")]
         [SerializeField] private Transform origin;     // usually player's body; if null -> this.transform
         [SerializeField] private LayerMask grabbable;  // only these layers can be grabbed
+        [SerializeField] private LayerMask losBlockers; // что блокирует линию видимости (например Default | Terrain)
 
         [Header("Hold")]
-        [SerializeField] private float holdDistance = 1.2f;   // distance from origin
-        [SerializeField] private float followGain = 25f;      // how fast it snaps to target
-        [SerializeField] private float maxHoldSpeed = 15f;    // cap velocity while holding
+        [SerializeField] private float holdDistance = 1.2f;
+        [SerializeField] private float followGain = 25f;   // kP
+        [SerializeField] private float dampGain = 8f;      // kD
+        [SerializeField] private float maxHoldSpeed = 15f; // cap на скорость
 
         [Header("Throw")]
         [SerializeField] private float throwImpulse = 15f;    // impulse magnitude on LMB
@@ -26,7 +28,7 @@ namespace Player
 
         Camera _cam;
         Rigidbody2D _held;
-        float _savedGravity, _savedAngularDrag;
+        float _savedGravity, _savedAngularDrag, _savedDrag;
         RigidbodyConstraints2D _savedConstraints;
 
         private void Awake()
@@ -53,18 +55,41 @@ namespace Player
         {
             if (!_held) return;
 
-            // target point = origin + dirToMouse * holdDistance
-            Vector3 mouseW = _cam.ScreenToWorldPoint(Input.mousePosition);
-            Vector2 dir = ((Vector2)mouseW - (Vector2)origin.position).normalized;
-            Vector2 target = (Vector2)origin.position + dir * holdDistance;
+            // Автодроп, если вышли за пределы или потеряли LOS
+            var mouseW = _cam.ScreenToWorldPoint(Input.mousePosition);
+            Vector2 dirFromOrigin = ((Vector2)mouseW - (Vector2)origin.position);
+            float distFromOrigin = dirFromOrigin.magnitude;
+            if (distFromOrigin > maxGrabRange * 1.25f) { Release(); return; }
 
-            // Proportional velocity toward target (keeps physics, collisions, external impulses)
+            // Проверка линии видимости между origin и объектом (по желанию)
+            if (losBlockers.value != 0)
+            {
+                var col = _held.GetComponent<Collider2D>();
+                var hit = Physics2D.Raycast(origin.position, (_held.position - (Vector2)origin.position).normalized,
+                                            Vector2.Distance(origin.position, _held.position), losBlockers);
+                if (hit.collider && (!col || hit.collider != col)) { Release(); return; }
+            }
+
+            // Точка удержания: на линии к курсору, на фикс. дистанции от origin
+            Vector2 holdDir = distFromOrigin < 0.001f ? Vector2.right : (dirFromOrigin / distFromOrigin);
+            Vector2 target = (Vector2)origin.position + holdDir * holdDistance;
+
+            // PD-контроллер через AddForce (сохраняет физику и коллизии)
             Vector2 toTarget = target - _held.position;
             Vector2 desiredVel = toTarget * followGain;
-            if (desiredVel.sqrMagnitude > maxHoldSpeed * maxHoldSpeed)
-                desiredVel = desiredVel.normalized * maxHoldSpeed;
+            Vector2 velErr = desiredVel - _held.linearVelocity;
+            Vector2 force = velErr * dampGain * _held.mass; // масштаб по массе
 
-            _held.linearVelocity = Vector2.Lerp(_held.linearVelocity, desiredVel, 0.5f);
+            // Кэп на итоговую скорость (мягко)
+            Vector2 newVel = _held.linearVelocity + (force / _held.mass) * Time.fixedDeltaTime;
+            if (newVel.sqrMagnitude > maxHoldSpeed * maxHoldSpeed)
+            {
+                newVel = newVel.normalized * maxHoldSpeed;
+                // Подправим силу так, чтобы выйти ровно на кэп
+                force = (newVel - _held.linearVelocity) * _held.mass / Time.fixedDeltaTime;
+            }
+
+            _held.AddForce(force, ForceMode2D.Force);
         }
 
         private void TryGrab()
@@ -127,6 +152,14 @@ namespace Player
             Release();
 
             rb.AddForce(dir * throwImpulse, ForceMode2D.Impulse);
+        }
+
+        // Вспомогательно: визуализация радиусов
+        void OnDrawGizmosSelected()
+        {
+            if (!origin) origin = transform;
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(origin.position, maxGrabRange);
         }
     }
 }

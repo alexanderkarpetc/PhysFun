@@ -5,7 +5,6 @@ namespace Common
     public class Damageable : MonoBehaviour
     {
         [Header("Health")] [SerializeField] private int maxHealth = 100;
-        [SerializeField] private bool destroyOnDeath = true;
         [SerializeField] private LayerMask targetLayers;
 
         private float _health;

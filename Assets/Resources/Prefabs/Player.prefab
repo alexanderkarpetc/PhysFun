@@ -992,7 +992,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
-  destroyOnDeath: 1
   targetLayers:
     serializedVersion: 2
     m_Bits: 1
@@ -1058,3 +1057,6 @@ MonoBehaviour:
   playerColliders:
   - {fileID: 4125614759584999805}
   ignorePlayerWhileHolding: 1
+  minMass: 3
+  maxMass: 150
+  pickRadius: 0.25

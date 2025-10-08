@@ -21,19 +21,23 @@ namespace Player
         [Header("Collision")]
         [SerializeField] private Collider2D[] playerColliders; // optional: to avoid self-collision while holding
         [SerializeField] private bool ignorePlayerWhileHolding = true;
+        [Header("Grab Filters")]
+        [SerializeField] private float minMass = 5f;
+        [SerializeField] private float maxMass = 150f;
+        [SerializeField] private float pickRadius = 0.25f; 
 
         Camera _cam;
         Rigidbody2D _held;
-        float _savedGravity, _savedDrag, _savedAngularDrag;
+        float _savedGravity, _savedAngularDrag;
         RigidbodyConstraints2D _savedConstraints;
 
-        void Awake()
+        private void Awake()
         {
             _cam = Camera.main;
             if (!origin) origin = transform;
         }
 
-        void Update()
+        private void Update()
         {
             if (Input.GetMouseButtonDown(1))
             {
@@ -47,7 +51,7 @@ namespace Player
             }
         }
 
-        void FixedUpdate()
+        private void FixedUpdate()
         {
             if (!_held) return;
 
@@ -65,27 +69,51 @@ namespace Player
             _held.linearVelocity = Vector2.Lerp(_held.linearVelocity, desiredVel, 0.5f);
         }
 
-        void TryGrab()
+        private void TryGrab()
         {
-            Vector3 mouseW = _cam.ScreenToWorldPoint(Input.mousePosition);
-            Vector2 p = mouseW;
+            // Look direction from facing (no cursor)
+            Vector2 dir = (origin.localScale.x >= 0f) ? Vector2.right : Vector2.left;
 
-            // require collider under cursor on allowed layers
-            Collider2D hit = Physics2D.OverlapPoint(p, grabbable);
-            if (!hit) return;
+            // Sweep a small capsule forward; get all hits in front up to range
+            var hits = Physics2D.CircleCastAll(origin.position, pickRadius, dir, maxGrabRange, grabbable);
+            if (hits == null || hits.Length == 0) return;
 
-            // optional range check
-            if (maxGrabRange > 0f && Vector2.Distance(hit.bounds.ClosestPoint(origin.position), origin.position) > maxGrabRange)
-                return;
+            Rigidbody2D bestRb = null;
+            Collider2D bestCol = null;
+            float bestDist = float.MaxValue;
 
-            Rigidbody2D rb = hit.attachedRigidbody;
-            if (!rb || rb.isKinematic) return;
+            foreach (var h in hits)
+            {
+                var rb = h.rigidbody;
+                var col = h.collider;
+                if (!rb || rb.isKinematic) continue;
 
-            _held = rb;
+                // Mass limits
+                if (rb.mass < minMass || rb.mass > maxMass) continue;
 
-            // save + modify physics for holding
+                // Skip player’s own colliders if provided
+                if (playerColliders != null)
+                {
+                    bool self = false;
+                    foreach (var pc in playerColliders) { if (pc && col && col == pc) { self = true; break; } }
+                    if (self) continue;
+                }
+
+                // Closest along the cast from the player
+                if (h.distance < bestDist)
+                {
+                    bestDist = h.distance;
+                    bestRb = rb;
+                    bestCol = col;
+                }
+            }
+
+            if (!bestRb) return;
+
+            // Begin holding (same as before)
+            _held = bestRb;
+
             _savedGravity     = _held.gravityScale;
-            _savedDrag        = _held.linearDamping;
             _savedAngularDrag = _held.angularDamping;
             _savedConstraints = _held.constraints;
 
@@ -98,7 +126,7 @@ namespace Player
             if (ignorePlayerWhileHolding && playerColliders != null)
             {
                 foreach (var pc in playerColliders)
-                    if (pc) Physics2D.IgnoreCollision(pc, hit, true);
+                    if (pc && bestCol) Physics2D.IgnoreCollision(pc, bestCol, true);
             }
         }
 
@@ -135,8 +163,5 @@ namespace Player
 
             rb.AddForce(dir * throwImpulse, ForceMode2D.Impulse);
         }
-
-        // Optional: helper to set distance at runtime
-        public void SetHoldDistance(float d) => holdDistance = Mathf.Max(0.1f, d);
     }
 }

@@ -1,0 +1,63 @@
+﻿/* You'll need a Point/Vec2 `dist_from_line` */
+
+typedef std::vector<Point> Polygon;
+typedef double Float;
+  
+/* Polyline Simplification Algorithm */
+namespace DouglasPeucker {
+  void simplify_section(const Polygon& pts,
+                        Float tolerance,
+                        size_t i, size_t j,
+                        std::vector<bool>* mark_map,
+                        size_t omitted = 0)
+  {
+    /* make sure we always return 2 points. */
+    if (pts.size() - omitted <= 2)
+      return;
+
+    assert(mark_map && mark_map->size() == pts.size());
+
+    if ((i + 1) == j) {
+      return;
+    }
+
+    Float max_distance = -1.0f;
+    size_t max_index = i;
+
+    for (size_t k = i + 1; k < j; k++) {
+      Float distance = abs(pts[k].dist_from_line(pts[i], pts[j]));
+
+      if (distance > max_distance) {
+        max_distance = distance;
+        max_index = k;
+      }
+    }
+
+    if (max_distance <= tolerance) {
+      for (size_t k = i + 1; k < j; k++) {
+        (*mark_map)[k] = false;
+        ++omitted;
+      }
+    } else {
+      simplify_section(pts, tolerance, i, max_index, mark_map, omitted);
+      simplify_section(pts, tolerance, max_index, j, mark_map, omitted);
+    }
+  }
+
+
+  Polygon simplify(const Polygon& vertices, Float tolerance)
+  {
+    std::vector<bool> mark_map(vertices.size(), true);
+
+    simplify_section(vertices, tolerance, 0, vertices.size() - 1, &mark_map);
+
+    Polygon result;
+    for (size_t i = 0; i != vertices.size(); ++i) {
+      if (mark_map[i]) {
+        result.push_back(vertices[i]);
+      }
+    }
+
+    return result;
+  }
+}

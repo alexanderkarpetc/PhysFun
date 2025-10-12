@@ -1,0 +1,637 @@
+fileFormatVersion: 2
+guid: d53dc987c0f331f47b15a36dd2058cf1
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -6798643731737478062
+    second: tank_gun_0
+  - first:
+      213: 3010699447881676378
+    second: tank_gun_1
+  - first:
+      213: 3225938480289592937
+    second: tank_gun_2
+  - first:
+      213: 3352361204098749130
+    second: tank_gun_3
+  - first:
+      213: -4764624846779419483
+    second: tank_gun_4
+  - first:
+      213: -213985500732076879
+    second: tank_gun_5
+  - first:
+      213: 4411797640819551401
+    second: tank_gun_6
+  - first:
+      213: -8637705984047299885
+    second: tank_gun_7
+  - first:
+      213: -2279352295402693413
+    second: tank_gun_8
+  - first:
+      213: 7106488949132552286
+    second: tank_gun_9
+  - first:
+      213: 4108954811277035736
+    second: tank_gun_10
+  - first:
+      213: 5495374687782958712
+    second: tank_gun_11
+  - first:
+      213: 953585263242338844
+    second: tank_gun_12
+  - first:
+      213: -1638760082117736726
+    second: tank_gun_13
+  - first:
+      213: -261560375869630648
+    second: tank_gun_14
+  - first:
+      213: -7195649810465083859
+    second: tank_gun_15
+  - first:
+      213: 349257002762451296
+    second: tank_gun_16
+  - first:
+      213: -853118120713415258
+    second: tank_gun_17
+  - first:
+      213: -4030536444797687143
+    second: tank_gun_18
+  - first:
+      213: -2586731625871832743
+    second: tank_gun_19
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 20
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 256
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: tank_gun_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 69
+        width: 21
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 25cf957fb8d56a1a0800000000000000
+      internalID: -6798643731737478062
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tank_gun_1
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 48
+        width: 20
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a56b37c423728c920800000000000000
+      internalID: 3010699447881676378
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tank_gun_2
+      rect:
+        serializedVersion: 2
+        x: 22
+        y: 48
+        width: 20
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 966bce0c4f5d4cc20800000000000000
+      internalID: 3225938480289592937
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tank_gun_3
+      rect:
+        serializedVersion: 2
+        x: 44
+        y: 48
+        width: 20
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ac25b19e0caf58e20800000000000000
+      internalID: 3352361204098749130
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tank_gun_4
+      rect:
+        serializedVersion: 2
+        x: 66
+        y: 48
+        width: 20
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5a476b722f6a0edb0800000000000000
+      internalID: -4764624846779419483
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tank_gun_5
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 27
+        width: 21
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1bcc7c12255c70df0800000000000000
+      internalID: -213985500732076879
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tank_gun_6
+      rect:
+        serializedVersion: 2
+        x: 22
+        y: 27
+        width: 20
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9aca4f1649ad93d30800000000000000
+      internalID: 4411797640819551401
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tank_gun_7
+      rect:
+        serializedVersion: 2
+        x: 44
+        y: 27
+        width: 21
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3d2489a0c24b02880800000000000000
+      internalID: -8637705984047299885
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tank_gun_8
+      rect:
+        serializedVersion: 2
+        x: 66
+        y: 27
+        width: 20
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bdc1d82f92d1e50e0800000000000000
+      internalID: -2279352295402693413
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tank_gun_9
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 6
+        width: 21
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e58e8452c025f9260800000000000000
+      internalID: 7106488949132552286
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tank_gun_10
+      rect:
+        serializedVersion: 2
+        x: 23
+        y: 6
+        width: 21
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8d8cc4471a0f50930800000000000000
+      internalID: 4108954811277035736
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tank_gun_11
+      rect:
+        serializedVersion: 2
+        x: 46
+        y: 6
+        width: 21
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 876f9fca92e734c40800000000000000
+      internalID: 5495374687782958712
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tank_gun_12
+      rect:
+        serializedVersion: 2
+        x: 69
+        y: 5
+        width: 21
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c126b9e9eb0db3d00800000000000000
+      internalID: 953585263242338844
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tank_gun_13
+      rect:
+        serializedVersion: 2
+        x: 92
+        y: 5
+        width: 21
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ae648494364f149e0800000000000000
+      internalID: -1638760082117736726
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tank_gun_14
+      rect:
+        serializedVersion: 2
+        x: 115
+        y: 5
+        width: 21
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 84719f45930ce5cf0800000000000000
+      internalID: -261560375869630648
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tank_gun_15
+      rect:
+        serializedVersion: 2
+        x: 138
+        y: 5
+        width: 21
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d2e2f1f1f9ae32c90800000000000000
+      internalID: -7195649810465083859
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tank_gun_16
+      rect:
+        serializedVersion: 2
+        x: 161
+        y: 5
+        width: 21
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 06939f0c46fc8d400800000000000000
+      internalID: 349257002762451296
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tank_gun_17
+      rect:
+        serializedVersion: 2
+        x: 183
+        y: 5
+        width: 20
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a59d67d69d1924f0800000000000000
+      internalID: -853118120713415258
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tank_gun_18
+      rect:
+        serializedVersion: 2
+        x: 206
+        y: 6
+        width: 20
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 99a61994578a018c0800000000000000
+      internalID: -4030536444797687143
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tank_gun_19
+      rect:
+        serializedVersion: 2
+        x: 230
+        y: 6
+        width: 21
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 95904a69a451a1cd0800000000000000
+      internalID: -2586731625871832743
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      tank_gun_0: -6798643731737478062
+      tank_gun_1: 3010699447881676378
+      tank_gun_10: 4108954811277035736
+      tank_gun_11: 5495374687782958712
+      tank_gun_12: 953585263242338844
+      tank_gun_13: -1638760082117736726
+      tank_gun_14: -261560375869630648
+      tank_gun_15: -7195649810465083859
+      tank_gun_16: 349257002762451296
+      tank_gun_17: -853118120713415258
+      tank_gun_18: -4030536444797687143
+      tank_gun_19: -2586731625871832743
+      tank_gun_2: 3225938480289592937
+      tank_gun_3: 3352361204098749130
+      tank_gun_4: -4764624846779419483
+      tank_gun_5: -213985500732076879
+      tank_gun_6: 4411797640819551401
+      tank_gun_7: -8637705984047299885
+      tank_gun_8: -2279352295402693413
+      tank_gun_9: 7106488949132552286
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

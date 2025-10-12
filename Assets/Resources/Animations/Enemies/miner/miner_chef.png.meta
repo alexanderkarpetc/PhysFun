@@ -1,0 +1,1417 @@
+fileFormatVersion: 2
+guid: 71f19100a169b794497af18603b272b0
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -4509857338258195117
+    second: miner_chef_0
+  - first:
+      213: 1496077835419050053
+    second: miner_chef_1
+  - first:
+      213: 6645304421186518329
+    second: miner_chef_2
+  - first:
+      213: 4460410322730418474
+    second: miner_chef_3
+  - first:
+      213: -8964025504977762194
+    second: miner_chef_4
+  - first:
+      213: 2535491810838552685
+    second: miner_chef_5
+  - first:
+      213: 3296190465149365670
+    second: miner_chef_6
+  - first:
+      213: -7412716729553320200
+    second: miner_chef_7
+  - first:
+      213: -6474970412203618718
+    second: miner_chef_8
+  - first:
+      213: 5115126424063430481
+    second: miner_chef_9
+  - first:
+      213: -5734268852523756918
+    second: miner_chef_10
+  - first:
+      213: 9069718123556474106
+    second: miner_chef_11
+  - first:
+      213: 8373252071645574596
+    second: miner_chef_12
+  - first:
+      213: 3616695539663938525
+    second: miner_chef_13
+  - first:
+      213: -1433892798841163972
+    second: miner_chef_14
+  - first:
+      213: -8325791088358183594
+    second: miner_chef_15
+  - first:
+      213: -2869424707571922383
+    second: miner_chef_16
+  - first:
+      213: 5929148038257822107
+    second: miner_chef_17
+  - first:
+      213: -7029818786303253094
+    second: miner_chef_18
+  - first:
+      213: -4126372983320941891
+    second: miner_chef_19
+  - first:
+      213: -3223642632384768784
+    second: miner_chef_20
+  - first:
+      213: 1017950885733708809
+    second: miner_chef_21
+  - first:
+      213: -2964510054976548354
+    second: miner_chef_22
+  - first:
+      213: -2785895533403502277
+    second: miner_chef_23
+  - first:
+      213: 4906659315971502971
+    second: miner_chef_24
+  - first:
+      213: 2338775319581662481
+    second: miner_chef_25
+  - first:
+      213: 6802922380415165837
+    second: miner_chef_26
+  - first:
+      213: 511157226522763824
+    second: miner_chef_27
+  - first:
+      213: -1141758617529870765
+    second: miner_chef_28
+  - first:
+      213: -4299969534551647763
+    second: miner_chef_29
+  - first:
+      213: -8041400848007711228
+    second: miner_chef_30
+  - first:
+      213: -3250540942482853781
+    second: miner_chef_31
+  - first:
+      213: 8227603089946014748
+    second: miner_chef_32
+  - first:
+      213: 7319949235579610397
+    second: miner_chef_33
+  - first:
+      213: -198660074518574064
+    second: miner_chef_34
+  - first:
+      213: 5315104087221331120
+    second: miner_chef_35
+  - first:
+      213: -6514271315930342573
+    second: miner_chef_36
+  - first:
+      213: -1710419423088815355
+    second: miner_chef_37
+  - first:
+      213: -2639194126113211213
+    second: miner_chef_38
+  - first:
+      213: 5510723628628151051
+    second: miner_chef_39
+  - first:
+      213: 1849166165170493004
+    second: miner_chef_40
+  - first:
+      213: -8829111833522834561
+    second: miner_chef_41
+  - first:
+      213: 3059728429508513089
+    second: miner_chef_42
+  - first:
+      213: 6918591221277528163
+    second: miner_chef_43
+  - first:
+      213: -8604933288150075346
+    second: miner_chef_44
+  - first:
+      213: -8310799275800873927
+    second: miner_chef_45
+  - first:
+      213: 3121024549801250633
+    second: miner_chef_46
+  - first:
+      213: -2729719931107057255
+    second: miner_chef_47
+  - first:
+      213: 5827681409571432752
+    second: miner_chef_48
+  - first:
+      213: 3213119902631653216
+    second: miner_chef_49
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 20
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 256
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: miner_chef_0
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 175
+        width: 14
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 35d7e6525a4c961c0800000000000000
+      internalID: -4509857338258195117
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_1
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 159
+        width: 14
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 540ec706dd223c410800000000000000
+      internalID: 1496077835419050053
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_2
+      rect:
+        serializedVersion: 2
+        x: 19
+        y: 159
+        width: 14
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 93db729a92dd83c50800000000000000
+      internalID: 6645304421186518329
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_3
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 175
+        width: 14
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a2105d66e8f86ed30800000000000000
+      internalID: 4460410322730418474
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_4
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 159
+        width: 13
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e684242fb42699380800000000000000
+      internalID: -8964025504977762194
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_5
+      rect:
+        serializedVersion: 2
+        x: 38
+        y: 175
+        width: 14
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d60a1fb4e50ef2320800000000000000
+      internalID: 2535491810838552685
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_6
+      rect:
+        serializedVersion: 2
+        x: 54
+        y: 159
+        width: 12
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6ade14b93cb6ebd20800000000000000
+      internalID: 3296190465149365670
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_7
+      rect:
+        serializedVersion: 2
+        x: 56
+        y: 175
+        width: 14
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8f60162a86db02990800000000000000
+      internalID: -7412716729553320200
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_8
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 159
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 26e407947b84426a0800000000000000
+      internalID: -6474970412203618718
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_9
+      rect:
+        serializedVersion: 2
+        x: 74
+        y: 175
+        width: 15
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 15fc38fa1649cf640800000000000000
+      internalID: 5115126424063430481
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_10
+      rect:
+        serializedVersion: 2
+        x: 91
+        y: 159
+        width: 15
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a821cbe2cd8cb60b0800000000000000
+      internalID: -5734268852523756918
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_11
+      rect:
+        serializedVersion: 2
+        x: 92
+        y: 175
+        width: 14
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: afc8187749c1edd70800000000000000
+      internalID: 9069718123556474106
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_12
+      rect:
+        serializedVersion: 2
+        x: 109
+        y: 159
+        width: 15
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c5fc315564c33470800000000000000
+      internalID: 8373252071645574596
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_13
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 127
+        width: 14
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dd3a8666e65113230800000000000000
+      internalID: 3616695539663938525
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_14
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 143
+        width: 13
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c3fe417b81ac91ce0800000000000000
+      internalID: -1433892798841163972
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_15
+      rect:
+        serializedVersion: 2
+        x: 18
+        y: 127
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 65d2c48fd19d47c80800000000000000
+      internalID: -8325791088358183594
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_16
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 143
+        width: 14
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 13a427b6e61cd28d0800000000000000
+      internalID: -2869424707571922383
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_17
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 128
+        width: 14
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b99cf011ab0984250800000000000000
+      internalID: 5929148038257822107
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_18
+      rect:
+        serializedVersion: 2
+        x: 38
+        y: 143
+        width: 14
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a95e6073f01117e90800000000000000
+      internalID: -7029818786303253094
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_19
+      rect:
+        serializedVersion: 2
+        x: 57
+        y: 143
+        width: 13
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dbae26652ad2cb6c0800000000000000
+      internalID: -4126372983320941891
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_20
+      rect:
+        serializedVersion: 2
+        x: 75
+        y: 143
+        width: 13
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0f496edfa125343d0800000000000000
+      internalID: -3223642632384768784
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_21
+      rect:
+        serializedVersion: 2
+        x: 93
+        y: 143
+        width: 13
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 904b3feefec702e00800000000000000
+      internalID: 1017950885733708809
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_22
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 111
+        width: 15
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ef19c08cfc1fbd6d0800000000000000
+      internalID: -2964510054976548354
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_23
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 95
+        width: 14
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b39032ec5c28659d0800000000000000
+      internalID: -2785895533403502277
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_24
+      rect:
+        serializedVersion: 2
+        x: 19
+        y: 95
+        width: 14
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b73b75ab6a4f71440800000000000000
+      internalID: 4906659315971502971
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_25
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 95
+        width: 14
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 11d9d1503cff47020800000000000000
+      internalID: 2338775319581662481
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_26
+      rect:
+        serializedVersion: 2
+        x: 54
+        y: 95
+        width: 13
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d85633f8cd5d86e50800000000000000
+      internalID: 6802922380415165837
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_27
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 95
+        width: 17
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 032634f0acef71700800000000000000
+      internalID: 511157226522763824
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_28
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 79
+        width: 15
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 35614ee2698a720f0800000000000000
+      internalID: -1141758617529870765
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_29
+      rect:
+        serializedVersion: 2
+        x: 19
+        y: 79
+        width: 15
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: de91c049d707354c0800000000000000
+      internalID: -4299969534551647763
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_30
+      rect:
+        serializedVersion: 2
+        x: 91
+        y: 95
+        width: 16
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 406b9fda884376090800000000000000
+      internalID: -8041400848007711228
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_31
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 63
+        width: 15
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b6032732c32c3e2d0800000000000000
+      internalID: -3250540942482853781
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_32
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 48
+        width: 14
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c1473292b615e2270800000000000000
+      internalID: 8227603089946014748
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_33
+      rect:
+        serializedVersion: 2
+        x: 18
+        y: 48
+        width: 15
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d156d980c0fa59560800000000000000
+      internalID: 7319949235579610397
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_34
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 63
+        width: 14
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 01c844bf6b73e3df0800000000000000
+      internalID: -198660074518574064
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_35
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 63
+        width: 15
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0b4ed07b10b03c940800000000000000
+      internalID: 5315104087221331120
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_36
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 47
+        width: 15
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 35b947390c8a895a0800000000000000
+      internalID: -6514271315930342573
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_37
+      rect:
+        serializedVersion: 2
+        x: 55
+        y: 63
+        width: 14
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 503dcddc89e5348e0800000000000000
+      internalID: -1710419423088815355
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_38
+      rect:
+        serializedVersion: 2
+        x: 74
+        y: 63
+        width: 14
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3bc79b3ece2bf5bd0800000000000000
+      internalID: -2639194126113211213
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_39
+      rect:
+        serializedVersion: 2
+        x: 91
+        y: 63
+        width: 15
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b0b8bb371f50a7c40800000000000000
+      internalID: 5510723628628151051
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_40
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 31
+        width: 16
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c4698a574de89a910800000000000000
+      internalID: 1849166165170493004
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_41
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 15
+        width: 15
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f737ca8e091b87580800000000000000
+      internalID: -8829111833522834561
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_42
+      rect:
+        serializedVersion: 2
+        x: 18
+        y: 15
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 14dc406abc6567a20800000000000000
+      internalID: 3059728429508513089
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_43
+      rect:
+        serializedVersion: 2
+        x: 19
+        y: 31
+        width: 15
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 360126a3f06c30060800000000000000
+      internalID: 6918591221277528163
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_44
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 15
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e2871ebe3c2259880800000000000000
+      internalID: -8604933288150075346
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_45
+      rect:
+        serializedVersion: 2
+        x: 54
+        y: 15
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 934b056571c1aac80800000000000000
+      internalID: -8310799275800873927
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_46
+      rect:
+        serializedVersion: 2
+        x: 73
+        y: 15
+        width: 15
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 94f4d2aca4b105b20800000000000000
+      internalID: 3121024549801250633
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_47
+      rect:
+        serializedVersion: 2
+        x: 92
+        y: 15
+        width: 13
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9916f027f261e1ad0800000000000000
+      internalID: -2729719931107057255
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_48
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 0
+        width: 15
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 03927a99d5510e050800000000000000
+      internalID: 5827681409571432752
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: miner_chef_49
+      rect:
+        serializedVersion: 2
+        x: 18
+        y: 0
+        width: 16
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 06fe811178b479c20800000000000000
+      internalID: 3213119902631653216
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      miner_chef_0: -4509857338258195117
+      miner_chef_1: 1496077835419050053
+      miner_chef_10: -5734268852523756918
+      miner_chef_11: 9069718123556474106
+      miner_chef_12: 8373252071645574596
+      miner_chef_13: 3616695539663938525
+      miner_chef_14: -1433892798841163972
+      miner_chef_15: -8325791088358183594
+      miner_chef_16: -2869424707571922383
+      miner_chef_17: 5929148038257822107
+      miner_chef_18: -7029818786303253094
+      miner_chef_19: -4126372983320941891
+      miner_chef_2: 6645304421186518329
+      miner_chef_20: -3223642632384768784
+      miner_chef_21: 1017950885733708809
+      miner_chef_22: -2964510054976548354
+      miner_chef_23: -2785895533403502277
+      miner_chef_24: 4906659315971502971
+      miner_chef_25: 2338775319581662481
+      miner_chef_26: 6802922380415165837
+      miner_chef_27: 511157226522763824
+      miner_chef_28: -1141758617529870765
+      miner_chef_29: -4299969534551647763
+      miner_chef_3: 4460410322730418474
+      miner_chef_30: -8041400848007711228
+      miner_chef_31: -3250540942482853781
+      miner_chef_32: 8227603089946014748
+      miner_chef_33: 7319949235579610397
+      miner_chef_34: -198660074518574064
+      miner_chef_35: 5315104087221331120
+      miner_chef_36: -6514271315930342573
+      miner_chef_37: -1710419423088815355
+      miner_chef_38: -2639194126113211213
+      miner_chef_39: 5510723628628151051
+      miner_chef_4: -8964025504977762194
+      miner_chef_40: 1849166165170493004
+      miner_chef_41: -8829111833522834561
+      miner_chef_42: 3059728429508513089
+      miner_chef_43: 6918591221277528163
+      miner_chef_44: -8604933288150075346
+      miner_chef_45: -8310799275800873927
+      miner_chef_46: 3121024549801250633
+      miner_chef_47: -2729719931107057255
+      miner_chef_48: 5827681409571432752
+      miner_chef_49: 3213119902631653216
+      miner_chef_5: 2535491810838552685
+      miner_chef_6: 3296190465149365670
+      miner_chef_7: -7412716729553320200
+      miner_chef_8: -6474970412203618718
+      miner_chef_9: 5115126424063430481
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

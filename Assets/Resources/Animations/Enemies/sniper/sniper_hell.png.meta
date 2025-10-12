@@ -1,0 +1,1781 @@
+fileFormatVersion: 2
+guid: 58636a5e5a2c7a6479284d702dddcd75
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -2270498391735663758
+    second: sniper_hell_0
+  - first:
+      213: 1864926238331606073
+    second: sniper_hell_1
+  - first:
+      213: -5897906381084837957
+    second: sniper_hell_2
+  - first:
+      213: -4834993915429131578
+    second: sniper_hell_3
+  - first:
+      213: 959071431326145098
+    second: sniper_hell_4
+  - first:
+      213: -7056952248550016190
+    second: sniper_hell_5
+  - first:
+      213: 7708822393472476362
+    second: sniper_hell_6
+  - first:
+      213: 7417880988210935470
+    second: sniper_hell_7
+  - first:
+      213: -2412824093494216252
+    second: sniper_hell_8
+  - first:
+      213: 4984089287068228722
+    second: sniper_hell_9
+  - first:
+      213: 3485531983195322489
+    second: sniper_hell_10
+  - first:
+      213: 6114897713972411007
+    second: sniper_hell_11
+  - first:
+      213: -5080537063817337513
+    second: sniper_hell_12
+  - first:
+      213: -6263913878176587543
+    second: sniper_hell_13
+  - first:
+      213: 6479652341492610331
+    second: sniper_hell_14
+  - first:
+      213: 7750307903921396434
+    second: sniper_hell_15
+  - first:
+      213: -6401095568668652286
+    second: sniper_hell_16
+  - first:
+      213: 6877092924617034941
+    second: sniper_hell_17
+  - first:
+      213: 6218554521742500620
+    second: sniper_hell_18
+  - first:
+      213: 211756744817195615
+    second: sniper_hell_19
+  - first:
+      213: 1022933437246743038
+    second: sniper_hell_20
+  - first:
+      213: -9153915691332295707
+    second: sniper_hell_21
+  - first:
+      213: 7195272187023482752
+    second: sniper_hell_22
+  - first:
+      213: -8491954501851916734
+    second: sniper_hell_23
+  - first:
+      213: 2360533964589990777
+    second: sniper_hell_24
+  - first:
+      213: -4786141050932553054
+    second: sniper_hell_25
+  - first:
+      213: -3056660440978969818
+    second: sniper_hell_26
+  - first:
+      213: -1904136880103245892
+    second: sniper_hell_27
+  - first:
+      213: -312517795876141566
+    second: sniper_hell_28
+  - first:
+      213: 5125038761994578007
+    second: sniper_hell_29
+  - first:
+      213: 5304712200915568451
+    second: sniper_hell_30
+  - first:
+      213: -3647997916395360987
+    second: sniper_hell_31
+  - first:
+      213: 5083774700115975201
+    second: sniper_hell_32
+  - first:
+      213: -9127615301067594173
+    second: sniper_hell_33
+  - first:
+      213: 8820403267531483813
+    second: sniper_hell_34
+  - first:
+      213: -5495998039184574644
+    second: sniper_hell_35
+  - first:
+      213: -2511033330051462276
+    second: sniper_hell_36
+  - first:
+      213: 2405379629196643099
+    second: sniper_hell_37
+  - first:
+      213: -9149720766188123034
+    second: sniper_hell_38
+  - first:
+      213: 6017705670333085726
+    second: sniper_hell_39
+  - first:
+      213: -8870368757733924905
+    second: sniper_hell_40
+  - first:
+      213: 4735019981057284683
+    second: sniper_hell_41
+  - first:
+      213: -770747585007655714
+    second: sniper_hell_42
+  - first:
+      213: -1029879723068837750
+    second: sniper_hell_43
+  - first:
+      213: 342259551119920653
+    second: sniper_hell_44
+  - first:
+      213: -2535101897041718164
+    second: sniper_hell_45
+  - first:
+      213: 338534648035944923
+    second: sniper_hell_46
+  - first:
+      213: -8602382046035092005
+    second: sniper_hell_47
+  - first:
+      213: 718551175024498278
+    second: sniper_hell_48
+  - first:
+      213: 2391521501686267086
+    second: sniper_hell_49
+  - first:
+      213: -3818604339309562549
+    second: sniper_hell_50
+  - first:
+      213: 8498155271687920481
+    second: sniper_hell_51
+  - first:
+      213: -6711113997964204863
+    second: sniper_hell_52
+  - first:
+      213: 8038230689876404980
+    second: sniper_hell_53
+  - first:
+      213: 3618158017317638368
+    second: sniper_hell_54
+  - first:
+      213: -5015592708296481184
+    second: sniper_hell_55
+  - first:
+      213: -4495998404287139085
+    second: sniper_hell_56
+  - first:
+      213: 6990252957254697999
+    second: sniper_hell_57
+  - first:
+      213: -1646856511733624545
+    second: sniper_hell_58
+  - first:
+      213: 8130944966354025156
+    second: sniper_hell_59
+  - first:
+      213: -5819776204367245089
+    second: sniper_hell_60
+  - first:
+      213: -8931156626189947709
+    second: sniper_hell_61
+  - first:
+      213: 8412526988821316032
+    second: sniper_hell_62
+  - first:
+      213: 2290419054612734894
+    second: sniper_hell_63
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 20
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 512
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: sniper_hell_0
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 161
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 27300890eb19d70e0800000000000000
+      internalID: -2270498391735663758
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_1
+      rect:
+        serializedVersion: 2
+        x: 21
+        y: 161
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9349f00788c81e910800000000000000
+      internalID: 1864926238331606073
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_2
+      rect:
+        serializedVersion: 2
+        x: 22
+        y: 143
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bb7bde4156d662ea0800000000000000
+      internalID: -5897906381084837957
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_3
+      rect:
+        serializedVersion: 2
+        x: 41
+        y: 161
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6caebab96a6a6ecb0800000000000000
+      internalID: -4834993915429131578
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_4
+      rect:
+        serializedVersion: 2
+        x: 42
+        y: 144
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a4a9b6aa26e4f4d00800000000000000
+      internalID: 959071431326145098
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_5
+      rect:
+        serializedVersion: 2
+        x: 61
+        y: 161
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 24b384cb15ba01e90800000000000000
+      internalID: -7056952248550016190
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_6
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 161
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ac4e08faf1d3bfa60800000000000000
+      internalID: 7708822393472476362
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_7
+      rect:
+        serializedVersion: 2
+        x: 85
+        y: 143
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ea6bf68057b91f660800000000000000
+      internalID: 7417880988210935470
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_8
+      rect:
+        serializedVersion: 2
+        x: 101
+        y: 161
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c9f5c9454de38ed0800000000000000
+      internalID: -2412824093494216252
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_9
+      rect:
+        serializedVersion: 2
+        x: 106
+        y: 144
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 27c188cbcca0b2540800000000000000
+      internalID: 4984089287068228722
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_10
+      rect:
+        serializedVersion: 2
+        x: 121
+        y: 161
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 978be9f1fd81f5030800000000000000
+      internalID: 3485531983195322489
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_11
+      rect:
+        serializedVersion: 2
+        x: 141
+        y: 161
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f7a7c2f921b7cd450800000000000000
+      internalID: 6114897713972411007
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_12
+      rect:
+        serializedVersion: 2
+        x: 161
+        y: 161
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 75526f2557e4e79b0800000000000000
+      internalID: -5080537063817337513
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_13
+      rect:
+        serializedVersion: 2
+        x: 181
+        y: 161
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9e025a3f38b1219a0800000000000000
+      internalID: -6263913878176587543
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_14
+      rect:
+        serializedVersion: 2
+        x: 201
+        y: 161
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b15f1b259795ce950800000000000000
+      internalID: 6479652341492610331
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_15
+      rect:
+        serializedVersion: 2
+        x: 221
+        y: 161
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2da1329c9ff9e8b60800000000000000
+      internalID: 7750307903921396434
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_16
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 143
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 20d8d28ae7dba27a0800000000000000
+      internalID: -6401095568668652286
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_17
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 125
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dbc862b1497507f50800000000000000
+      internalID: 6877092924617034941
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_18
+      rect:
+        serializedVersion: 2
+        x: 22
+        y: 125
+        width: 17
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c036cd4e36ebc4650800000000000000
+      internalID: 6218554521742500620
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_19
+      rect:
+        serializedVersion: 2
+        x: 63
+        y: 143
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f5a3f9133af40f200800000000000000
+      internalID: 211756744817195615
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_20
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 107
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ef126fb9a80323e00800000000000000
+      internalID: 1022933437246743038
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_21
+      rect:
+        serializedVersion: 2
+        x: 21
+        y: 107
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5e3a342ad22c6f080800000000000000
+      internalID: -9153915691332295707
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_22
+      rect:
+        serializedVersion: 2
+        x: 41
+        y: 107
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 08f58c19eedbad360800000000000000
+      internalID: 7195272187023482752
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_23
+      rect:
+        serializedVersion: 2
+        x: 44
+        y: 125
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 24656547f54862a80800000000000000
+      internalID: -8491954501851916734
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_24
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 107
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 97381a7522d42c020800000000000000
+      internalID: 2360533964589990777
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_25
+      rect:
+        serializedVersion: 2
+        x: 65
+        y: 125
+        width: 17
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2aa104e7216349db0800000000000000
+      internalID: -4786141050932553054
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_26
+      rect:
+        serializedVersion: 2
+        x: 85
+        y: 107
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 62ba578168f8495d0800000000000000
+      internalID: -3056660440978969818
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_27
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 125
+        width: 17
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cb7b9b998952395e0800000000000000
+      internalID: -1904136880103245892
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_28
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 125
+        width: 17
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 20680de68b6b9abf0800000000000000
+      internalID: -312517795876141566
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_29
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 125
+        width: 17
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7586bc4b99bcf1740800000000000000
+      internalID: 5125038761994578007
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_30
+      rect:
+        serializedVersion: 2
+        x: 149
+        y: 125
+        width: 17
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 347c04324af1e9940800000000000000
+      internalID: 5304712200915568451
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_31
+      rect:
+        serializedVersion: 2
+        x: 168
+        y: 125
+        width: 17
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 52da3e31935bf5dc0800000000000000
+      internalID: -3647997916395360987
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_32
+      rect:
+        serializedVersion: 2
+        x: 190
+        y: 125
+        width: 15
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 12cd78e97223d8640800000000000000
+      internalID: 5083774700115975201
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_33
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 125
+        width: 14
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 346227d6e32345180800000000000000
+      internalID: -9127615301067594173
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_34
+      rect:
+        serializedVersion: 2
+        x: 234
+        y: 125
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5aaa8e01a0e586a70800000000000000
+      internalID: 8820403267531483813
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_35
+      rect:
+        serializedVersion: 2
+        x: 254
+        y: 125
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c47f82407ea4ab3b0800000000000000
+      internalID: -5495998039184574644
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_36
+      rect:
+        serializedVersion: 2
+        x: 22
+        y: 89
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c7bcd178d74072dd0800000000000000
+      internalID: -2511033330051462276
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_37
+      rect:
+        serializedVersion: 2
+        x: 42
+        y: 90
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1b0a3c4700a16120800000000000000
+      internalID: 2405379629196643099
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_38
+      rect:
+        serializedVersion: 2
+        x: 85
+        y: 89
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 66c8751c079a50180800000000000000
+      internalID: -9149720766188123034
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_39
+      rect:
+        serializedVersion: 2
+        x: 106
+        y: 107
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e18be0b8c6f238350800000000000000
+      internalID: 6017705670333085726
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_40
+      rect:
+        serializedVersion: 2
+        x: 106
+        y: 90
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7dfdb80bc9e16e480800000000000000
+      internalID: -8870368757733924905
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_41
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 89
+        width: 18
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b4adb47e59b26b140800000000000000
+      internalID: 4735019981057284683
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_42
+      rect:
+        serializedVersion: 2
+        x: 22
+        y: 71
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ed4e020b721cd45f0800000000000000
+      internalID: -770747585007655714
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_43
+      rect:
+        serializedVersion: 2
+        x: 42
+        y: 72
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a80ba1139d125b1f0800000000000000
+      internalID: -1029879723068837750
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_44
+      rect:
+        serializedVersion: 2
+        x: 63
+        y: 89
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d0ecc759f33ffb400800000000000000
+      internalID: 342259551119920653
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_45
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 71
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c64d865914281dcd0800000000000000
+      internalID: -2535101897041718164
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_46
+      rect:
+        serializedVersion: 2
+        x: 22
+        y: 53
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bd928500877b2b400800000000000000
+      internalID: 338534648035944923
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_47
+      rect:
+        serializedVersion: 2
+        x: 43
+        y: 54
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bdd51e34b133e9880800000000000000
+      internalID: -8602382046035092005
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_48
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 53
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 66656449c7ec8f900800000000000000
+      internalID: 718551175024498278
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_49
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 35
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eccf7bc8224603120800000000000000
+      internalID: 2391521501686267086
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_50
+      rect:
+        serializedVersion: 2
+        x: 22
+        y: 35
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b4530b1d597910bc0800000000000000
+      internalID: -3818604339309562549
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_51
+      rect:
+        serializedVersion: 2
+        x: 42
+        y: 36
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 16b5217c1338fe570800000000000000
+      internalID: 8498155271687920481
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_52
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 35
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1c4213830655dd2a0800000000000000
+      internalID: -6711113997964204863
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_53
+      rect:
+        serializedVersion: 2
+        x: 84
+        y: 35
+        width: 17
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4fae9bc59388d8f60800000000000000
+      internalID: 8038230689876404980
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_54
+      rect:
+        serializedVersion: 2
+        x: 105
+        y: 36
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e013730c87463230800000000000000
+      internalID: 3618158017317638368
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_55
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 17
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 066e2fb6109056ab0800000000000000
+      internalID: -5015592708296481184
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_56
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 0
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3f2fdb9a5410b91c0800000000000000
+      internalID: -4495998404287139085
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_57
+      rect:
+        serializedVersion: 2
+        x: 21
+        y: 17
+        width: 17
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f044a47570e520160800000000000000
+      internalID: 6990252957254697999
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_58
+      rect:
+        serializedVersion: 2
+        x: 22
+        y: 0
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f11141e5ab03529e0800000000000000
+      internalID: -1646856511733624545
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_59
+      rect:
+        serializedVersion: 2
+        x: 42
+        y: 17
+        width: 17
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4ca38c70e5be6d070800000000000000
+      internalID: 8130944966354025156
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_60
+      rect:
+        serializedVersion: 2
+        x: 62
+        y: 17
+        width: 17
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fd05b6a60600c3fa0800000000000000
+      internalID: -5819776204367245089
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_61
+      rect:
+        serializedVersion: 2
+        x: 85
+        y: 17
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3cc62962e582e0480800000000000000
+      internalID: -8931156626189947709
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_62
+      rect:
+        serializedVersion: 2
+        x: 106
+        y: 17
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c1c41099bc4fb470800000000000000
+      internalID: 8412526988821316032
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sniper_hell_63
+      rect:
+        serializedVersion: 2
+        x: 43
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ea36af8bef339cf10800000000000000
+      internalID: 2290419054612734894
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      sniper_hell_0: -2270498391735663758
+      sniper_hell_1: 1864926238331606073
+      sniper_hell_10: 3485531983195322489
+      sniper_hell_11: 6114897713972411007
+      sniper_hell_12: -5080537063817337513
+      sniper_hell_13: -6263913878176587543
+      sniper_hell_14: 6479652341492610331
+      sniper_hell_15: 7750307903921396434
+      sniper_hell_16: -6401095568668652286
+      sniper_hell_17: 6877092924617034941
+      sniper_hell_18: 6218554521742500620
+      sniper_hell_19: 211756744817195615
+      sniper_hell_2: -5897906381084837957
+      sniper_hell_20: 1022933437246743038
+      sniper_hell_21: -9153915691332295707
+      sniper_hell_22: 7195272187023482752
+      sniper_hell_23: -8491954501851916734
+      sniper_hell_24: 2360533964589990777
+      sniper_hell_25: -4786141050932553054
+      sniper_hell_26: -3056660440978969818
+      sniper_hell_27: -1904136880103245892
+      sniper_hell_28: -312517795876141566
+      sniper_hell_29: 5125038761994578007
+      sniper_hell_3: -4834993915429131578
+      sniper_hell_30: 5304712200915568451
+      sniper_hell_31: -3647997916395360987
+      sniper_hell_32: 5083774700115975201
+      sniper_hell_33: -9127615301067594173
+      sniper_hell_34: 8820403267531483813
+      sniper_hell_35: -5495998039184574644
+      sniper_hell_36: -2511033330051462276
+      sniper_hell_37: 2405379629196643099
+      sniper_hell_38: -9149720766188123034
+      sniper_hell_39: 6017705670333085726
+      sniper_hell_4: 959071431326145098
+      sniper_hell_40: -8870368757733924905
+      sniper_hell_41: 4735019981057284683
+      sniper_hell_42: -770747585007655714
+      sniper_hell_43: -1029879723068837750
+      sniper_hell_44: 342259551119920653
+      sniper_hell_45: -2535101897041718164
+      sniper_hell_46: 338534648035944923
+      sniper_hell_47: -8602382046035092005
+      sniper_hell_48: 718551175024498278
+      sniper_hell_49: 2391521501686267086
+      sniper_hell_5: -7056952248550016190
+      sniper_hell_50: -3818604339309562549
+      sniper_hell_51: 8498155271687920481
+      sniper_hell_52: -6711113997964204863
+      sniper_hell_53: 8038230689876404980
+      sniper_hell_54: 3618158017317638368
+      sniper_hell_55: -5015592708296481184
+      sniper_hell_56: -4495998404287139085
+      sniper_hell_57: 6990252957254697999
+      sniper_hell_58: -1646856511733624545
+      sniper_hell_59: 8130944966354025156
+      sniper_hell_6: 7708822393472476362
+      sniper_hell_60: -5819776204367245089
+      sniper_hell_61: -8931156626189947709
+      sniper_hell_62: 8412526988821316032
+      sniper_hell_63: 2290419054612734894
+      sniper_hell_7: 7417880988210935470
+      sniper_hell_8: -2412824093494216252
+      sniper_hell_9: 4984089287068228722
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

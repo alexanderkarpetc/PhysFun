@@ -1,0 +1,1027 @@
+fileFormatVersion: 2
+guid: adff3c1173060f44893487181a195c05
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -5738498768696573160
+    second: icer_uv_src_0
+  - first:
+      213: -5183848304169511153
+    second: icer_uv_src_1
+  - first:
+      213: 6242834433176764429
+    second: icer_uv_src_2
+  - first:
+      213: 1542840464429677208
+    second: icer_uv_src_3
+  - first:
+      213: -180987965576956994
+    second: icer_uv_src_4
+  - first:
+      213: -4285596320124887424
+    second: icer_uv_src_5
+  - first:
+      213: -6856980021069945103
+    second: icer_uv_src_6
+  - first:
+      213: -9022764254126636901
+    second: icer_uv_src_7
+  - first:
+      213: 2370863887795905288
+    second: icer_uv_src_8
+  - first:
+      213: -3353350481903005076
+    second: icer_uv_src_9
+  - first:
+      213: -8330621028040146256
+    second: icer_uv_src_10
+  - first:
+      213: -2910287258943277831
+    second: icer_uv_src_11
+  - first:
+      213: 3011935073006746045
+    second: icer_uv_src_12
+  - first:
+      213: -2763444207162313053
+    second: icer_uv_src_13
+  - first:
+      213: 5922783445927424471
+    second: icer_uv_src_14
+  - first:
+      213: 4261715318160897575
+    second: icer_uv_src_15
+  - first:
+      213: -7467133541532615011
+    second: icer_uv_src_16
+  - first:
+      213: 4759542178425527241
+    second: icer_uv_src_17
+  - first:
+      213: 7013920688227527375
+    second: icer_uv_src_18
+  - first:
+      213: 3449008760877491365
+    second: icer_uv_src_19
+  - first:
+      213: 4768205701159769112
+    second: icer_uv_src_20
+  - first:
+      213: 1003080819306039450
+    second: icer_uv_src_21
+  - first:
+      213: 767932840197359157
+    second: icer_uv_src_22
+  - first:
+      213: -1923726037690615808
+    second: icer_uv_src_23
+  - first:
+      213: -8530244830921635847
+    second: icer_uv_src_24
+  - first:
+      213: 2082446794050688280
+    second: icer_uv_src_25
+  - first:
+      213: 8139055825456285394
+    second: icer_uv_src_26
+  - first:
+      213: 5142902990943475557
+    second: icer_uv_src_27
+  - first:
+      213: -5995672737558760026
+    second: icer_uv_src_28
+  - first:
+      213: 5471011502320995693
+    second: icer_uv_src_29
+  - first:
+      213: 2130027088705982319
+    second: icer_uv_src_30
+  - first:
+      213: -8689511301427428128
+    second: icer_uv_src_31
+  - first:
+      213: -8248508245325989212
+    second: icer_uv_src_32
+  - first:
+      213: 37101217490108717
+    second: icer_uv_src_33
+  - first:
+      213: 3847269379298451783
+    second: icer_uv_src_34
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 20
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 256
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: icer_uv_src_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 146
+        width: 12
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 81303d316c1cc50b0800000000000000
+      internalID: -5738498768696573160
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_1
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 134
+        width: 11
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f07177cbe654f08b0800000000000000
+      internalID: -5183848304169511153
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_2
+      rect:
+        serializedVersion: 2
+        x: 11
+        y: 149
+        width: 18
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d00041d47d003a650800000000000000
+      internalID: 6242834433176764429
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_3
+      rect:
+        serializedVersion: 2
+        x: 11
+        y: 135
+        width: 14
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 89afd636a35496510800000000000000
+      internalID: 1542840464429677208
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_4
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 146
+        width: 26
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eb33a2b77600d7df0800000000000000
+      internalID: -180987965576956994
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_5
+      rect:
+        serializedVersion: 2
+        x: 30
+        y: 132
+        width: 14
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 08e1c385ad08684c0800000000000000
+      internalID: -4285596320124887424
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_6
+      rect:
+        serializedVersion: 2
+        x: 45
+        y: 138
+        width: 14
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1f6ec2c200d17d0a0800000000000000
+      internalID: -6856980021069945103
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_7
+      rect:
+        serializedVersion: 2
+        x: 51
+        y: 139
+        width: 16
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b9080bc27b3b8c280800000000000000
+      internalID: -9022764254126636901
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_8
+      rect:
+        serializedVersion: 2
+        x: 62
+        y: 151
+        width: 22
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 80360e2052007e020800000000000000
+      internalID: 2370863887795905288
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_9
+      rect:
+        serializedVersion: 2
+        x: 85
+        y: 151
+        width: 16
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c6259c6e0818671d0800000000000000
+      internalID: -3353350481903005076
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_10
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 119
+        width: 15
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0b284410050b36c80800000000000000
+      internalID: -8330621028040146256
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_11
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 134
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9f4375848259c97d0800000000000000
+      internalID: -2910287258943277831
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_12
+      rect:
+        serializedVersion: 2
+        x: 54
+        y: 132
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: db97b11bdfa8cc920800000000000000
+      internalID: 3011935073006746045
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_13
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 109
+        width: 12
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3a6ba7b822646a9d0800000000000000
+      internalID: -2763444207162313053
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_14
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 97
+        width: 8
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7d17110f924f13250800000000000000
+      internalID: 5922783445927424471
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_15
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 113
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 72632d89087a42b30800000000000000
+      internalID: 4261715318160897575
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_16
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 96
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d9e3b864b996f5890800000000000000
+      internalID: -7467133541532615011
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_17
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 69
+        width: 16
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9cbda86e46a4d0240800000000000000
+      internalID: 4759542178425527241
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_18
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 51
+        width: 13
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fcaa09064b3765160800000000000000
+      internalID: 7013920688227527375
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_19
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 32
+        width: 11
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5a42053c1375ddf20800000000000000
+      internalID: 3449008760877491365
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_20
+      rect:
+        serializedVersion: 2
+        x: 11
+        y: 56
+        width: 14
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 814de9972d11c2240800000000000000
+      internalID: 4768205701159769112
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_21
+      rect:
+        serializedVersion: 2
+        x: 11
+        y: 24
+        width: 22
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a988ebbc0b8abed00800000000000000
+      internalID: 1003080819306039450
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_22
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 70
+        width: 12
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 536025779de38aa00800000000000000
+      internalID: 767932840197359157
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_23
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 44
+        width: 26
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 008f74e6c5d8d45e0800000000000000
+      internalID: -1923726037690615808
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_24
+      rect:
+        serializedVersion: 2
+        x: 34
+        y: 61
+        width: 8
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9f7cdcd758b7e9980800000000000000
+      internalID: -8530244830921635847
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_25
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 20
+        width: 11
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 815da0f635656ec10800000000000000
+      internalID: 2082446794050688280
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_26
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 11
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2d64563962cb3f070800000000000000
+      internalID: 8139055825456285394
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_27
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 13
+        width: 10
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 567da71a5034f5740800000000000000
+      internalID: 5142902990943475557
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_28
+      rect:
+        serializedVersion: 2
+        x: 11
+        y: 2
+        width: 14
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a5f05069671bcca0800000000000000
+      internalID: -5995672737558760026
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_29
+      rect:
+        serializedVersion: 2
+        x: 17
+        y: 14
+        width: 13
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d6d4be589ffeceb40800000000000000
+      internalID: 5471011502320995693
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_30
+      rect:
+        serializedVersion: 2
+        x: 18
+        y: 19
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f6f87401a506f8d10800000000000000
+      internalID: 2130027088705982319
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_31
+      rect:
+        serializedVersion: 2
+        x: 34
+        y: 0
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e40da6a287a86780800000000000000
+      internalID: -8689511301427428128
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_32
+      rect:
+        serializedVersion: 2
+        x: 51
+        y: 5
+        width: 16
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4aab67e0479678d80800000000000000
+      internalID: -8248508245325989212
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_33
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 1
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d218b395c5fc38000800000000000000
+      internalID: 37101217490108717
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: icer_uv_src_34
+      rect:
+        serializedVersion: 2
+        x: 54
+        y: 0
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7416254ed1f346530800000000000000
+      internalID: 3847269379298451783
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      icer_uv_src_0: -5738498768696573160
+      icer_uv_src_1: -5183848304169511153
+      icer_uv_src_10: -8330621028040146256
+      icer_uv_src_11: -2910287258943277831
+      icer_uv_src_12: 3011935073006746045
+      icer_uv_src_13: -2763444207162313053
+      icer_uv_src_14: 5922783445927424471
+      icer_uv_src_15: 4261715318160897575
+      icer_uv_src_16: -7467133541532615011
+      icer_uv_src_17: 4759542178425527241
+      icer_uv_src_18: 7013920688227527375
+      icer_uv_src_19: 3449008760877491365
+      icer_uv_src_2: 6242834433176764429
+      icer_uv_src_20: 4768205701159769112
+      icer_uv_src_21: 1003080819306039450
+      icer_uv_src_22: 767932840197359157
+      icer_uv_src_23: -1923726037690615808
+      icer_uv_src_24: -8530244830921635847
+      icer_uv_src_25: 2082446794050688280
+      icer_uv_src_26: 8139055825456285394
+      icer_uv_src_27: 5142902990943475557
+      icer_uv_src_28: -5995672737558760026
+      icer_uv_src_29: 5471011502320995693
+      icer_uv_src_3: 1542840464429677208
+      icer_uv_src_30: 2130027088705982319
+      icer_uv_src_31: -8689511301427428128
+      icer_uv_src_32: -8248508245325989212
+      icer_uv_src_33: 37101217490108717
+      icer_uv_src_34: 3847269379298451783
+      icer_uv_src_4: -180987965576956994
+      icer_uv_src_5: -4285596320124887424
+      icer_uv_src_6: -6856980021069945103
+      icer_uv_src_7: -9022764254126636901
+      icer_uv_src_8: 2370863887795905288
+      icer_uv_src_9: -3353350481903005076
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

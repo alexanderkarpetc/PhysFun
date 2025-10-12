@@ -1,0 +1,923 @@
+fileFormatVersion: 2
+guid: 992906c02636c76479abe6610a0bd6cd
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 2252072040713946243
+    second: roboguard_0
+  - first:
+      213: 8329603910322222693
+    second: roboguard_1
+  - first:
+      213: -2880464362424600637
+    second: roboguard_2
+  - first:
+      213: 362736584399456795
+    second: roboguard_3
+  - first:
+      213: -649301864392207787
+    second: roboguard_4
+  - first:
+      213: 907473502865346248
+    second: roboguard_5
+  - first:
+      213: -9204813135995185941
+    second: roboguard_6
+  - first:
+      213: -4882892236448379543
+    second: roboguard_7
+  - first:
+      213: 7197596683810692948
+    second: roboguard_8
+  - first:
+      213: 2671167286278237587
+    second: roboguard_9
+  - first:
+      213: 3271208906100985152
+    second: roboguard_10
+  - first:
+      213: -3138514872187530205
+    second: roboguard_11
+  - first:
+      213: 4185084303068488491
+    second: roboguard_12
+  - first:
+      213: -7497751753384488674
+    second: roboguard_13
+  - first:
+      213: 503724296591154966
+    second: roboguard_14
+  - first:
+      213: 2724065390713406659
+    second: roboguard_15
+  - first:
+      213: 8206405596003336888
+    second: roboguard_16
+  - first:
+      213: 660494075259683066
+    second: roboguard_17
+  - first:
+      213: -4259086138869214101
+    second: roboguard_18
+  - first:
+      213: -19857769473768519
+    second: roboguard_19
+  - first:
+      213: -5855578615021512676
+    second: roboguard_20
+  - first:
+      213: -6379026762523249897
+    second: roboguard_21
+  - first:
+      213: 3511486272141238634
+    second: roboguard_22
+  - first:
+      213: -8946242992906043025
+    second: roboguard_23
+  - first:
+      213: 4500278399077533423
+    second: roboguard_24
+  - first:
+      213: 4287678585376897758
+    second: roboguard_25
+  - first:
+      213: -7757396398427110783
+    second: roboguard_26
+  - first:
+      213: 5568244841470181961
+    second: roboguard_27
+  - first:
+      213: 2298018002753497998
+    second: roboguard_28
+  - first:
+      213: -2975391849372710065
+    second: roboguard_29
+  - first:
+      213: -2830126917776647217
+    second: roboguard_30
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 20
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 256
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: roboguard_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 147
+        width: 23
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 384085bc697f04f10800000000000000
+      internalID: 2252072040713946243
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_1
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 147
+        width: 23
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 566f572df92b89370800000000000000
+      internalID: 8329603910322222693
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_2
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 147
+        width: 23
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3c772897ce88608d0800000000000000
+      internalID: -2880464362424600637
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_3
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 147
+        width: 23
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1a0b2c6003b80500800000000000000
+      internalID: 362736584399456795
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_4
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 147
+        width: 23
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 55257ecf4673df6f0800000000000000
+      internalID: -649301864392207787
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_5
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 147
+        width: 23
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ce4e55c75ef79c00800000000000000
+      internalID: 907473502865346248
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_6
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 126
+        width: 23
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: be45825d83fe14080800000000000000
+      internalID: -9204813135995185941
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_7
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 126
+        width: 25
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 96d4bf1b16b7c3cb0800000000000000
+      internalID: -4882892236448379543
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_8
+      rect:
+        serializedVersion: 2
+        x: 50
+        y: 126
+        width: 23
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 45fd017ac0003e360800000000000000
+      internalID: 7197596683810692948
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_9
+      rect:
+        serializedVersion: 2
+        x: 76
+        y: 126
+        width: 22
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 39d22429e74e11520800000000000000
+      internalID: 2671167286278237587
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_10
+      rect:
+        serializedVersion: 2
+        x: 101
+        y: 126
+        width: 21
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 04d4e322b2ba56d20800000000000000
+      internalID: 3271208906100985152
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_11
+      rect:
+        serializedVersion: 2
+        x: 126
+        y: 126
+        width: 22
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3245bf03a51c174d0800000000000000
+      internalID: -3138514872187530205
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_12
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 105
+        width: 23
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b23e5770008641a30800000000000000
+      internalID: 4185084303068488491
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_13
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 84
+        width: 24
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e11947d4182a2f790800000000000000
+      internalID: -7497751753384488674
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_14
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 63
+        width: 23
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 61f9c0334969df600800000000000000
+      internalID: 503724296591154966
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_15
+      rect:
+        serializedVersion: 2
+        x: 25
+        y: 63
+        width: 23
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3c488664a03ddc520800000000000000
+      internalID: 2724065390713406659
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_16
+      rect:
+        serializedVersion: 2
+        x: 50
+        y: 63
+        width: 24
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8b28e80096203e170800000000000000
+      internalID: 8206405596003336888
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_17
+      rect:
+        serializedVersion: 2
+        x: 74
+        y: 63
+        width: 26
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: af08a1cacdb8a2900800000000000000
+      internalID: 660494075259683066
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_18
+      rect:
+        serializedVersion: 2
+        x: 99
+        y: 63
+        width: 21
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b6419e8e8bfa4e4c0800000000000000
+      internalID: -4259086138869214101
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_19
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 42
+        width: 23
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9b30c70c67379bff0800000000000000
+      internalID: -19857769473768519
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_20
+      rect:
+        serializedVersion: 2
+        x: 25
+        y: 42
+        width: 24
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c18d449164eccbea0800000000000000
+      internalID: -5855578615021512676
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_21
+      rect:
+        serializedVersion: 2
+        x: 50
+        y: 42
+        width: 23
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 713771ff4f42977a0800000000000000
+      internalID: -6379026762523249897
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_22
+      rect:
+        serializedVersion: 2
+        x: 74
+        y: 42
+        width: 23
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a61a3ace82e4bb030800000000000000
+      internalID: 3511486272141238634
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_23
+      rect:
+        serializedVersion: 2
+        x: 99
+        y: 42
+        width: 23
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f61028da56f88d380800000000000000
+      internalID: -8946242992906043025
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_24
+      rect:
+        serializedVersion: 2
+        x: 125
+        y: 42
+        width: 23
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fe641674c53347e30800000000000000
+      internalID: 4500278399077533423
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_25
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 21
+        width: 24
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eda7070d4f4e08b30800000000000000
+      internalID: 4287678585376897758
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_26
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 21
+        width: 23
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1828bd97311385490800000000000000
+      internalID: -7757396398427110783
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_27
+      rect:
+        serializedVersion: 2
+        x: 53
+        y: 21
+        width: 22
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9424b367e21664d40800000000000000
+      internalID: 5568244841470181961
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_28
+      rect:
+        serializedVersion: 2
+        x: 75
+        y: 21
+        width: 23
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8b2395b23334ef10800000000000000
+      internalID: 2298018002753497998
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_29
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 22
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f4b0c8690e845b6d0800000000000000
+      internalID: -2975391849372710065
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: roboguard_30
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 0
+        width: 24
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fcbd6ac109e59b8d0800000000000000
+      internalID: -2830126917776647217
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      roboguard_0: 2252072040713946243
+      roboguard_1: 8329603910322222693
+      roboguard_10: 3271208906100985152
+      roboguard_11: -3138514872187530205
+      roboguard_12: 4185084303068488491
+      roboguard_13: -7497751753384488674
+      roboguard_14: 503724296591154966
+      roboguard_15: 2724065390713406659
+      roboguard_16: 8206405596003336888
+      roboguard_17: 660494075259683066
+      roboguard_18: -4259086138869214101
+      roboguard_19: -19857769473768519
+      roboguard_2: -2880464362424600637
+      roboguard_20: -5855578615021512676
+      roboguard_21: -6379026762523249897
+      roboguard_22: 3511486272141238634
+      roboguard_23: -8946242992906043025
+      roboguard_24: 4500278399077533423
+      roboguard_25: 4287678585376897758
+      roboguard_26: -7757396398427110783
+      roboguard_27: 5568244841470181961
+      roboguard_28: 2298018002753497998
+      roboguard_29: -2975391849372710065
+      roboguard_3: 362736584399456795
+      roboguard_30: -2830126917776647217
+      roboguard_4: -649301864392207787
+      roboguard_5: 907473502865346248
+      roboguard_6: -9204813135995185941
+      roboguard_7: -4882892236448379543
+      roboguard_8: 7197596683810692948
+      roboguard_9: 2671167286278237587
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

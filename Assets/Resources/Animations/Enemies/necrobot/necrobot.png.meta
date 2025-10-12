@@ -1,0 +1,871 @@
+fileFormatVersion: 2
+guid: e6c5eb5f0595c0c49a044081c4d24690
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 8941864294225733242
+    second: necrobot_0
+  - first:
+      213: 2433754716325073154
+    second: necrobot_1
+  - first:
+      213: -2808445742869485045
+    second: necrobot_2
+  - first:
+      213: -8001350694431637923
+    second: necrobot_3
+  - first:
+      213: -1085243753581091797
+    second: necrobot_4
+  - first:
+      213: -1259138271678200237
+    second: necrobot_5
+  - first:
+      213: 857908922892838169
+    second: necrobot_6
+  - first:
+      213: -8720285445946902706
+    second: necrobot_7
+  - first:
+      213: 609763187525364431
+    second: necrobot_8
+  - first:
+      213: 2516565496968441403
+    second: necrobot_9
+  - first:
+      213: -5798623988858150782
+    second: necrobot_10
+  - first:
+      213: -7875419220603541859
+    second: necrobot_11
+  - first:
+      213: 5628001226417192173
+    second: necrobot_12
+  - first:
+      213: 5457189122165972906
+    second: necrobot_13
+  - first:
+      213: -3095087324414264008
+    second: necrobot_14
+  - first:
+      213: -4459755717437656012
+    second: necrobot_15
+  - first:
+      213: 6773243686024690978
+    second: necrobot_16
+  - first:
+      213: -4760542708997863214
+    second: necrobot_17
+  - first:
+      213: -2248512174309824260
+    second: necrobot_18
+  - first:
+      213: 8654253171803673709
+    second: necrobot_19
+  - first:
+      213: -6265235960390206598
+    second: necrobot_20
+  - first:
+      213: -3007575904797022867
+    second: necrobot_21
+  - first:
+      213: 8581961845709013924
+    second: necrobot_22
+  - first:
+      213: -7145343668846399036
+    second: necrobot_23
+  - first:
+      213: -5676029329054495320
+    second: necrobot_24
+  - first:
+      213: -9185921161771515695
+    second: necrobot_25
+  - first:
+      213: -7403384604774482832
+    second: necrobot_26
+  - first:
+      213: 7247327954143816359
+    second: necrobot_27
+  - first:
+      213: 2576140507448276253
+    second: necrobot_28
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 20
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 256
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: necrobot_0
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 164
+        width: 17
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a76e2171332e71c70800000000000000
+      internalID: 8941864294225733242
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_1
+      rect:
+        serializedVersion: 2
+        x: 21
+        y: 164
+        width: 17
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 201dcf8150f66c120800000000000000
+      internalID: 2433754716325073154
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_2
+      rect:
+        serializedVersion: 2
+        x: 41
+        y: 164
+        width: 17
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b0a6e450a756609d0800000000000000
+      internalID: -2808445742869485045
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_3
+      rect:
+        serializedVersion: 2
+        x: 61
+        y: 164
+        width: 17
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d5eb317bfed75f090800000000000000
+      internalID: -8001350694431637923
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_4
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 164
+        width: 17
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b2466155e8070f0f0800000000000000
+      internalID: -1085243753581091797
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_5
+      rect:
+        serializedVersion: 2
+        x: 101
+        y: 164
+        width: 17
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3568581c964a68ee0800000000000000
+      internalID: -1259138271678200237
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_6
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 134
+        width: 17
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9156aa6be97e7eb00800000000000000
+      internalID: 857908922892838169
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_7
+      rect:
+        serializedVersion: 2
+        x: 21
+        y: 134
+        width: 17
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e477356c6925bf680800000000000000
+      internalID: -8720285445946902706
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_8
+      rect:
+        serializedVersion: 2
+        x: 41
+        y: 134
+        width: 17
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fca2f8d6360567800800000000000000
+      internalID: 609763187525364431
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_9
+      rect:
+        serializedVersion: 2
+        x: 62
+        y: 134
+        width: 17
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b3eeec47cf2ace220800000000000000
+      internalID: 2516565496968441403
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_10
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 102
+        width: 18
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2802d0e5436278fa0800000000000000
+      internalID: -5798623988858150782
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_11
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 72
+        width: 17
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d9664a2d1f3e4b290800000000000000
+      internalID: -7875419220603541859
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_12
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 71
+        width: 18
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dec3f080c4daa1e40800000000000000
+      internalID: 5628001226417192173
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_13
+      rect:
+        serializedVersion: 2
+        x: 41
+        y: 70
+        width: 17
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aaf14dad794dbbb40800000000000000
+      internalID: 5457189122165972906
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_14
+      rect:
+        serializedVersion: 2
+        x: 60
+        y: 71
+        width: 18
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 83d39771a7a0c05d0800000000000000
+      internalID: -3095087324414264008
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_15
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 42
+        width: 18
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4347c15cdc3cb12c0800000000000000
+      internalID: -4459755717437656012
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_16
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 41
+        width: 19
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 22db8aa0f356ffd50800000000000000
+      internalID: 6773243686024690978
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_17
+      rect:
+        serializedVersion: 2
+        x: 41
+        y: 40
+        width: 18
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2d84b1ce0a72fedb0800000000000000
+      internalID: -4760542708997863214
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_18
+      rect:
+        serializedVersion: 2
+        x: 60
+        y: 41
+        width: 19
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cf82f11371eabc0e0800000000000000
+      internalID: -2248512174309824260
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_19
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 14
+        width: 17
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d64d7a558651a1870800000000000000
+      internalID: 8654253171803673709
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_20
+      rect:
+        serializedVersion: 2
+        x: 22
+        y: 14
+        width: 14
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a7b30f2b6196d09a0800000000000000
+      internalID: -6265235960390206598
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_21
+      rect:
+        serializedVersion: 2
+        x: 42
+        y: 14
+        width: 14
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d65ac8f36a1f246d0800000000000000
+      internalID: -3007575904797022867
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_22
+      rect:
+        serializedVersion: 2
+        x: 62
+        y: 14
+        width: 14
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4a3017954d0491770800000000000000
+      internalID: 8581961845709013924
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_23
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 14
+        width: 14
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c1f2547ac3a6dc90800000000000000
+      internalID: -7145343668846399036
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_24
+      rect:
+        serializedVersion: 2
+        x: 101
+        y: 14
+        width: 15
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ad020be561ba31b0800000000000000
+      internalID: -5676029329054495320
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_25
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 14
+        width: 17
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1d08dd95f5d058080800000000000000
+      internalID: -9185921161771515695
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_26
+      rect:
+        serializedVersion: 2
+        x: 140
+        y: 14
+        width: 18
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 07c32d04de4e14990800000000000000
+      internalID: -7403384604774482832
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_27
+      rect:
+        serializedVersion: 2
+        x: 161
+        y: 14
+        width: 17
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7aa2085506ea39460800000000000000
+      internalID: 7247327954143816359
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: necrobot_28
+      rect:
+        serializedVersion: 2
+        x: 181
+        y: 14
+        width: 17
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d15f2fd742a40c320800000000000000
+      internalID: 2576140507448276253
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      necrobot_0: 8941864294225733242
+      necrobot_1: 2433754716325073154
+      necrobot_10: -5798623988858150782
+      necrobot_11: -7875419220603541859
+      necrobot_12: 5628001226417192173
+      necrobot_13: 5457189122165972906
+      necrobot_14: -3095087324414264008
+      necrobot_15: -4459755717437656012
+      necrobot_16: 6773243686024690978
+      necrobot_17: -4760542708997863214
+      necrobot_18: -2248512174309824260
+      necrobot_19: 8654253171803673709
+      necrobot_2: -2808445742869485045
+      necrobot_20: -6265235960390206598
+      necrobot_21: -3007575904797022867
+      necrobot_22: 8581961845709013924
+      necrobot_23: -7145343668846399036
+      necrobot_24: -5676029329054495320
+      necrobot_25: -9185921161771515695
+      necrobot_26: -7403384604774482832
+      necrobot_27: 7247327954143816359
+      necrobot_28: 2576140507448276253
+      necrobot_3: -8001350694431637923
+      necrobot_4: -1085243753581091797
+      necrobot_5: -1259138271678200237
+      necrobot_6: 857908922892838169
+      necrobot_7: -8720285445946902706
+      necrobot_8: 609763187525364431
+      necrobot_9: 2516565496968441403
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

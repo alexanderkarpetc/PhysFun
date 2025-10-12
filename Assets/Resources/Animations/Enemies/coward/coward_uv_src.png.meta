@@ -14,6 +14,114 @@ TextureImporter:
   - first:
       213: -6443285772055348137
     second: coward_uv_src_3
+  - first:
+      213: -5721835179512457790
+    second: stand_uv_00
+  - first:
+      213: -4036214141370607036
+    second: stand_uv_01
+  - first:
+      213: 2751865157800625395
+    second: stand_uv_02
+  - first:
+      213: -8769460473769309046
+    second: stand_uv_03
+  - first:
+      213: -5694158414533177301
+    second: stand_uv_04
+  - first:
+      213: -7979340818003704660
+    second: stand_uv_05
+  - first:
+      213: -4370653608703766100
+    second: walk_uv_00
+  - first:
+      213: -3580783184832072593
+    second: walk_uv_01
+  - first:
+      213: -6637330708039281101
+    second: walk_uv_02
+  - first:
+      213: 2124092908112118739
+    second: walk_uv_03
+  - first:
+      213: 4215399962077471313
+    second: walk_uv_04
+  - first:
+      213: -7258769548875844236
+    second: walk_uv_05
+  - first:
+      213: 5888419747610830782
+    second: run_uv_00
+  - first:
+      213: -7499529970797546215
+    second: run_uv_01
+  - first:
+      213: -7632005925876012708
+    second: run_uv_02
+  - first:
+      213: 429713932877028950
+    second: run_uv_03
+  - first:
+      213: -8778585375178520907
+    second: run_uv_04
+  - first:
+      213: -7690295880785809358
+    second: run_uv_05
+  - first:
+      213: -1933635559866258387
+    second: burn_uv_00
+  - first:
+      213: -8833060878026984862
+    second: burn_uv_01
+  - first:
+      213: -5317462881261203831
+    second: burn_uv_02
+  - first:
+      213: -5186519030703966240
+    second: burn_uv_03
+  - first:
+      213: 1225910538346966573
+    second: burn_uv_04
+  - first:
+      213: -5211794953369159016
+    second: burn_uv_05
+  - first:
+      213: 5478887868025183167
+    second: attack_ranged_uv_00
+  - first:
+      213: 8038362436288419725
+    second: attack_ranged_uv_01
+  - first:
+      213: 1421759403329892239
+    second: attack_ranged_uv_02
+  - first:
+      213: 4605468622445755064
+    second: attack_ranged_uv_03
+  - first:
+      213: -6295360574168337826
+    second: fly_idle_uv_00
+  - first:
+      213: -7191562970205049878
+    second: fly_idle_uv_01
+  - first:
+      213: 8522578503159766042
+    second: fly_idle_uv_02
+  - first:
+      213: 1514282308619528517
+    second: fly_idle_uv_03
+  - first:
+      213: 6326805623979288599
+    second: fly_move_uv_00
+  - first:
+      213: 1072633978066396861
+    second: fly_move_uv_01
+  - first:
+      213: 4281050585829497676
+    second: fly_move_uv_02
+  - first:
+      213: 7848953146376823009
+    second: fly_move_uv_03
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -33,7 +141,7 @@ TextureImporter:
     heightScale: 0.25
     normalMapFilter: 0
     flipGreenChannel: 0
-  isReadable: 0
+  isReadable: 1
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
@@ -46,7 +154,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -109,89 +217,793 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: coward_uv_src_0
+      name: stand_uv_00
       rect:
         serializedVersion: 2
-        x: 1
-        y: 6
-        width: 92
-        height: 105
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 92
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 5bc7e57e852c16490800000000000000
-      internalID: -7754703396260643659
+      spriteID: 2c593d54835f790b0800000000000000
+      internalID: -5721835179512457790
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: coward_uv_src_1
+      name: stand_uv_01
       rect:
         serializedVersion: 2
-        x: 1
-        y: 33
-        width: 6
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 16
+        y: 92
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: ab6280fa3ad154d10800000000000000
-      internalID: 2109124589346367162
+      spriteID: 44a523a8f9c7cf7c0800000000000000
+      internalID: -4036214141370607036
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: coward_uv_src_2
+      name: stand_uv_02
       rect:
         serializedVersion: 2
-        x: 17
-        y: 32
-        width: 8
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 32
+        y: 92
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 144e517b7b7bda430800000000000000
-      internalID: 3795892060621759553
+      spriteID: 3f40b70f7c6903620800000000000000
+      internalID: 2751865157800625395
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: coward_uv_src_3
+      name: stand_uv_03
       rect:
         serializedVersion: 2
-        x: 33
-        y: 31
-        width: 8
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 48
+        y: 92
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 75cff427ab9d496a0800000000000000
-      internalID: -6443285772055348137
+      spriteID: a8cc625692e9c4680800000000000000
+      internalID: -8769460473769309046
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stand_uv_04
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 92
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b20d2f647194af0b0800000000000000
+      internalID: -5694158414533177301
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: stand_uv_05
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 92
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ca44d196dcfa34190800000000000000
+      internalID: -7979340818003704660
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walk_uv_00
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 70
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ca1dee813b15853c0800000000000000
+      internalID: -4370653608703766100
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walk_uv_01
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 70
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f64746a4aa08e4ec0800000000000000
+      internalID: -3580783184832072593
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walk_uv_02
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 70
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 336d68a13e673e3a0800000000000000
+      internalID: -6637330708039281101
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walk_uv_03
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 70
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3d303f9fe3b4a7d10800000000000000
+      internalID: 2124092908112118739
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walk_uv_04
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 70
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 152a2dd6eeb108a30800000000000000
+      internalID: 4215399962077471313
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: walk_uv_05
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 70
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 47535dccd8ba34b90800000000000000
+      internalID: -7258769548875844236
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: run_uv_00
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 70
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eb72db0ff8ed7b150800000000000000
+      internalID: 5888419747610830782
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: run_uv_01
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 70
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 915773cc9315ce790800000000000000
+      internalID: -7499529970797546215
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: run_uv_02
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 70
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c59eb78eb0ba51690800000000000000
+      internalID: -7632005925876012708
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: run_uv_03
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 70
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 65edb249b86a6f500800000000000000
+      internalID: 429713932877028950
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: run_uv_04
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 70
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5b68b0abc133c2680800000000000000
+      internalID: -8778585375178520907
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: run_uv_05
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 70
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 230bc1034a4964590800000000000000
+      internalID: -7690295880785809358
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: burn_uv_00
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 70
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d2cab1104b85a25e0800000000000000
+      internalID: -1933635559866258387
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: burn_uv_01
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 70
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2623dc55ee9aa6580800000000000000
+      internalID: -8833060878026984862
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: burn_uv_02
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 70
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 98ec910cea39436b0800000000000000
+      internalID: -5317462881261203831
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: burn_uv_03
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 70
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e73612cb68c508b0800000000000000
+      internalID: -5186519030703966240
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: burn_uv_04
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 70
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d2e2494b32f430110800000000000000
+      internalID: 1225910538346966573
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: burn_uv_05
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 70
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 89af14a6a1cfba7b0800000000000000
+      internalID: -5211794953369159016
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: attack_ranged_uv_00
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 4
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fbb96d1dc7be80c40800000000000000
+      internalID: 5478887868025183167
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: attack_ranged_uv_01
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 4
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d8790d6fb000e8f60800000000000000
+      internalID: 8038362436288419725
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: attack_ranged_uv_02
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 4
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f8fac8ff4aa1bb310800000000000000
+      internalID: 1421759403329892239
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: attack_ranged_uv_03
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 4
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ba3611bf49e9ef30800000000000000
+      internalID: 4605468622445755064
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fly_idle_uv_00
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 48
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e5272bb79e262a8a0800000000000000
+      internalID: -6295360574168337826
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fly_idle_uv_01
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 48
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aeb2315c49f623c90800000000000000
+      internalID: -7191562970205049878
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fly_idle_uv_02
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 48
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a1cd73b7ef7464670800000000000000
+      internalID: 8522578503159766042
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fly_idle_uv_03
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 48
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 549ece69cbfc30510800000000000000
+      internalID: 1514282308619528517
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fly_move_uv_00
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 26
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 718aa34b1345dc750800000000000000
+      internalID: 6326805623979288599
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fly_move_uv_01
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 26
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: db669a48be2c2ee00800000000000000
+      internalID: 1072633978066396861
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fly_move_uv_02
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 26
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c4b58d963d8596b30800000000000000
+      internalID: 4281050585829497676
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fly_move_uv_03
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 26
+        width: 16
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27272728}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1e0a9741d451dec60800000000000000
+      internalID: 7848953146376823009
       vertices: []
       indices: 
       edges: []
@@ -210,10 +1022,46 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
+      attack_ranged_uv_00: 5478887868025183167
+      attack_ranged_uv_01: 8038362436288419725
+      attack_ranged_uv_02: 1421759403329892239
+      attack_ranged_uv_03: 4605468622445755064
+      burn_uv_00: -1933635559866258387
+      burn_uv_01: -8833060878026984862
+      burn_uv_02: -5317462881261203831
+      burn_uv_03: -5186519030703966240
+      burn_uv_04: 1225910538346966573
+      burn_uv_05: -5211794953369159016
       coward_uv_src_0: -7754703396260643659
       coward_uv_src_1: 2109124589346367162
       coward_uv_src_2: 3795892060621759553
       coward_uv_src_3: -6443285772055348137
+      fly_idle_uv_00: -6295360574168337826
+      fly_idle_uv_01: -7191562970205049878
+      fly_idle_uv_02: 8522578503159766042
+      fly_idle_uv_03: 1514282308619528517
+      fly_move_uv_00: 6326805623979288599
+      fly_move_uv_01: 1072633978066396861
+      fly_move_uv_02: 4281050585829497676
+      fly_move_uv_03: 7848953146376823009
+      run_uv_00: 5888419747610830782
+      run_uv_01: -7499529970797546215
+      run_uv_02: -7632005925876012708
+      run_uv_03: 429713932877028950
+      run_uv_04: -8778585375178520907
+      run_uv_05: -7690295880785809358
+      stand_uv_00: -5721835179512457790
+      stand_uv_01: -4036214141370607036
+      stand_uv_02: 2751865157800625395
+      stand_uv_03: -8769460473769309046
+      stand_uv_04: -5694158414533177301
+      stand_uv_05: -7979340818003704660
+      walk_uv_00: -4370653608703766100
+      walk_uv_01: -3580783184832072593
+      walk_uv_02: -6637330708039281101
+      walk_uv_03: 2124092908112118739
+      walk_uv_04: 4215399962077471313
+      walk_uv_05: -7258769548875844236
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

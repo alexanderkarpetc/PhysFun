@@ -9,21 +9,18 @@ using UnityEngine;
 
 public static class GenerateBodyUVAsset
 {
-    // Hardcoded folder
     const string Folder = "Assets/Resources/Animations/Enemies/coward";
+    const int PPU = 20;                 // pixels per unit
+    const int ColorTolerance = 8;        // ± per channel
 
-    // Map DOT colors → body parts. Use exact or near-exact colors from your UV sheet.
     static readonly (Color32 color, UVPart part)[] Legend = new[] {
         (new Color32(255,255,0,255), UVPart.Head),   // yellow
-        (new Color32(  0,  0,255,255), UVPart.RArm), // blue
-        (new Color32(255,  0,255,255), UVPart.LArm), // magenta
-        (new Color32(  0,255,  0,255), UVPart.Torso),// green
-        (new Color32(255,  0,  0,255), UVPart.LLeg), // red
-        (new Color32(128,  0,  0,255), UVPart.RLeg), // dark red
-        // add more as needed
+        (new Color32(  0,  0,255,255), UVPart.RArm), // blue  (use as Hand_R)
+        (new Color32(255,  0,255,255), UVPart.LArm), // magenta (use as Hand_L)
+        (new Color32(  0,255,  0,255), UVPart.Torso),// green  (origin)
+        (new Color32(255,  0,  0,255), UVPart.LLeg), // red    (Foot_L)
+        (new Color32(128,  0,  0,255), UVPart.RLeg), // dark red (Foot_R)
     };
-
-    const int ColorTolerance = 8; // ± per channel
 
     [MenuItem("Tools/Sprites/Generate BodyUV Asset (Hardcoded)")]
     public static void Run()
@@ -36,7 +33,6 @@ public static class GenerateBodyUVAsset
         var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(uvAssetPath);
         if (!tex) { Debug.LogError("Failed to load UV texture."); return; }
 
-        // ensure readable for pixel access
         var ti = (TextureImporter)AssetImporter.GetAtPath(uvAssetPath);
         bool changed = false;
         if (!ti.isReadable) { ti.isReadable = true; changed = true; }
@@ -49,7 +45,6 @@ public static class GenerateBodyUVAsset
                                    .ToArray();
         if (sprites.Length == 0) { Debug.LogError("No sprites found on UV PNG."); return; }
 
-        // Create/overwrite asset
         string assetPath = Path.Combine(Folder, "BodyUV.asset").Replace('\\','/');
         var asset = ScriptableObject.CreateInstance<BodyUVAsset>();
         asset.sourceTexture = tex;
@@ -62,18 +57,17 @@ public static class GenerateBodyUVAsset
                 continue;
             }
 
-            // read pixels within this sprite rect
-            Rect r = s.rect; // in texture pixels (origin bottom-left)
+            Rect r = s.rect;                    // texture-space (origin bottom-left)
             int x = Mathf.RoundToInt(r.x);
             int y = Mathf.RoundToInt(r.y);
             int w = Mathf.RoundToInt(r.width);
             int h = Mathf.RoundToInt(r.height);
 
-            // GetPixels32 is fast and simple
+            // NOTE: GetPixels(x,y,w,h) returns Color[] (not Color32[])
             var pixels = tex.GetPixels(x, y, w, h);
 
-            // find centroids per color in Legend
-            var entries = new List<BodyUVFrame.Entry>();
+            // 1) collect absolute normalized UVs per part (0..1, Y up within the frame)
+            var absUv = new Dictionary<UVPart, Vector2>();
             foreach (var (color, part) in Legend)
             {
                 Vector2 sum = Vector2.zero;
@@ -95,10 +89,34 @@ public static class GenerateBodyUVAsset
                 if (count > 0)
                 {
                     Vector2 avg = sum / Mathf.Max(1, count);
-                    // normalize to [0..1], Y up
-                    var uv = new Vector2(avg.x / w, avg.y / h);
-                    entries.Add(new BodyUVFrame.Entry { part = part, uv = uv });
+                    var uv01 = new Vector2(avg.x / w, avg.y / h);   // 0..1 in frame, Y up
+                    absUv[part] = uv01;
                 }
+            }
+
+            // 2) torso as origin: compute torso uv (fallback to sprite pivot if missing)
+            Vector2 torsoUv01;
+            if (!absUv.TryGetValue(UVPart.Torso, out torsoUv01))
+            {
+                // sprite pivot as fallback
+                var pivot01 = new Vector2(s.pivot.x / r.width, s.pivot.y / r.height);
+                torsoUv01 = pivot01;
+                absUv[UVPart.Torso] = pivot01; // ensure torso exists
+            }
+
+            // 3) convert to torso-relative **world** offsets using PPU=100
+            // worldOffset = (uv - torsoUv) ∘ (frameSize / PPU)
+            Vector2 scale = new Vector2(w / (float)PPU, h / (float)PPU);
+
+            var entries = new List<BodyUVFrame.Entry>();
+            foreach (var kv in absUv)
+            {
+                Vector2 rel01 = kv.Value - torsoUv01;              // torso at (0,0) in frame space
+                Vector2 world = new Vector2(rel01.x * scale.x, rel01.y * scale.y); // meters
+                // force torso to exact zero
+                if (kv.Key == UVPart.Torso) world = Vector2.zero;
+
+                entries.Add(new BodyUVFrame.Entry { part = kv.Key, uv = world });
             }
 
             asset.frames.Add(new BodyUVFrame { anim = anim, frame = frame, points = entries });
@@ -107,15 +125,19 @@ public static class GenerateBodyUVAsset
         AssetDatabase.CreateAsset(asset, assetPath);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        Debug.Log($"Generated BodyUV asset with {asset.frames.Count} frames at {assetPath}");
+        Debug.Log($"Generated BodyUV (torso-centered, world units @ PPU=100) with {asset.frames.Count} frames at {assetPath}");
     }
 
-    static bool Close(Color32 a, Color32 b, int tol)
+    static bool Close(Color p, Color32 target, int tol)
     {
-        return Math.Abs(a.r - b.r) <= tol &&
-               Math.Abs(a.g - b.g) <= tol &&
-               Math.Abs(a.b - b.b) <= tol &&
-               a.a >= 8; // ignore near-transparent
+        // compare in byte space with tolerance; ignore near-transparent pixels
+        if (p.a < 0.03f) return false;
+        int r = Mathf.RoundToInt(p.r * 255f);
+        int g = Mathf.RoundToInt(p.g * 255f);
+        int b = Mathf.RoundToInt(p.b * 255f);
+        return Math.Abs(r - target.r) <= tol &&
+               Math.Abs(g - target.g) <= tol &&
+               Math.Abs(b - target.b) <= tol;
     }
 
     static bool TryParseAnimAndFrame(string spriteName, out string anim, out int frame)
@@ -125,11 +147,9 @@ public static class GenerateBodyUVAsset
         frame = 0;
         var parts = spriteName.Split('_');
         if (parts.Length < 3) return false;
-        // drop trailing index
         if (!int.TryParse(parts[^1], NumberStyles.Integer, CultureInfo.InvariantCulture, out frame))
             return false;
-        // drop the "_uv" segment
-        anim = string.Join("_", parts.Take(parts.Length - 2)); // everything before "_uv" + index
+        anim = string.Join("_", parts.Take(parts.Length - 2)); // before "_uv" + index
         return true;
     }
 

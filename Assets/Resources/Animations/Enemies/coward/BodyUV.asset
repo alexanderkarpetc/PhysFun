@@ -1,0 +1,556 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a370ef1342141a086d0bf85181a392c, type: 3}
+  m_Name: BodyUV
+  m_EditorClassIdentifier: 
+  sourceTexture: {fileID: 2800000, guid: 31ec38052808d35449363b2f971a6cb4, type: 3}
+  frames:
+  - anim: attack_ranged
+    frame: 0
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: -0.05000002}
+    - part: 3
+      uv: {x: -0.05, y: -0.05000002}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.2, y: -0.3}
+    - part: 6
+      uv: {x: 0.1, y: -0.3}
+  - anim: attack_ranged
+    frame: 1
+    points:
+    - part: 0
+      uv: {x: 0.05, y: 0.4}
+    - part: 4
+      uv: {x: 0.15, y: 0}
+    - part: 3
+      uv: {x: -0.05, y: -0.05000002}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.1, y: -0.3}
+    - part: 6
+      uv: {x: 0.15, y: -0.25}
+  - anim: attack_ranged
+    frame: 2
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: 0}
+    - part: 3
+      uv: {x: -0.05, y: -0.05000002}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.1, y: -0.3}
+    - part: 6
+      uv: {x: 0.15, y: -0.25}
+  - anim: attack_ranged
+    frame: 3
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.35}
+    - part: 4
+      uv: {x: 0.2, y: -0.05000002}
+    - part: 3
+      uv: {x: -0.05, y: -0.05000002}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.2, y: -0.3}
+    - part: 6
+      uv: {x: 0.05, y: -0.3}
+  - anim: burn
+    frame: 0
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: -0.05000002}
+    - part: 3
+      uv: {x: -0.05, y: -0.05000002}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.25, y: -0.3}
+    - part: 6
+      uv: {x: 0.1, y: -0.2}
+  - anim: burn
+    frame: 1
+    points:
+    - part: 0
+      uv: {x: 0.075, y: 0.525}
+    - part: 4
+      uv: {x: 0.175, y: 0.124999985}
+    - part: 3
+      uv: {x: -0.05, y: 0.124999985}
+    - part: 5
+      uv: {x: -0.275, y: -0.07500001}
+    - part: 6
+      uv: {x: 0.125, y: -0.12500001}
+    - part: 1
+      uv: {x: 0, y: 0}
+  - anim: burn
+    frame: 2
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: -0.1}
+    - part: 3
+      uv: {x: -0.05, y: -0.1}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.15, y: -0.25}
+    - part: 6
+      uv: {x: 0.05, y: -0.3}
+  - anim: burn
+    frame: 3
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: -0.05000002}
+    - part: 3
+      uv: {x: -0.05, y: -0.05000002}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.1, y: -0.2}
+    - part: 6
+      uv: {x: 0, y: -0.3}
+  - anim: burn
+    frame: 4
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: 0}
+    - part: 3
+      uv: {x: -0.05, y: 0}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.05, y: -0.25}
+    - part: 6
+      uv: {x: 0, y: -0.19999999}
+  - anim: burn
+    frame: 5
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: -0.1}
+    - part: 3
+      uv: {x: -0.05, y: -0.1}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.15, y: -0.3}
+    - part: 6
+      uv: {x: 0.05, y: -0.25}
+  - anim: fly_idle
+    frame: 0
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: -0.05000002}
+    - part: 3
+      uv: {x: -0.05, y: -0.05000002}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.25, y: -0.25}
+    - part: 6
+      uv: {x: -0.05, y: -0.3}
+  - anim: fly_idle
+    frame: 1
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: -0.049999986}
+    - part: 3
+      uv: {x: -0.05, y: -0.049999986}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.25, y: -0.25}
+    - part: 6
+      uv: {x: -0.05, y: -0.29999998}
+  - anim: fly_idle
+    frame: 2
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.39999998}
+    - part: 4
+      uv: {x: 0.2, y: -0.05000002}
+    - part: 3
+      uv: {x: -0.05, y: -0.05000002}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.25, y: -0.25}
+    - part: 6
+      uv: {x: -0.05, y: -0.3}
+  - anim: fly_idle
+    frame: 3
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: -0.049999986}
+    - part: 3
+      uv: {x: -0.05, y: -0.049999986}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.25, y: -0.25}
+    - part: 6
+      uv: {x: -0.05, y: -0.29999998}
+  - anim: fly_move
+    frame: 0
+    points:
+    - part: 0
+      uv: {x: 0.15, y: 0.35}
+    - part: 4
+      uv: {x: 0.2, y: -0.05000002}
+    - part: 3
+      uv: {x: -0.05, y: -0.05000002}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.25, y: -0.25}
+    - part: 6
+      uv: {x: -0.05, y: -0.3}
+  - anim: fly_move
+    frame: 1
+    points:
+    - part: 0
+      uv: {x: 0.15, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: -0.049999986}
+    - part: 3
+      uv: {x: -0.05, y: -0.049999986}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.25, y: -0.25}
+    - part: 6
+      uv: {x: -0.05, y: -0.29999998}
+  - anim: fly_move
+    frame: 2
+    points:
+    - part: 0
+      uv: {x: 0.15, y: 0.39999998}
+    - part: 4
+      uv: {x: 0.2, y: -0.05000002}
+    - part: 3
+      uv: {x: -0.05, y: -0.05000002}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.25, y: -0.25}
+    - part: 6
+      uv: {x: -0.05, y: -0.3}
+  - anim: fly_move
+    frame: 3
+    points:
+    - part: 0
+      uv: {x: 0.15, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: -0.049999986}
+    - part: 3
+      uv: {x: -0.05, y: -0.049999986}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.25, y: -0.25}
+    - part: 6
+      uv: {x: -0.05, y: -0.29999998}
+  - anim: run
+    frame: 0
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: -0.05000002}
+    - part: 3
+      uv: {x: -0.05, y: -0.05000002}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.25, y: -0.3}
+    - part: 6
+      uv: {x: 0.1, y: -0.2}
+  - anim: run
+    frame: 1
+    points:
+    - part: 0
+      uv: {x: 0.075, y: 0.525}
+    - part: 4
+      uv: {x: 0.175, y: 0.124999985}
+    - part: 3
+      uv: {x: -0.05, y: 0.124999985}
+    - part: 5
+      uv: {x: -0.275, y: -0.07500001}
+    - part: 6
+      uv: {x: 0.125, y: -0.12500001}
+    - part: 1
+      uv: {x: 0, y: 0}
+  - anim: run
+    frame: 2
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: -0.1}
+    - part: 3
+      uv: {x: -0.05, y: -0.1}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.15, y: -0.25}
+    - part: 6
+      uv: {x: 0.05, y: -0.3}
+  - anim: run
+    frame: 3
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: -0.05000002}
+    - part: 3
+      uv: {x: -0.05, y: -0.05000002}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.1, y: -0.2}
+    - part: 6
+      uv: {x: 0, y: -0.3}
+  - anim: run
+    frame: 4
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: 0}
+    - part: 3
+      uv: {x: -0.05, y: 0}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.05, y: -0.25}
+    - part: 6
+      uv: {x: 0, y: -0.19999999}
+  - anim: run
+    frame: 5
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: -0.1}
+    - part: 3
+      uv: {x: -0.05, y: -0.1}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.15, y: -0.3}
+    - part: 6
+      uv: {x: 0.05, y: -0.25}
+  - anim: stand
+    frame: 0
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: -0.05000002}
+    - part: 3
+      uv: {x: -0.05, y: -0.05000002}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.2, y: -0.3}
+    - part: 6
+      uv: {x: 0.05, y: -0.3}
+  - anim: stand
+    frame: 1
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.35}
+    - part: 4
+      uv: {x: 0.2, y: -0.05000002}
+    - part: 3
+      uv: {x: -0.05, y: -0.05000002}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.2, y: -0.3}
+    - part: 6
+      uv: {x: 0.05, y: -0.3}
+  - anim: stand
+    frame: 2
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.35}
+    - part: 4
+      uv: {x: 0.2, y: -0.049999986}
+    - part: 3
+      uv: {x: -0.05, y: -0.049999986}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.2, y: -0.25}
+    - part: 6
+      uv: {x: 0.05, y: -0.25}
+  - anim: stand
+    frame: 3
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.35}
+    - part: 4
+      uv: {x: 0.2, y: -0.1}
+    - part: 3
+      uv: {x: -0.05, y: -0.1}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.2, y: -0.25}
+    - part: 6
+      uv: {x: 0.05, y: -0.25}
+  - anim: stand
+    frame: 4
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.35}
+    - part: 4
+      uv: {x: 0.2, y: -0.15000002}
+    - part: 3
+      uv: {x: -0.05, y: -0.15000002}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.2, y: -0.3}
+    - part: 6
+      uv: {x: 0.05, y: -0.3}
+  - anim: stand
+    frame: 5
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: -0.1}
+    - part: 3
+      uv: {x: -0.05, y: -0.1}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.2, y: -0.3}
+    - part: 6
+      uv: {x: 0.05, y: -0.3}
+  - anim: walk
+    frame: 0
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: -0.05000002}
+    - part: 3
+      uv: {x: -0.05, y: -0.05000002}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.25, y: -0.3}
+    - part: 6
+      uv: {x: 0.1, y: -0.2}
+  - anim: walk
+    frame: 1
+    points:
+    - part: 0
+      uv: {x: 0.075, y: 0.525}
+    - part: 4
+      uv: {x: 0.175, y: 0.124999985}
+    - part: 3
+      uv: {x: -0.05, y: 0.124999985}
+    - part: 5
+      uv: {x: -0.275, y: -0.07500001}
+    - part: 6
+      uv: {x: 0.125, y: -0.12500001}
+    - part: 1
+      uv: {x: 0, y: 0}
+  - anim: walk
+    frame: 2
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: -0.1}
+    - part: 3
+      uv: {x: -0.05, y: -0.1}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.15, y: -0.25}
+    - part: 6
+      uv: {x: 0.05, y: -0.3}
+  - anim: walk
+    frame: 3
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: -0.05000002}
+    - part: 3
+      uv: {x: -0.05, y: -0.05000002}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.1, y: -0.2}
+    - part: 6
+      uv: {x: 0, y: -0.3}
+  - anim: walk
+    frame: 4
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: 0}
+    - part: 3
+      uv: {x: -0.05, y: 0}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.05, y: -0.25}
+    - part: 6
+      uv: {x: 0, y: -0.19999999}
+  - anim: walk
+    frame: 5
+    points:
+    - part: 0
+      uv: {x: 0.1, y: 0.4}
+    - part: 4
+      uv: {x: 0.2, y: -0.1}
+    - part: 3
+      uv: {x: -0.05, y: -0.1}
+    - part: 1
+      uv: {x: 0, y: 0}
+    - part: 5
+      uv: {x: -0.15, y: -0.3}
+    - part: 6
+      uv: {x: 0.05, y: -0.25}

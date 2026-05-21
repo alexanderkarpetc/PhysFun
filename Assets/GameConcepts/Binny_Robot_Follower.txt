@@ -1,0 +1,79 @@
+BINNY - THE RECYCLING ROBOT FOLLOWER
+=====================================
+
+OVERVIEW
+--------
+Binny is a funny, sarcastic flying robot companion for the 2D platformer game. 
+He follows the player and serves as a mobile recycling unit with a big personality.
+
+NAME ORIGIN
+-----------
+Full Name: "Binbot" (shortened to "Binny")
+- A play on "Bin" (trash/recycling bin) + "Bot" (robot)
+- The name reflects his primary function: collecting and recycling resources
+
+DESIGN & APPEARANCE
+-------------------
+- Flying Robot: Hovers and follows the player using propulsion systems
+- Big Hole on Top: Large opening/receptacle on the top of the robot where players 
+  can deposit collected resources
+- Stupid Funny Face: Features a comical, expressive face with:
+  - Exaggerated eyes (possibly googly or animated)
+  - Silly mouth/expression
+  - Overall goofy, endearing appearance
+- Compact body design suitable for a 2D side-scrolling platformer
+
+FUNCTIONALITY
+-------------
+- Resource Collection: Players can throw/drop collected resources into Binny's 
+  top opening
+- Recycling System: Automatically processes and recycles collected resources
+- Mobile Companion: Follows the player throughout the game world
+- Flying Mechanics: Hovers at a comfortable distance from the player, adjusting 
+  position as needed
+
+PERSONALITY & DIALOGUE
+----------------------
+- Personality: Sarcastic, talks "shit" (playful trash-talk, not offensive)
+- Communication Method: VOICE/SOUND ONLY (no text dialogue)
+  - Uses sound effects and voice clips for communication
+  - Appropriate for fast-paced platformer gameplay
+  - Doesn't interrupt gameplay flow with text reading
+- Dialogue Style: 
+  - Snarky comments
+  - Funny observations
+  - Encouraging but sarcastic remarks
+  - Reactions to player actions (collecting items, taking damage, etc.)
+
+GAMEPLAY INTEGRATION
+-------------------
+- Follows player automatically
+- Resource deposit interaction (player throws items into top hole)
+- Visual feedback when recycling (animations, particles, etc.)
+- Audio feedback for all interactions
+- Does not obstruct player movement or platforming
+
+TECHNICAL CONSIDERATIONS
+------------------------
+- 2D Sprite/Animation system
+- Flying AI that follows player with smooth movement
+- Collision detection for resource collection
+- Sound system for voice lines
+- Recycling processing system (converts resources to usable materials/currency)
+
+VOICE LINES (Examples)
+----------------------
+- When player collects resource: "Ooh, shiny!" / "Gimme that!"
+- When recycling: "Mmm, delicious garbage!" / "Processing... processing... done!"
+- When player takes damage: "Ouch! That looked painful!" / "You okay there, buddy?"
+- Idle comments: Random funny observations about the environment
+- Encouragement: Sarcastic but supportive remarks
+
+ANIMATION IDEAS
+---------------
+- Idle hover animation (gentle floating)
+- Happy/excited animation when receiving resources
+- Processing animation (internal mechanisms working)
+- Face expressions changing based on context
+- Following movement (smooth tracking of player)
+

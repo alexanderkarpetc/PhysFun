@@ -27,7 +27,7 @@ namespace Player
         [SerializeField] private Collider2D[] playerColliders; // to avoid self-collision while holding
         [Header("Grab Filters")]
         [SerializeField] private float minMass = 5f;
-        [SerializeField] private float maxMass = 150f;
+        [SerializeField] private float maxMass = 300f;
         [SerializeField] private float maxGrabRange = 6f;     // pickup range
 
         Camera _cam;
@@ -109,6 +109,8 @@ namespace Player
             if (hit.collider == null) return;
             // check layer
             if ((grabbable.value & (1 << hit.collider.gameObject.layer)) == 0) return;
+            // mass filter: too heavy to manipulate
+            if (hit.rigidbody == null || hit.rigidbody.mass > maxMass) return;
 
             _held = hit.rigidbody;
 

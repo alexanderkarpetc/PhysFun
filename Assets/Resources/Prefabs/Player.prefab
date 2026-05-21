@@ -1106,5 +1106,5 @@ MonoBehaviour:
   playerColliders:
   - {fileID: 4125614759584999805}
   minMass: 3
-  maxMass: 150
+  maxMass: 300
   maxGrabRange: 6

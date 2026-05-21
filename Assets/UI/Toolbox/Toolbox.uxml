@@ -1,0 +1,46 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/Toolbox/Toolbox.uss" />
+    <ui:VisualElement name="toolbox-root" class="toolbox-root">
+        <ui:VisualElement name="toolbar" class="toolbar">
+            <ui:Button name="tool-spawn" text="Spawn" class="tool-btn" />
+            <ui:Button name="tool-erase" text="Erase" class="tool-btn" />
+            <ui:Button name="tool-crack" text="Crack" class="tool-btn" />
+            <ui:Button name="tool-synth" text="Draw"  class="tool-btn" />
+            <ui:Button name="tool-none"  text="None"  class="tool-btn tool-btn-secondary" />
+        </ui:VisualElement>
+
+        <ui:Label name="active-label" text="Active: Spawn" class="active-label" />
+
+        <!-- Spawn -->
+        <ui:VisualElement name="panel-spawn" class="panel">
+            <ui:Slider name="lod-slider" label="Simplification" low-value="0" high-value="6" value="3" show-input-field="true" />
+            <ui:ScrollView name="items-scroll" mode="Vertical" class="items-scroll">
+                <ui:VisualElement name="items-grid" class="items-grid" />
+            </ui:ScrollView>
+            <ui:Label class="hint" text="Click to select, drag into world to place." />
+        </ui:VisualElement>
+
+        <!-- Erase -->
+        <ui:VisualElement name="panel-erase" class="panel">
+            <ui:Slider name="erase-brush" label="Brush radius" low-value="0.05" high-value="2" value="0.2" show-input-field="true" />
+            <ui:Label class="hint" text="Hold LMB on objects to erase." />
+        </ui:VisualElement>
+
+        <!-- Crack -->
+        <ui:VisualElement name="panel-crack" class="panel">
+            <ui:Slider name="crack-radius" label="Radius" low-value="0.1" high-value="5" value="2" show-input-field="true" />
+            <ui:SliderInt name="crack-pieces" label="Pieces" low-value="2" high-value="20" value="6" show-input-field="true" />
+            <ui:Label class="hint" text="RMB to crack objects in radius." />
+        </ui:VisualElement>
+
+        <!-- Draw (Synthesizer) -->
+        <ui:VisualElement name="panel-synth" class="panel">
+            <ui:VisualElement name="sketch-surface" class="sketch-surface" />
+            <ui:SliderInt name="synth-brush" label="Brush" low-value="1" high-value="32" value="8" show-input-field="true" />
+            <ui:VisualElement class="row">
+                <ui:Button name="synth-create" text="Create" class="action-btn" />
+                <ui:Button name="synth-clear"  text="Clear"  class="action-btn action-btn-secondary" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

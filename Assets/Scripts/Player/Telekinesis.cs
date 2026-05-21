@@ -16,7 +16,11 @@ namespace Player
         [SerializeField] private float maxHoldSpeed = 15f; // cap на скорость
 
         [Header("Throw")]
-        [SerializeField] private float throwImpulse = 15f;    // impulse magnitude on LMB
+        [SerializeField] private float throwSpeed = 12f;      // target launch speed (m/s), mass-independent
+        [SerializeField] private float referenceMass = 5f;    // mass that launches at exactly throwSpeed
+        [SerializeField, Range(0f, 1f)] private float massInfluence = 0.25f; // 0 = same speed for all, 1 = full inverse-sqrt mass scaling
+        [SerializeField] private float maxThrowSpeed = 18f;   // hard cap, keeps tiny objects from rocketing
+        [SerializeField] private float minThrowSpeed = 4f;    // floor, keeps very heavy objects from feeling limp
         [SerializeField] private float releaseDrag = 0.5f;    // drag after release
 
         [Header("Collision")]
@@ -149,9 +153,16 @@ namespace Player
             Vector2 dir = ((Vector2)mouseW - (Vector2)origin.position).normalized;
 
             var rb = _held;   // keep reference before Release()
+
+            // Gentle mass curve: heavier than reference throws a bit slower, lighter a bit faster
+            float massRatio = referenceMass / Mathf.Max(rb.mass, 0.01f);
+            float scale = Mathf.Lerp(1f, Mathf.Sqrt(massRatio), massInfluence);
+            float speed = Mathf.Clamp(throwSpeed * scale, minThrowSpeed, maxThrowSpeed);
+
             Release();
 
-            rb.AddForce(dir * throwImpulse, ForceMode2D.Impulse);
+            rb.linearVelocity = dir * speed;
+            rb.angularVelocity = 0f;
         }
 
         // Вспомогательно: визуализация радиусов

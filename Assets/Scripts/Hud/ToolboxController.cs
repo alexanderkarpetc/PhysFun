@@ -14,7 +14,9 @@ public class ToolboxController : MonoBehaviour
 
     [Header("Erase")]
     [SerializeField] private LayerMask eraseTargets = ~0;
+    [SerializeField] private string[] eraseIgnoreLayers = { "Untouchable" };
     [SerializeField] private int eraseSimplifyLevel = 2;
+    [SerializeField] private float eraseRebuildInterval = 0.15f;  // seconds between mid-stroke collider rebuilds
 
     [Header("Crack")]
     [SerializeField] private LayerMask crackTargets = ~0;
@@ -45,6 +47,8 @@ public class ToolboxController : MonoBehaviour
     // Erase state
     private SpriteEraseService _eraseService;
     private Slider _eraseBrushSlider;
+    private float _lastEraseRebuild;
+    private int _eraseEffectiveMask;
 
     // Crack state
     private Slider _crackRadiusSlider;
@@ -65,6 +69,18 @@ public class ToolboxController : MonoBehaviour
         _cam = Camera.main;
         _eraseService = new SpriteEraseService();
         _sketch = new SketchCanvas(sketchSize, sketchSize, new Color32(0, 0, 0, 0));
+
+        // eraseTargets minus any layers listed in eraseIgnoreLayers (e.g. "Untouchable").
+        _eraseEffectiveMask = eraseTargets.value;
+        if (eraseIgnoreLayers != null)
+        {
+            foreach (var name in eraseIgnoreLayers)
+            {
+                if (string.IsNullOrEmpty(name)) continue;
+                int layer = LayerMask.NameToLayer(name);
+                if (layer >= 0) _eraseEffectiveMask &= ~(1 << layer);
+            }
+        }
     }
 
     private void OnEnable()
@@ -253,13 +269,31 @@ public class ToolboxController : MonoBehaviour
 
     private void TickErase()
     {
-        if (!Input.GetMouseButton(0)) return;
-        float radius = _eraseBrushSlider != null ? _eraseBrushSlider.value : 0.2f;
-        Vector3 wp = _cam.ScreenToWorldPoint(Input.mousePosition); wp.z = 0f;
+        if (Input.GetMouseButton(0))
+        {
+            float radius = _eraseBrushSlider != null ? _eraseBrushSlider.value : 0.2f;
+            Vector3 wp = _cam.ScreenToWorldPoint(Input.mousePosition); wp.z = 0f;
 
-        var hits = Physics2D.OverlapCircleAll(wp, radius, eraseTargets);
-        foreach (var h in hits) _eraseService.EraseCircle(h.gameObject, wp, radius);
-        foreach (var h in hits) _eraseService.RebuildAndMaybeSplit(h.gameObject, eraseSimplifyLevel);
+            var hits = Physics2D.OverlapCircleAll(wp, radius, _eraseEffectiveMask);
+            foreach (var h in hits) _eraseService.EraseCircle(h.gameObject, wp, radius);
+
+            // Push pixel changes to GPU (subregion upload, cheap).
+            _eraseService.Flush();
+
+            // Rebuild colliders on a timer so collisions catch up without per-frame cost.
+            if (Time.unscaledTime - _lastEraseRebuild > eraseRebuildInterval)
+            {
+                _eraseService.RebuildModifiedColliders(eraseSimplifyLevel);
+                _lastEraseRebuild = Time.unscaledTime;
+            }
+        }
+
+        // Always rebuild once on release so the final shape is correct.
+        if (Input.GetMouseButtonUp(0))
+        {
+            _eraseService.RebuildModifiedColliders(eraseSimplifyLevel);
+            _lastEraseRebuild = Time.unscaledTime;
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────

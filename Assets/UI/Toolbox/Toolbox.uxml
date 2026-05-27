@@ -10,6 +10,7 @@
         </ui:VisualElement>
 
         <ui:Label name="active-label" text="Active: Spawn" class="active-label" />
+        <ui:Toggle name="show-debug" label="Show debug overlay" value="true" class="debug-toggle" />
 
         <!-- Spawn -->
         <ui:VisualElement name="panel-spawn" class="panel">

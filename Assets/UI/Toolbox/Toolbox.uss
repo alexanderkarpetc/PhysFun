@@ -43,6 +43,12 @@
     font-size: 11px;
 }
 
+.debug-toggle {
+    margin: 2px 4px 4px 4px;
+    color: rgb(180, 180, 180);
+    font-size: 11px;
+}
+
 .panel {
     margin-top: 6px;
     padding: 8px;

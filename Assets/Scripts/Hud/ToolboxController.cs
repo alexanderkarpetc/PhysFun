@@ -20,6 +20,13 @@ public class ToolboxController : MonoBehaviour
 
     [Header("Crack")]
     [SerializeField] private LayerMask crackTargets = ~0;
+    [SerializeField] private string[] crackIgnoreLayers = { "Untouchable" };
+    [SerializeField] private float crackImpactImpulse = 6f;     // outward push per shard
+    [SerializeField] private float crackImpactFalloff = 0.6f;   // world meters; smaller = more concentrated burst
+
+    [Header("Debug overlay")]
+    [SerializeField] private Color eraseRingColor = new Color(1f, 0.4f, 0.4f, 0.85f);
+    [SerializeField] private Color crackRingColor = new Color(0.4f, 0.7f, 1f, 0.85f);
 
     [Header("Synth")]
     [SerializeField] private int sketchSize = 500;
@@ -49,6 +56,7 @@ public class ToolboxController : MonoBehaviour
     private Slider _eraseBrushSlider;
     private float _lastEraseRebuild;
     private int _eraseEffectiveMask;
+    private int _crackEffectiveMask;
 
     // Crack state
     private Slider _crackRadiusSlider;
@@ -63,24 +71,21 @@ public class ToolboxController : MonoBehaviour
     private Vector2Int _lastSketchPos;
     private bool _pointerOverUI;
 
+    // Overlay
+    private Texture2D _ringTex;
+    private Toggle _debugToggle;
+
     private void Awake()
     {
         _doc = GetComponent<UIDocument>();
         _cam = Camera.main;
         _eraseService = new SpriteEraseService();
         _sketch = new SketchCanvas(sketchSize, sketchSize, new Color32(0, 0, 0, 0));
+        _ringTex = BuildRingTexture(128, 2.5f);
 
-        // eraseTargets minus any layers listed in eraseIgnoreLayers (e.g. "Untouchable").
-        _eraseEffectiveMask = eraseTargets.value;
-        if (eraseIgnoreLayers != null)
-        {
-            foreach (var name in eraseIgnoreLayers)
-            {
-                if (string.IsNullOrEmpty(name)) continue;
-                int layer = LayerMask.NameToLayer(name);
-                if (layer >= 0) _eraseEffectiveMask &= ~(1 << layer);
-            }
-        }
+        // *Targets minus any *IgnoreLayers (e.g. "Untouchable"), computed once.
+        _eraseEffectiveMask = MaskMinusLayers(eraseTargets.value, eraseIgnoreLayers);
+        _crackEffectiveMask = MaskMinusLayers(crackTargets.value, crackIgnoreLayers);
     }
 
     private void OnEnable()
@@ -109,6 +114,8 @@ public class ToolboxController : MonoBehaviour
         BuildErasePanel(root);
         BuildCrackPanel(root);
         BuildSynthPanel(root);
+
+        _debugToggle = root.Q<Toggle>("show-debug");
 
         // Track whether pointer is over the toolbox so world-space tools don't fire through UI.
         var toolboxRoot = root.Q<VisualElement>("toolbox-root");
@@ -308,13 +315,22 @@ public class ToolboxController : MonoBehaviour
 
     private void TickCrack()
     {
-        if (!Input.GetMouseButtonDown(1)) return;
+        // Either mouse button triggers a crack — RMB and LMB both feel natural for a one-shot impact.
+        if (!Input.GetMouseButtonDown(0) && !Input.GetMouseButtonDown(1)) return;
         float radius = _crackRadiusSlider != null ? _crackRadiusSlider.value : 2f;
         int pieces = _crackPiecesSlider != null ? _crackPiecesSlider.value : 6;
         Vector3 wp = _cam.ScreenToWorldPoint(Input.mousePosition); wp.z = 0f;
 
-        var hits = Physics2D.OverlapCircleAll(wp, radius, crackTargets);
-        foreach (var h in hits) Cracker.Cracker.Crack(h.gameObject, pieces);
+        var hits = Physics2D.OverlapCircleAll(wp, radius, _crackEffectiveMask);
+        foreach (var h in hits)
+        {
+            Cracker.Cracker.Crack(
+                h.gameObject,
+                pieces,
+                impactWorld: wp,
+                impactImpulse: crackImpactImpulse,
+                impactFalloff: crackImpactFalloff);
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -406,6 +422,18 @@ public class ToolboxController : MonoBehaviour
 
     // ─────────────────────────────────────────────────────────────────────────
 
+    private static int MaskMinusLayers(int mask, string[] ignoreNames)
+    {
+        if (ignoreNames == null) return mask;
+        foreach (var name in ignoreNames)
+        {
+            if (string.IsNullOrEmpty(name)) continue;
+            int layer = LayerMask.NameToLayer(name);
+            if (layer >= 0) mask &= ~(1 << layer);
+        }
+        return mask;
+    }
+
     private Vector3 MouseWorld()
     {
         var sp = Input.mousePosition;
@@ -413,5 +441,70 @@ public class ToolboxController : MonoBehaviour
         var wp = _cam.ScreenToWorldPoint(sp);
         wp.z = 0f;
         return wp;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // OnGUI brush/impact ring overlay (debug visual for world-space tools)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private void OnGUI()
+    {
+        if (_debugToggle != null && !_debugToggle.value) return;
+        if (_pointerOverUI) return;
+        if (_ringTex == null || _cam == null) return;
+
+        bool isErase = _current == Tool.Erase;
+        bool isCrack = _current == Tool.Crack;
+        if (!isErase && !isCrack) return;
+
+        float worldRadius =
+            isErase ? (_eraseBrushSlider != null ? _eraseBrushSlider.value : 0.2f)
+                    : (_crackRadiusSlider != null ? _crackRadiusSlider.value : 2f);
+
+        // Convert world radius -> screen pixels via the camera.
+        Vector3 mouseW = _cam.ScreenToWorldPoint(Input.mousePosition);
+        Vector3 edgeW  = mouseW + new Vector3(worldRadius, 0f, 0f);
+        Vector3 mouseS = _cam.WorldToScreenPoint(mouseW);
+        Vector3 edgeS  = _cam.WorldToScreenPoint(edgeW);
+        float screenR = Mathf.Abs(edgeS.x - mouseS.x);
+        if (screenR < 2f) return;
+
+        // OnGUI uses top-left origin; Input.mousePosition is bottom-left. Flip Y.
+        float gx = Input.mousePosition.x - screenR;
+        float gy = (Screen.height - Input.mousePosition.y) - screenR;
+
+        var prev = GUI.color;
+        GUI.color = isErase ? eraseRingColor : crackRingColor;
+        GUI.DrawTexture(new Rect(gx, gy, screenR * 2f, screenR * 2f), _ringTex);
+        GUI.color = prev;
+    }
+
+    private static Texture2D BuildRingTexture(int size, float thickness)
+    {
+        var tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
+        {
+            wrapMode = TextureWrapMode.Clamp,
+            filterMode = FilterMode.Bilinear,
+            hideFlags = HideFlags.DontSave
+        };
+
+        var pixels = new Color32[size * size];
+        float center = size * 0.5f - 0.5f;
+        float ringR = center - thickness; // leave one-pixel breathing room from the edge
+
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float dx = x - center;
+                float dy = y - center;
+                float d = Mathf.Sqrt(dx * dx + dy * dy);
+                float a = Mathf.Clamp01(1f - Mathf.Abs(d - ringR) / thickness);
+                pixels[y * size + x] = new Color32(255, 255, 255, (byte)(a * 255f));
+            }
+        }
+        tex.SetPixels32(pixels);
+        tex.Apply(false, true);
+        return tex;
     }
 }

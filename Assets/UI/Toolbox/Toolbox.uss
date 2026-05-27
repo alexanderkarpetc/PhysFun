@@ -115,4 +115,33 @@
     border-radius: 4px;
     border-width: 1px;
     border-color: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
 }
+
+.brush-preview {
+    position: absolute;
+    width: 0;
+    height: 0;
+    display: none;
+    -unity-background-image-tint-color: rgba(255, 255, 255, 0.85);
+}
+.brush-preview.visible { display: flex; }
+
+/* Color swatches */
+.color-swatches {
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+.swatch {
+    width: 22px;
+    height: 22px;
+    margin: 2px;
+    border-radius: 4px;
+    border-width: 2px;
+    border-color: rgba(0, 0, 0, 0.4);
+    transition-property: border-color, scale;
+    transition-duration: 90ms;
+}
+.swatch:hover { scale: 1.1 1.1; }
+.swatch.selected { border-color: white; }

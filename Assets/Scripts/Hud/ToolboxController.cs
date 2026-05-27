@@ -65,11 +65,23 @@ public class ToolboxController : MonoBehaviour
     // Synth state
     private SketchCanvas _sketch;
     private VisualElement _sketchSurface;
+    private VisualElement _brushPreview;
+    private VisualElement _swatchRow;
     private SliderInt _synthBrushSlider;
     private bool _drawing;
+    private int _drawButton;             // 0 = LMB paint, 1 = RMB erase
     private bool _hasLastSketchPos;
     private Vector2Int _lastSketchPos;
+    private Color32 _drawColor = new Color32(255, 255, 255, 255);
+    private readonly List<VisualElement> _swatches = new();
     private bool _pointerOverUI;
+
+    private static readonly Color32[] Palette = {
+        new(255, 255, 255, 255), new(20, 20, 20, 255),
+        new(220, 60, 60, 255),   new(60, 200, 90, 255),  new(70, 140, 255, 255),
+        new(255, 200, 50, 255),  new(200, 90, 220, 255), new(60, 210, 210, 255),
+        new(255, 140, 60, 255),  new(150, 110, 80, 255),
+    };
 
     // Overlay
     private Texture2D _ringTex;
@@ -340,45 +352,110 @@ public class ToolboxController : MonoBehaviour
     private void BuildSynthPanel(VisualElement root)
     {
         _sketchSurface = root.Q<VisualElement>("sketch-surface");
+        _brushPreview  = root.Q<VisualElement>("brush-preview");
+        _swatchRow     = root.Q<VisualElement>("color-swatches");
         _synthBrushSlider = root.Q<SliderInt>("synth-brush");
         var createBtn = root.Q<Button>("synth-create");
         var clearBtn  = root.Q<Button>("synth-clear");
 
         _sketchSurface.style.backgroundImage = new StyleBackground(_sketch.Texture);
-        _sketchSurface.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
+        _sketchSurface.style.backgroundSize  = new BackgroundSize(BackgroundSizeType.Contain);
+
+        // Brush ring overlay uses the same procedurally-generated ring as OnGUI.
+        _brushPreview.style.backgroundImage = new StyleBackground(_ringTex);
+        _brushPreview.pickingMode = PickingMode.Ignore;
 
         _sketchSurface.RegisterCallback<PointerDownEvent>(OnSketchPointerDown);
         _sketchSurface.RegisterCallback<PointerMoveEvent>(OnSketchPointerMove);
         _sketchSurface.RegisterCallback<PointerUpEvent>(OnSketchPointerUp);
+        _sketchSurface.RegisterCallback<PointerEnterEvent>(_ => _brushPreview.AddToClassList("visible"));
+        _sketchSurface.RegisterCallback<PointerLeaveEvent>(_ => _brushPreview.RemoveFromClassList("visible"));
         _sketchSurface.RegisterCallback<PointerCaptureOutEvent>(_ => { _drawing = false; _hasLastSketchPos = false; });
+        _sketchSurface.RegisterCallback<WheelEvent>(OnSketchWheel);
+
+        // Color swatches.
+        foreach (var c in Palette) BuildSwatch(c);
+        SelectColor(Palette[0]);
 
         createBtn.clicked += OnSynthCreate;
         clearBtn.clicked  += () => _sketch.Clear();
     }
 
+    private void BuildSwatch(Color32 col)
+    {
+        var sw = new VisualElement();
+        sw.AddToClassList("swatch");
+        sw.style.backgroundColor = new StyleColor((Color)col);
+        sw.tooltip = $"#{col.r:X2}{col.g:X2}{col.b:X2}";
+        sw.RegisterCallback<ClickEvent>(_ => SelectColor(col));
+        _swatchRow.Add(sw);
+        _swatches.Add(sw);
+    }
+
+    private void SelectColor(Color32 col)
+    {
+        _drawColor = col;
+        for (int i = 0; i < _swatches.Count; i++)
+        {
+            bool match = Palette[i].r == col.r && Palette[i].g == col.g && Palette[i].b == col.b && Palette[i].a == col.a;
+            if (match) _swatches[i].AddToClassList("selected");
+            else _swatches[i].RemoveFromClassList("selected");
+        }
+    }
+
     private void OnSketchPointerDown(PointerDownEvent evt)
     {
-        if (evt.button != 0) return;
+        if (evt.button != 0 && evt.button != 1) return;
         _drawing = true;
+        _drawButton = evt.button;
         _hasLastSketchPos = false;
         _sketchSurface.CapturePointer(evt.pointerId);
         PaintSketchAt(evt.localPosition);
+        UpdateBrushPreview(evt.localPosition);
         evt.StopPropagation();
     }
 
     private void OnSketchPointerMove(PointerMoveEvent evt)
     {
+        UpdateBrushPreview(evt.localPosition);
         if (!_drawing) return;
         PaintSketchAt(evt.localPosition);
     }
 
     private void OnSketchPointerUp(PointerUpEvent evt)
     {
-        if (evt.button != 0) return;
+        if (evt.button != _drawButton) return;
         _drawing = false;
         _hasLastSketchPos = false;
         if (_sketchSurface.HasPointerCapture(evt.pointerId))
             _sketchSurface.ReleasePointer(evt.pointerId);
+    }
+
+    private void OnSketchWheel(WheelEvent evt)
+    {
+        if (_synthBrushSlider == null) return;
+        int delta = -(int)Mathf.Sign(evt.delta.y); // scroll up grows brush
+        if (delta == 0) return;
+        _synthBrushSlider.value = Mathf.Clamp(_synthBrushSlider.value + delta, _synthBrushSlider.lowValue, _synthBrushSlider.highValue);
+        UpdateBrushPreview(evt.mousePosition - (Vector2)_sketchSurface.worldBound.position);
+        evt.StopPropagation();
+    }
+
+    private void UpdateBrushPreview(Vector2 local)
+    {
+        if (_brushPreview == null || _sketchSurface == null) return;
+        var size = _sketchSurface.contentRect.size;
+        if (size.x <= 0f) return;
+
+        int brushPx = _synthBrushSlider != null ? _synthBrushSlider.value : 8;
+        float scale = size.x / _sketch.Width;
+        float radiusInSurface = brushPx * scale;
+        float diameter = radiusInSurface * 2f;
+
+        _brushPreview.style.left   = local.x - radiusInSurface;
+        _brushPreview.style.top    = local.y - radiusInSurface;
+        _brushPreview.style.width  = diameter;
+        _brushPreview.style.height = diameter;
     }
 
     private void PaintSketchAt(Vector2 local)
@@ -393,7 +470,8 @@ public class ToolboxController : MonoBehaviour
         int py = Mathf.FloorToInt(v * (_sketch.Height - 1));
 
         int r = _synthBrushSlider != null ? _synthBrushSlider.value : 8;
-        var col = new Color32(255, 255, 255, 255);
+        // RMB erases (paints fully transparent), LMB uses the selected color.
+        var col = _drawButton == 1 ? new Color32(0, 0, 0, 0) : _drawColor;
 
         var pos = new Vector2Int(px, py);
         if (!_hasLastSketchPos)
@@ -407,17 +485,29 @@ public class ToolboxController : MonoBehaviour
             _sketch.DrawSegment(_lastSketchPos, pos, r, col);
             _lastSketchPos = pos;
         }
-        _sketch.Apply();
+        _sketch.Flush();
     }
 
     private void OnSynthCreate()
     {
-        var tex = _sketch.SnapshotCopy();
-        var sprite = Sprite.Create(tex,
+        // Spawn the drawing as a single sprite trimmed to its content...
+        var tex = _sketch.SnapshotTrimmed(margin: 4);
+        if (tex == null) return;
+
+        var sprite = Sprite.Create(
+            tex,
             new Rect(0, 0, tex.width, tex.height),
             new Vector2(0.5f, 0.5f),
             synthPixelsPerUnit);
-        SpriteFactory.Create(sprite, Vector3.zero, null, false, 3);
+
+        Vector3 spawn = _cam.transform.position;
+        spawn.z = 0f;
+        var go = SpriteFactory.Create(sprite, spawn, null, false, 3);
+
+        // ...then run the same connected-component split the eraser uses. If the drawing
+        // is multiple disconnected blobs they become separate physics bodies at their
+        // canvas-relative offsets; a single blob stays as one object.
+        SpriteSplitHelper.TrySplitInPlace(go, simplifyLevel: 3, minPixels: 16);
     }
 
     // ─────────────────────────────────────────────────────────────────────────

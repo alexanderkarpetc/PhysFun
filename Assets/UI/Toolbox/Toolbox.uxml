@@ -36,12 +36,16 @@
 
         <!-- Draw (Synthesizer) -->
         <ui:VisualElement name="panel-synth" class="panel">
-            <ui:VisualElement name="sketch-surface" class="sketch-surface" />
-            <ui:SliderInt name="synth-brush" label="Brush" low-value="1" high-value="32" value="8" show-input-field="true" />
+            <ui:VisualElement name="sketch-surface" class="sketch-surface">
+                <ui:VisualElement name="brush-preview" class="brush-preview" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:VisualElement name="color-swatches" class="color-swatches" />
+            <ui:SliderInt name="synth-brush" label="Brush" low-value="1" high-value="64" value="8" show-input-field="true" />
             <ui:VisualElement class="row">
                 <ui:Button name="synth-create" text="Create" class="action-btn" />
                 <ui:Button name="synth-clear"  text="Clear"  class="action-btn action-btn-secondary" />
             </ui:VisualElement>
+            <ui:Label class="hint" text="LMB paints • RMB erases • Wheel resizes brush" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

@@ -18,6 +18,7 @@ public class SpriteEraseService
         public Texture2D tex;
         public Color32[] pixels;     // CPU-side mirror of tex
         public float ppu;
+        public Vector2 pivotPx;      // sprite pivot in texture pixels
 
         // Pixel-write dirty rect (inclusive bounds).
         public int dx0 = int.MaxValue, dy0 = int.MaxValue;
@@ -28,6 +29,7 @@ public class SpriteEraseService
 
     private readonly Dictionary<GameObject, Record> _records = new();
     private readonly List<GameObject> _scratch = new();
+    private readonly List<GameObject> _dead = new();
     private Color32[] _uploadBuf = Array.Empty<Color32>();
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -43,8 +45,8 @@ public class SpriteEraseService
         int texW = rec.tex.width;
         int texH = rec.tex.height;
 
-        int cx = Mathf.FloorToInt(local.x * rec.ppu + texW * 0.5f);
-        int cy = Mathf.FloorToInt(local.y * rec.ppu + texH * 0.5f);
+        int cx = Mathf.FloorToInt(local.x * rec.ppu + rec.pivotPx.x);
+        int cy = Mathf.FloorToInt(local.y * rec.ppu + rec.pivotPx.y);
         int r  = Mathf.CeilToInt(brushRadius * rec.ppu);
         int r2 = r * r;
 
@@ -122,12 +124,15 @@ public class SpriteEraseService
         if (_records.Count == 0) return;
 
         // Snapshot keys: rebuilding can spawn clones and mutate the dictionary.
+        // Also drop records whose GameObject has been destroyed externally.
         _scratch.Clear();
+        _dead.Clear();
         foreach (var kv in _records)
         {
-            if (kv.Key == null) continue;
+            if (kv.Key == null) { _dead.Add(kv.Key); continue; }
             if (kv.Value.colliderDirty) _scratch.Add(kv.Key);
         }
+        foreach (var key in _dead) _records.Remove(key);
 
         foreach (var go in _scratch)
         {
@@ -158,16 +163,22 @@ public class SpriteEraseService
         var tex = SpriteTexUtil.CloneReadable(original);
         if (!tex) return null;
 
+        // Preserve the original pivot so the sprite doesn't jump when the texture is swapped.
+        var pivotNorm = new Vector2(
+            original.pivot.x / original.rect.width,
+            original.pivot.y / original.rect.height);
+
         sr.sprite = Sprite.Create(tex,
             new Rect(0, 0, tex.width, tex.height),
-            new Vector2(0.5f, 0.5f),
+            pivotNorm,
             original.pixelsPerUnit);
 
         rec = new Record
         {
             tex = tex,
             pixels = tex.GetPixels32(),
-            ppu = original.pixelsPerUnit
+            ppu = original.pixelsPerUnit,
+            pivotPx = new Vector2(pivotNorm.x * tex.width, pivotNorm.y * tex.height)
         };
         _records[go] = rec;
         return rec;
@@ -175,68 +186,32 @@ public class SpriteEraseService
 
     private void ProcessRebuild(GameObject go, Record rec, int simplifyLevel)
     {
-        var sr = go.GetComponent<SpriteRenderer>();
-        if (!sr) return;
+        if (!go.GetComponent<SpriteRenderer>()) return;
 
         // Did the erase disconnect the sprite into multiple solid blobs?
-        if (SpriteSplitUtil.TrySplit(go, rec.tex, rec.ppu, alphaThreshold: 0.1f, minPixels: 64, out var parts))
+        var split = SpriteSplitHelper.TrySplitInPlace(go, simplifyLevel, alphaThreshold: 0.1f, minPixels: 64);
+        if (split != null)
         {
-            parts.Sort((a, b) => (b.rect.width * b.rect.height).CompareTo(a.rect.width * a.rect.height));
+            // The pre-split texture belongs to this service and no sprite references it anymore.
+            UnityEngine.Object.Destroy(rec.tex);
 
-            float ppu = rec.ppu;
-            int centerX = rec.tex.width / 2;
-            int centerY = rec.tex.height / 2;
-            var basePos = go.transform.position;
-
-            // Clones for all non-largest parts.
-            for (int i = 1; i < parts.Count; i++)
+            // Re-track every resulting piece so subsequent erases hit a cached buffer.
+            foreach (var part in split)
             {
-                var clone = UnityEngine.Object.Instantiate(go, go.transform.parent);
-                var b = parts[i].rect;
-                float xShift = ((b.xMin + b.xMax) * 0.5f - centerX) / (2f * ppu);
-                float yShift = ((b.yMin + b.yMax) * 0.5f - centerY) / (2f * ppu);
-                clone.transform.position = new Vector3(basePos.x + xShift, basePos.y + yShift, basePos.z);
-
-                ApplyPart(clone, clone.GetComponent<SpriteRenderer>(), parts[i].tex, ppu, simplifyLevel);
-
-                // Track the new part so subsequent erases hit a cached buffer.
-                _records[clone] = new Record
+                var partSprite = part.GetComponent<SpriteRenderer>().sprite;
+                var partTex = (Texture2D)partSprite.texture;
+                _records[part] = new Record
                 {
-                    tex = parts[i].tex,
-                    pixels = parts[i].tex.GetPixels32(),
-                    ppu = ppu
+                    tex = partTex,
+                    pixels = partTex.GetPixels32(),
+                    ppu = partSprite.pixelsPerUnit,
+                    pivotPx = partSprite.pivot
                 };
             }
-
-            // Largest part becomes the original.
-            var mb = parts[0].rect;
-            float xMainShift = ((mb.xMin + mb.xMax) * 0.5f - centerX) / (2f * ppu);
-            float yMainShift = ((mb.yMin + mb.yMax) * 0.5f - centerY) / (2f * ppu);
-            go.transform.position = new Vector3(basePos.x + xMainShift, basePos.y + yMainShift, basePos.z);
-
-            ApplyPart(go, sr, parts[0].tex, ppu, simplifyLevel);
-
-            // Re-cache pixels for the trimmed texture.
-            rec.tex = parts[0].tex;
-            rec.pixels = parts[0].tex.GetPixels32();
-            rec.pixelsDirty = false;
-            rec.dx0 = int.MaxValue; rec.dy0 = int.MaxValue;
-            rec.dx1 = -1; rec.dy1 = -1;
             return;
         }
 
         // No split — just rebuild the collider against the updated texture.
-        var existing = go.GetComponent<PolygonCollider2D>();
-        if (existing) UnityEngine.Object.DestroyImmediate(existing);
-        var poly = go.AddComponent<PolygonCollider2D>();
-        ColliderSimplifier2D.Simplify(poly, simplifyLevel);
-        MassRecalculator.SetMass(null, go.GetComponent<Rigidbody2D>(), poly);
-    }
-
-    private static void ApplyPart(GameObject go, SpriteRenderer sr, Texture2D partTex, float ppu, int simplifyLevel)
-    {
-        sr.sprite = Sprite.Create(partTex, new Rect(0, 0, partTex.width, partTex.height), new Vector2(0.5f, 0.5f), ppu);
-
         var existing = go.GetComponent<PolygonCollider2D>();
         if (existing) UnityEngine.Object.DestroyImmediate(existing);
         var poly = go.AddComponent<PolygonCollider2D>();

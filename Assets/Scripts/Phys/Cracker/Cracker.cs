@@ -23,30 +23,36 @@ namespace Cracker
             if (!sr || !sr.sprite) return;
 
             var srcSprite = sr.sprite;
-            var tex = GetReadableCopy(srcSprite);
+            var tex = GetReadableCopy(srcSprite, out bool ownsTex);
             if (!tex) { Debug.LogWarning("Crack: texture not readable"); return; }
 
             int w = tex.width, h = tex.height;
             float ppu = srcSprite.pixelsPerUnit;
             var src = tex.GetPixels32();
 
+            // Pixels are on the CPU now — release the temporary copy before any early return can leak it.
+            if (ownsTex) Object.Destroy(tex);
+
             // Solid mask
+            byte alphaByte = (byte)Mathf.RoundToInt(Mathf.Clamp01(alphaThreshold) * 255f);
             bool[] solid = new bool[w * h];
             int solidCount = 0;
             for (int i = 0; i < src.Length; i++)
             {
-                bool s = (src[i].a / 255f) > alphaThreshold;
+                bool s = src[i].a > alphaByte;
                 solid[i] = s; if (s) solidCount++;
             }
             if (solidCount < minPixels) return;
 
             // Convert impact world point into texture-pixel space (if provided).
+            // The sprite pivot is where local (0,0) sits in the texture.
             Vector2? impactPx = null;
             float falloffPx = Mathf.Max(0.01f, impactFalloff) * ppu;
             if (impactWorld.HasValue)
             {
                 var local = go.transform.InverseTransformPoint(impactWorld.Value);
-                impactPx = new Vector2(local.x * ppu + w * 0.5f, local.y * ppu + h * 0.5f);
+                var pivot = srcSprite.pivot;
+                impactPx = new Vector2(local.x * ppu + pivot.x, local.y * ppu + pivot.y);
             }
 
             // Seeds inside solid — weighted toward impact when provided.
@@ -110,13 +116,9 @@ namespace Cracker
                 int bw = rect.width, bh = rect.height;
                 var dst = new Color32[bw * bh]; // zeroed (transparent)
 
-                // copy
+                // copy (bucket pixels are inside the bucket's bounds by construction)
                 foreach (var p in pixels)
-                {
-                    int dx = p.x - rect.x; if ((uint)dx >= (uint)bw) continue;
-                    int dy = p.y - rect.y; if ((uint)dy >= (uint)bh) continue;
-                    dst[dy * bw + dx] = src[p.y * w + p.x];
-                }
+                    dst[(p.y - rect.y) * bw + (p.x - rect.x)] = src[p.y * w + p.x];
 
                 var t = new Texture2D(bw, bh, TextureFormat.ARGB32, false);
                 t.SetPixels32(dst);
@@ -124,7 +126,12 @@ namespace Cracker
                 parts.Add((t, rect));
             }
 
-            if (parts.Count <= 1) return;
+            if (parts.Count <= 1)
+            {
+                // Nothing to crack into — don't leak the piece textures already created.
+                foreach (var p in parts) Object.Destroy(p.tex);
+                return;
+            }
 
             // Largest first
             parts.Sort((a, b) =>
@@ -135,7 +142,8 @@ namespace Cracker
             var origRot = go.transform.rotation;
             var origL2W = go.transform.localToWorldMatrix; // local -> world BEFORE moving
 
-            Vector2 texCenterPx = new Vector2(w * 0.5f, h * 0.5f);
+            // Offsets are measured from the sprite pivot (= the GO origin), not the texture center.
+            Vector2 pivotPx = srcSprite.pivot;
 
             var shardWorldPos = new Vector3[parts.Count];
             for (int i = 0; i < parts.Count; i++)
@@ -143,8 +151,8 @@ namespace Cracker
                 var rect = parts[i].rect;
                 Vector2 pieceCenterPx = rect.center;
                 Vector3 localOffset = new Vector3(
-                    (pieceCenterPx.x - texCenterPx.x) / ppu,
-                    (pieceCenterPx.y - texCenterPx.y) / ppu,
+                    (pieceCenterPx.x - pivotPx.x) / ppu,
+                    (pieceCenterPx.y - pivotPx.y) / ppu,
                     0f);
 
                 shardWorldPos[i] = origL2W.MultiplyPoint3x4(localOffset);
@@ -181,7 +189,9 @@ namespace Cracker
 
                     Vector2 toShard = (Vector2)shard.transform.position - impactPt;
                     float dist = toShard.magnitude;
-                    Vector2 dir = dist > 1e-4f ? toShard / dist : Random.insideUnitCircle.normalized;
+                    Vector2 dir;
+                    if (dist > 1e-4f) dir = toShard / dist;
+                    else { float ang = Random.value * Mathf.PI * 2f; dir = new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)); }
                     float magnitude = impactImpulse / (1f + dist / falloffWorld);
                     rb.AddForce(dir * magnitude, ForceMode2D.Impulse);
                     // A little spin makes the burst feel less rigid.
@@ -192,9 +202,13 @@ namespace Cracker
 
         // ----- helpers -----
 
-        static Texture2D GetReadableCopy(Sprite src)
+        /// <summary>Readable pixels for the sprite. <paramref name="owned"/> is true when the
+        /// returned texture is a temporary copy the caller must destroy.</summary>
+        static Texture2D GetReadableCopy(Sprite src, out bool owned)
         {
+            owned = true;
             try { var c = SpriteTexUtil.CloneReadable(src); if (c) return c; } catch { }
+            owned = false;
             var t = src.texture;
             return (t && t.isReadable) ? t : null;
         }
@@ -300,7 +314,7 @@ namespace Cracker
             var go = sr.gameObject;
             Object.DestroyImmediate(go.GetComponent<PolygonCollider2D>());
             var poly = go.AddComponent<PolygonCollider2D>();
-            ColliderSimplifier2D.Simplify(go.GetComponent<PolygonCollider2D>(), simplifyLevel);
+            ColliderSimplifier2D.Simplify(poly, simplifyLevel);
             MassRecalculator.SetMass(null, go.GetComponent<Rigidbody2D>(), poly);
         }
     }

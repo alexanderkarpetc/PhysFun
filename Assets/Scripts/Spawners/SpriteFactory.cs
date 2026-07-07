@@ -19,10 +19,11 @@ namespace Spawners
 
             var rb = go.AddComponent<Rigidbody2D>();
             go.transform.localScale = new Vector3(allScale, allScale, allScale);
-            MassRecalculator.SetMass(sprite, rb, poly);
 
-            // simplify after collider is created from sprite physics shape
+            // simplify after collider is created from sprite physics shape,
+            // then derive mass from the final (simplified) shape
             ColliderSimplifier2D.Simplify(poly, simplifyLevel);
+            MassRecalculator.SetMass(sprite, rb, poly);
 
             return go;
         }

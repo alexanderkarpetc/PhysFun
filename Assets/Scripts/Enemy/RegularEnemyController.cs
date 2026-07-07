@@ -2,7 +2,8 @@
 
 namespace Enemy
 {
-    public class SimpleBot : MonoBehaviour
+    // Class name must match the file name or Unity can't bind it to prefabs (Shotgunner.prefab uses it).
+    public class RegularEnemyController : MonoBehaviour
     {
         [Header("Refs")]
         [SerializeField] private Transform _body;          // visuals to flip
@@ -129,9 +130,9 @@ namespace Enemy
             float angle = Vector2.Angle(forward, toPlayer.normalized);
             if (angle > fovDegrees * 0.5f) return false;
 
-            // Line of sight (no obstacles)
-            var hit = Physics2D.Raycast(eyePos, toPlayer.normalized, dist, obstacleMask);
-            return hit.collider.gameObject == App.Instance.PlayerGo;
+            // Line of sight: visible when nothing blocks the ray, or the first hit is the player itself.
+            var hit = Physics2D.Raycast(eyePos, toPlayer / dist, dist, obstacleMask);
+            return hit.collider == null || hit.collider.gameObject == App.Instance.PlayerGo;
         }
 
         // called by animation event

@@ -1,108 +1,105 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 public static class SpriteSplitUtil
 {
     // threshold: alpha > threshold is solid. minPixels: ignore tiny crumbs.
-    public static bool TrySplit(GameObject go, Texture2D tex, float ppu, float alphaThreshold, int minPixels,
+    public static bool TrySplit(Texture2D tex, float alphaThreshold, int minPixels,
                                 out List<(Texture2D tex, RectInt rect)> parts)
     {
         parts = null;
-        var solid = BuildMask(tex, alphaThreshold);
-        var comps = FindComponents(solid, minPixels);
+        int w = tex.width, h = tex.height;
+        var src = tex.GetPixels32();
+
+        byte alphaByte = (byte)Mathf.RoundToInt(Mathf.Clamp01(alphaThreshold) * 255f);
+        var solid = new bool[w * h];
+        for (int i = 0; i < src.Length; i++) solid[i] = src[i].a > alphaByte;
+
+        var comps = FindComponents(solid, w, h, minPixels);
         if (comps.Count <= 1) return false;
 
         parts = new List<(Texture2D, RectInt)>(comps.Count);
         foreach (var c in comps)
-            parts.Add(CreateSubTexture(tex, c.bounds, c.pixels));
+            parts.Add(CreateSubTexture(src, w, c.bounds, c.pixels));
 
         return true;
     }
 
     // --- helpers ---
 
-    struct Comp { public RectInt bounds; public List<Vector2Int> pixels; }
+    struct Comp { public RectInt bounds; public List<int> pixels; }
 
-    static bool[,] BuildMask(Texture2D tex, float a)
+    // 4-connectivity flood fill over flat pixel indices.
+    static List<Comp> FindComponents(bool[] mask, int w, int h, int minPixels)
     {
-        int w = tex.width, h = tex.height;
-        var px = tex.GetPixels32();
-        var mask = new bool[w, h];
-        for (int y = 0; y < h; y++)
-        for (int x = 0; x < w; x++)
-            mask[x, y] = px[y * w + x].a / 255f > a;
-        return mask;
-    }
-
-    // 4-connectivity flood fill
-    static List<Comp> FindComponents(bool[,] mask, int minPixels)
-    {
-        int w = mask.GetLength(0), h = mask.GetLength(1);
-        var seen = new bool[w, h];
+        var seen = new bool[w * h];
         var res = new List<Comp>();
-        var q = new Queue<Vector2Int>();
+        var q = new Queue<int>(256);
 
         for (int y = 0; y < h; y++)
-        for (int x = 0; x < w; x++)
         {
-            if (!mask[x, y] || seen[x, y]) continue;
-
-            q.Clear();
-            q.Enqueue(new Vector2Int(x, y));
-            seen[x, y] = true;
-
-            var pixels = new List<Vector2Int>(256);
-            int minX = x, maxX = x, minY = y, maxY = y;
-
-            while (q.Count > 0)
+            int row = y * w;
+            for (int x = 0; x < w; x++)
             {
-                var p = q.Dequeue();
-                pixels.Add(p);
-                if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x;
-                if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
+                int start = row + x;
+                if (!mask[start] || seen[start]) continue;
 
-                // neighbors
-                TryEnq(p.x + 1, p.y);
-                TryEnq(p.x - 1, p.y);
-                TryEnq(p.x, p.y + 1);
-                TryEnq(p.x, p.y - 1);
-            }
+                q.Clear();
+                q.Enqueue(start);
+                seen[start] = true;
 
-            if (pixels.Count >= minPixels)
-            {
-                var bounds = new RectInt(minX, minY, maxX - minX + 1, maxY - minY + 1);
-                res.Add(new Comp { bounds = bounds, pixels = pixels });
+                var pixels = new List<int>(256);
+                int minX = x, maxX = x, minY = y, maxY = y;
+
+                while (q.Count > 0)
+                {
+                    int idx = q.Dequeue();
+                    pixels.Add(idx);
+
+                    int px = idx % w, py = idx / w;
+                    if (px < minX) minX = px; if (px > maxX) maxX = px;
+                    if (py < minY) minY = py; if (py > maxY) maxY = py;
+
+                    // neighbors
+                    if (px + 1 < w)  TryEnq(idx + 1);
+                    if (px - 1 >= 0) TryEnq(idx - 1);
+                    if (py + 1 < h)  TryEnq(idx + w);
+                    if (py - 1 >= 0) TryEnq(idx - w);
+                }
+
+                if (pixels.Count >= minPixels)
+                {
+                    var bounds = new RectInt(minX, minY, maxX - minX + 1, maxY - minY + 1);
+                    res.Add(new Comp { bounds = bounds, pixels = pixels });
+                }
             }
         }
         return res;
 
-        void TryEnq(int nx, int ny)
+        void TryEnq(int n)
         {
-            if (nx < 0 || ny < 0 || nx >= w || ny >= h) return;
-            if (!mask[nx, ny] || seen[nx, ny]) return;
-            seen[nx, ny] = true;
-            q.Enqueue(new Vector2Int(nx, ny));
+            if (!mask[n] || seen[n]) return;
+            seen[n] = true;
+            q.Enqueue(n);
         }
     }
 
-    static (Texture2D tex, RectInt rect) CreateSubTexture(Texture2D src, RectInt rect, List<Vector2Int> pixels)
+    static (Texture2D tex, RectInt rect) CreateSubTexture(Color32[] src, int srcW, RectInt rect, List<int> pixels)
     {
-        var dst = new Texture2D(rect.width, rect.height, TextureFormat.ARGB32, false);
-        var clear = new Color32[rect.width * rect.height];
-        // initialize transparent
-        for (int i = 0; i < clear.Length; i++) clear[i] = new Color32(0,0,0,0);
-        dst.SetPixels32(clear);
+        int bw = rect.width, bh = rect.height;
+        var dst = new Color32[bw * bh]; // zero-init = fully transparent
 
         // copy only component pixels
-        foreach (var p in pixels)
+        for (int i = 0; i < pixels.Count; i++)
         {
-            int sx = p.x, sy = p.y;
-            var c = src.GetPixel(sx, sy);
-            int dx = sx - rect.x;
-            int dy = sy - rect.y;
-            dst.SetPixel(dx, dy, c);
+            int idx = pixels[i];
+            int px = idx % srcW, py = idx / srcW;
+            dst[(py - rect.y) * bw + (px - rect.x)] = src[idx];
         }
-        dst.Apply(false, false);
-        return (dst, rect);
+
+        var tex = new Texture2D(bw, bh, TextureFormat.ARGB32, false);
+        tex.SetPixels32(dst);
+        tex.Apply(false, false);
+        return (tex, rect);
     }
 }

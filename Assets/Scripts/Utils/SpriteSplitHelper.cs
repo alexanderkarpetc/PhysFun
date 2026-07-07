@@ -35,18 +35,17 @@ public static class SpriteSplitHelper
         var tex = src.isReadable ? src : SpriteTexUtil.CloneReadable(sprite);
         if (!tex) return null;
 
-        if (!SpriteSplitUtil.TrySplit(go, tex, sprite.pixelsPerUnit, alphaThreshold, minPixels, out var parts))
-            return null;
+        bool splitOk = SpriteSplitUtil.TrySplit(tex, alphaThreshold, minPixels, out var parts);
+        if (tex != src) Object.Destroy(tex); // temporary copy — pixels already extracted
+        if (!splitOk) return null;
 
         // Largest piece first — it gets the existing GO.
         parts.Sort((a, b) => (b.rect.width * b.rect.height).CompareTo(a.rect.width * a.rect.height));
 
         float ppu = sprite.pixelsPerUnit;
-        float lossy = go.transform.lossyScale.x;
-        int centerX = tex.width / 2;
-        int centerY = tex.height / 2;
+        // Offsets are measured from the sprite pivot — that's where the GO origin sits.
+        Vector2 pivotPx = sprite.pivot;
 
-        var basePos  = go.transform.position;
         var rotation = go.transform.rotation;
         var parent   = go.transform.parent;
 
@@ -58,8 +57,8 @@ public static class SpriteSplitHelper
             float cx = r.x + r.width  * 0.5f;
             float cy = r.y + r.height * 0.5f;
             // Pixel offset → local-space metres → world-space (respecting current scale + rotation).
-            Vector3 localOffset = new Vector3((cx - centerX) / ppu, (cy - centerY) / ppu, 0f);
-            positions[i] = basePos + rotation * (localOffset * lossy);
+            Vector3 localOffset = new Vector3((cx - pivotPx.x) / ppu, (cy - pivotPx.y) / ppu, 0f);
+            positions[i] = go.transform.TransformPoint(localOffset);
         }
 
         var result = new List<GameObject>(parts.Count);

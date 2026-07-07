@@ -67,7 +67,10 @@ public class SketchCanvas
             {
                 int dx = x - cx;
                 if (dx * dx + dy2 > r2) continue;
-                _pixels[row + x] = col;
+                int idx = row + x;
+                var p = _pixels[idx];
+                if (p.r == col.r && p.g == col.g && p.b == col.b && p.a == col.a) continue; // no-op write
+                _pixels[idx] = col;
                 changed = true;
             }
         }

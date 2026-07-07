@@ -66,6 +66,9 @@ public class DamageHud : MonoBehaviour
     {
         if (active.Count == 0) return;
 
+        var cam = Camera.main;
+        if (!cam) return;
+
         float dt = Time.deltaTime;
         var node = active.First;
         while (node != null)
@@ -88,7 +91,7 @@ public class DamageHud : MonoBehaviour
 
                 // ---- World -> Canvas conversion ----
                 var rt = (RectTransform)p.transform;
-                Vector2 sp = Camera.main.WorldToScreenPoint(wpos);
+                Vector2 sp = cam.WorldToScreenPoint(wpos);
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(
                     (RectTransform)canvas.transform, sp, null, out var lp);
                 rt.anchoredPosition = lp;

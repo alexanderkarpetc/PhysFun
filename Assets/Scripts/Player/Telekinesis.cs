@@ -32,7 +32,7 @@ namespace Player
 
         Camera _cam;
         Rigidbody2D _held;
-        float _savedGravity, _savedAngularDrag, _savedDrag;
+        float _savedGravity, _savedAngularDrag;
         RigidbodyConstraints2D _savedConstraints;
 
         private void Awake()
@@ -109,8 +109,8 @@ namespace Player
             if (hit.collider == null) return;
             // check layer
             if ((grabbable.value & (1 << hit.collider.gameObject.layer)) == 0) return;
-            // mass filter: too heavy to manipulate
-            if (hit.rigidbody == null || hit.rigidbody.mass > maxMass) return;
+            // mass filter: too light or too heavy to manipulate
+            if (hit.rigidbody == null || hit.rigidbody.mass < minMass || hit.rigidbody.mass > maxMass) return;
 
             _held = hit.rigidbody;
 

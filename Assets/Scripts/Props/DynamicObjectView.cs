@@ -14,7 +14,9 @@ namespace Props
             var col = GetComponent<Collider2D>();
             MassRecalculator.SetMass(sprite, rb, col);
 
+#if UNITY_EDITOR
             UnityEditor.EditorUtility.SetDirty(rb);
+#endif
         }
     }
 }

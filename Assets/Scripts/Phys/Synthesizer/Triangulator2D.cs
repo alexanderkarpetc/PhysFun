@@ -9,11 +9,11 @@ public static class Triangulator2D
         var n = poly?.Count ?? 0;
         if (n < 3) return null;
 
-        // Ensure CCW
-        if (SignedArea(poly) < 0f) poly.Reverse();
-
+        // Ensure CCW winding by walking the index ring backwards for CW input —
+        // the caller's list is never mutated and returned indices stay valid for it.
+        bool reversed = SignedArea(poly) < 0f;
         var indices = new List<int>(n);
-        for (int i = 0; i < n; i++) indices.Add(i);
+        for (int i = 0; i < n; i++) indices.Add(reversed ? n - 1 - i : i);
 
         var tris = new List<int>(Mathf.Max(0, (n - 2) * 3));
         int guard = 0, maxGuard = n * n;
@@ -31,7 +31,7 @@ public static class Triangulator2D
                 var b = poly[i1];
                 var c = poly[i2];
 
-                if (Area2(a, b, c) <= 0f) continue; // not a convex ear
+                if (Area2(a, b, c) <= 1e-9f) continue; // not a convex ear (or degenerate/collinear)
 
                 bool contains = false;
                 for (int j = 0; j < indices.Count; j++)
@@ -85,7 +85,10 @@ public static class Triangulator2D
         float dot11 = Vector2.Dot(v1, v1);
         float dot12 = Vector2.Dot(v1, v2);
 
-        float invDen = 1f / (dot00 * dot11 - dot01 * dot01);
+        float den = dot00 * dot11 - dot01 * dot01;
+        if (den <= Mathf.Epsilon) return false; // degenerate triangle contains nothing
+
+        float invDen = 1f / den;
         float u = (dot11 * dot02 - dot01 * dot12) * invDen;
         float v = (dot00 * dot12 - dot01 * dot02) * invDen;
 

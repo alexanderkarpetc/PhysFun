@@ -47,7 +47,7 @@ public static class ColliderSimplifier2D
         var open = new List<Vector2>(n);
         for (int i = 0; i < n; i++) open.Add(ring[i]);
 
-        var simplifiedOpen = RDP(open, tolerance);
+        var simplifiedOpen = Spawners.DouglasPeucker2D.Simplify(open, tolerance);
 
         // Re-close
         if (simplifiedOpen.Count < 3)
@@ -59,51 +59,6 @@ public static class ColliderSimplifier2D
 
         simplifiedOpen.Add(simplifiedOpen[0]);
         return simplifiedOpen.ToArray();
-    }
-
-    static List<Vector2> RDP(List<Vector2> pts, float epsilon)
-    {
-        if (pts.Count < 3) return new List<Vector2>(pts);
-
-        int index = -1;
-        float maxDist = 0f;
-
-        Vector2 a = pts[0];
-        Vector2 b = pts[pts.Count - 1];
-
-        for (int i = 1; i < pts.Count - 1; i++)
-        {
-            float d = PerpDistance(pts[i], a, b);
-            if (d > maxDist)
-            {
-                index = i;
-                maxDist = d;
-            }
-        }
-
-        if (maxDist > epsilon)
-        {
-            var left = RDP(pts.GetRange(0, index + 1), epsilon);
-            var right = RDP(pts.GetRange(index, pts.Count - index), epsilon);
-
-            // merge, removing duplicate middle point
-            left.RemoveAt(left.Count - 1);
-            left.AddRange(right);
-            return left;
-        }
-        else
-        {
-            return new List<Vector2> { a, b };
-        }
-    }
-
-    static float PerpDistance(Vector2 p, Vector2 a, Vector2 b)
-    {
-        float l2 = (b - a).sqrMagnitude;
-        if (l2 == 0f) return (p - a).magnitude;
-        float t = Mathf.Clamp01(Vector2.Dot(p - a, b - a) / l2);
-        Vector2 proj = a + t * (b - a);
-        return (p - proj).magnitude;
     }
 
     static float Area(List<Vector2> pts)

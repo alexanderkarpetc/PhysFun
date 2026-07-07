@@ -8,10 +8,12 @@ namespace Common
         [SerializeField] private LayerMask targetLayers;
 
         private float _health;
+        private Rigidbody2D _rb;
 
         private void Awake()
         {
             _health = maxHealth;
+            _rb = GetComponent<Rigidbody2D>();
         }
 
         // if (_lastHitTime.TryGetValue(c.collider, out var t) && Time.time - t < perTargetCooldown) return;
@@ -22,9 +24,11 @@ namespace Common
             // check layer
             if ((targetLayers.value & (1 << c.collider.gameObject.layer)) == 0)
                 return;
-            
-            var playerRb = GetComponent<Rigidbody2D>();
-            float relSpeed = c.relativeVelocity.magnitude - playerRb.linearVelocity.magnitude; // will calculate how fast other object hit us
+
+            // Static colliders carry no rigidbody — nothing to weigh the impact by.
+            if (c.rigidbody == null || _rb == null) return;
+
+            float relSpeed = c.relativeVelocity.magnitude - _rb.linearVelocity.magnitude; // will calculate how fast other object hit us
             // todo we shouldn't subtract player's speed, because if player has speed it can be withdrawn twice
             
             if (relSpeed < 2f) return; // too slow
@@ -38,7 +42,8 @@ namespace Common
                 playerIsBelow
             );
             ApplyDamage(damage);
-            App.Instance.Hud.DamageHud.ShowDamage(c.transform.position, damage);
+            if (App.Instance.Hud.DamageHud != null)
+                App.Instance.Hud.DamageHud.ShowDamage(c.transform.position, damage);
         }
 
 

@@ -199,9 +199,6 @@ public class ToolboxController : MonoBehaviour
             if (s != null && s.texture != null)
             {
                 cell.style.backgroundImage = new StyleBackground(s.texture);
-                // Slice the texture region for atlas-style sprites.
-                var rect = s.rect;
-                var tex = s.texture;
                 cell.style.backgroundPositionX = new BackgroundPosition(BackgroundPositionKeyword.Center);
                 cell.style.backgroundPositionY = new BackgroundPosition(BackgroundPositionKeyword.Center);
                 cell.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);

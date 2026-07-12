@@ -9,7 +9,8 @@ using UnityEngine;
 /// Usage:
 ///   service.EraseCircle(go, worldPos, radius);  // call as often as you like
 ///   service.Flush();                            // once per frame after a batch of erases
-///   service.RebuildModifiedColliders(level);    // throttled; e.g. every 0.15s + on mouse-up
+///   service.RefreshColliders(level, budgetMs);  // once per frame — colliders track pixels instantly
+///   service.ProcessSplits(level);               // throttled + on stroke end; flood-fill split detection
 /// </summary>
 public class SpriteEraseService
 {
@@ -24,7 +25,8 @@ public class SpriteEraseService
         public int dx0 = int.MaxValue, dy0 = int.MaxValue;
         public int dx1 = -1, dy1 = -1;
         public bool pixelsDirty;
-        public bool colliderDirty;
+        public bool colliderDirty;   // collider outline no longer matches pixels
+        public bool splitDirty;      // erase may have disconnected the sprite
     }
 
     private readonly Dictionary<GameObject, Record> _records = new();
@@ -79,6 +81,7 @@ public class SpriteEraseService
 
         rec.pixelsDirty = true;
         rec.colliderDirty = true;
+        rec.splitDirty = true;
         if (xmin < rec.dx0) rec.dx0 = xmin;
         if (ymin < rec.dy0) rec.dy0 = ymin;
         if (xmax > rec.dx1) rec.dx1 = xmax;
@@ -116,31 +119,69 @@ public class SpriteEraseService
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Collider rebuilds (expensive — throttle from the caller)
+    // Collider rebuilds
     // ─────────────────────────────────────────────────────────────────────────
 
-    public void RebuildModifiedColliders(int simplifyLevel)
+    /// <summary>
+    /// Retrace colliders of modified sprites so physics matches the pixels.
+    /// Cheap enough to call every frame during a stroke. No split detection.
+    /// Stops after <paramref name="maxMillis"/> (at least one object is always
+    /// processed); the rest stay dirty and are picked up next frame.
+    /// </summary>
+    public void RefreshColliders(int simplifyLevel, double maxMillis = double.MaxValue)
     {
         if (_records.Count == 0) return;
+        Flush(); // collider tracing reads the texture — make sure it's current
 
-        // Snapshot keys: rebuilding can spawn clones and mutate the dictionary.
-        // Also drop records whose GameObject has been destroyed externally.
-        _scratch.Clear();
-        _dead.Clear();
-        foreach (var kv in _records)
+        if (!CollectDirty(r => r.colliderDirty)) return;
+
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        foreach (var go in _scratch)
         {
-            if (kv.Key == null) { _dead.Add(kv.Key); continue; }
-            if (kv.Value.colliderDirty) _scratch.Add(kv.Key);
+            if (sw.Elapsed.TotalMilliseconds > maxMillis) break;
+            if (!_records.TryGetValue(go, out var rec)) continue;
+            RebuildCollider(go, simplifyLevel);
+            rec.colliderDirty = false;
         }
-        foreach (var key in _dead) _records.Remove(key);
+    }
+
+    /// <summary>
+    /// Check whether erasing disconnected any modified sprite into separate blobs
+    /// and split it in place. Flood-fills the whole texture — throttle from the
+    /// caller and call once more when the stroke ends.
+    /// </summary>
+    public void ProcessSplits(int simplifyLevel)
+    {
+        if (_records.Count == 0) return;
+        Flush();
+
+        // Snapshot keys: splitting spawns clones and mutates the dictionary.
+        if (!CollectDirty(r => r.splitDirty)) return;
 
         foreach (var go in _scratch)
         {
             if (go == null) { _records.Remove(go); continue; }
             if (!_records.TryGetValue(go, out var rec)) continue;
-            ProcessRebuild(go, rec, simplifyLevel);
-            if (_records.TryGetValue(go, out rec)) rec.colliderDirty = false;
+            ProcessSplit(go, rec, simplifyLevel);
+            if (_records.TryGetValue(go, out rec)) rec.splitDirty = false;
         }
+    }
+
+    /// <summary>
+    /// Snapshot records matching <paramref name="predicate"/> into _scratch,
+    /// dropping records whose GameObject has been destroyed externally.
+    /// </summary>
+    private bool CollectDirty(Func<Record, bool> predicate)
+    {
+        _scratch.Clear();
+        _dead.Clear();
+        foreach (var kv in _records)
+        {
+            if (kv.Key == null) { _dead.Add(kv.Key); continue; }
+            if (predicate(kv.Value)) _scratch.Add(kv.Key);
+        }
+        foreach (var key in _dead) _records.Remove(key);
+        return _scratch.Count > 0;
     }
 
     /// <summary>Release tracked state for a specific GameObject (e.g. when externally destroyed).</summary>
@@ -184,34 +225,39 @@ public class SpriteEraseService
         return rec;
     }
 
-    private void ProcessRebuild(GameObject go, Record rec, int simplifyLevel)
+    private void ProcessSplit(GameObject go, Record rec, int simplifyLevel)
     {
         if (!go.GetComponent<SpriteRenderer>()) return;
 
         // Did the erase disconnect the sprite into multiple solid blobs?
-        var split = SpriteSplitHelper.TrySplitInPlace(go, simplifyLevel, alphaThreshold: 0.1f, minPixels: 64);
-        if (split != null)
+        // rec.pixels is the authoritative CPU mirror — saves a full GetPixels32 copy.
+        var split = SpriteSplitHelper.TrySplitInPlace(go, simplifyLevel,
+            alphaThreshold: 0.1f, minPixels: 64, pixels: rec.pixels);
+        if (split == null) return; // still one piece; RefreshColliders keeps the outline current
+
+        // The pre-split texture belongs to this service and no sprite references it anymore.
+        UnityEngine.Object.Destroy(rec.tex);
+
+        // Re-track every resulting piece so subsequent erases hit a cached buffer.
+        // Parts get fresh textures and colliders, so they start clean.
+        foreach (var part in split)
         {
-            // The pre-split texture belongs to this service and no sprite references it anymore.
-            UnityEngine.Object.Destroy(rec.tex);
-
-            // Re-track every resulting piece so subsequent erases hit a cached buffer.
-            foreach (var part in split)
+            var partSprite = part.GetComponent<SpriteRenderer>().sprite;
+            var partTex = (Texture2D)partSprite.texture;
+            _records[part] = new Record
             {
-                var partSprite = part.GetComponent<SpriteRenderer>().sprite;
-                var partTex = (Texture2D)partSprite.texture;
-                _records[part] = new Record
-                {
-                    tex = partTex,
-                    pixels = partTex.GetPixels32(),
-                    ppu = partSprite.pixelsPerUnit,
-                    pivotPx = partSprite.pivot
-                };
-            }
-            return;
+                tex = partTex,
+                pixels = partTex.GetPixels32(),
+                ppu = partSprite.pixelsPerUnit,
+                pivotPx = partSprite.pivot
+            };
         }
+    }
 
-        // No split — just rebuild the collider against the updated texture.
+    private static void RebuildCollider(GameObject go, int simplifyLevel)
+    {
+        if (!go.GetComponent<SpriteRenderer>()) return;
+
         var existing = go.GetComponent<PolygonCollider2D>();
         if (existing) UnityEngine.Object.DestroyImmediate(existing);
         var poly = go.AddComponent<PolygonCollider2D>();

@@ -15,12 +15,15 @@ public static class SpriteSplitHelper
     /// Try splitting <paramref name="go"/>'s sprite into connected components.
     /// Returns the resulting GameObjects (including <paramref name="go"/>) when a
     /// split occurred, or null otherwise.
+    /// Pass <paramref name="pixels"/> when the caller already keeps a CPU mirror of
+    /// the sprite texture — skips a full-texture copy per call.
     /// </summary>
     public static List<GameObject> TrySplitInPlace(
         GameObject go,
         int simplifyLevel,
         float alphaThreshold = 0.1f,
-        int minPixels = 64)
+        int minPixels = 64,
+        Color32[] pixels = null)
     {
         if (!go) return null;
 
@@ -31,12 +34,21 @@ public static class SpriteSplitHelper
         var src = sprite.texture;
         if (!src) return null;
 
-        // Need a CPU-readable copy. CloneReadable handles both readable and non-readable sources.
-        var tex = src.isReadable ? src : SpriteTexUtil.CloneReadable(sprite);
-        if (!tex) return null;
+        bool splitOk;
+        List<(Texture2D tex, RectInt rect)> parts;
+        if (pixels != null && pixels.Length == src.width * src.height)
+        {
+            splitOk = SpriteSplitUtil.TrySplit(pixels, src.width, src.height, alphaThreshold, minPixels, out parts);
+        }
+        else
+        {
+            // Need a CPU-readable copy. CloneReadable handles both readable and non-readable sources.
+            var tex = src.isReadable ? src : SpriteTexUtil.CloneReadable(sprite);
+            if (!tex) return null;
 
-        bool splitOk = SpriteSplitUtil.TrySplit(tex, alphaThreshold, minPixels, out var parts);
-        if (tex != src) Object.Destroy(tex); // temporary copy — pixels already extracted
+            splitOk = SpriteSplitUtil.TrySplit(tex, alphaThreshold, minPixels, out parts);
+            if (tex != src) Object.Destroy(tex); // temporary copy — pixels already extracted
+        }
         if (!splitOk) return null;
 
         // Largest piece first — it gets the existing GO.

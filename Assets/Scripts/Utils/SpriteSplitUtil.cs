@@ -6,10 +6,13 @@ public static class SpriteSplitUtil
     // threshold: alpha > threshold is solid. minPixels: ignore tiny crumbs.
     public static bool TrySplit(Texture2D tex, float alphaThreshold, int minPixels,
                                 out List<(Texture2D tex, RectInt rect)> parts)
+        => TrySplit(tex.GetPixels32(), tex.width, tex.height, alphaThreshold, minPixels, out parts);
+
+    // Overload for callers that already hold a CPU-side pixel mirror.
+    public static bool TrySplit(Color32[] src, int w, int h, float alphaThreshold, int minPixels,
+                                out List<(Texture2D tex, RectInt rect)> parts)
     {
         parts = null;
-        int w = tex.width, h = tex.height;
-        var src = tex.GetPixels32();
 
         byte alphaByte = (byte)Mathf.RoundToInt(Mathf.Clamp01(alphaThreshold) * 255f);
         var solid = new bool[w * h];

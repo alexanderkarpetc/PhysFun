@@ -16,7 +16,8 @@ public class ToolboxController : MonoBehaviour
     [SerializeField] private LayerMask eraseTargets = ~0;
     [SerializeField] private string[] eraseIgnoreLayers = { "Untouchable" };
     [SerializeField] private int eraseSimplifyLevel = 2;
-    [SerializeField] private float eraseRebuildInterval = 0.15f;  // seconds between mid-stroke collider rebuilds
+    [SerializeField] private float eraseRebuildInterval = 0.15f;  // seconds between mid-stroke split checks (flood fill)
+    [SerializeField] private float eraseColliderBudgetMs = 3f;    // per-frame time budget for instant collider retraces
 
     [Header("Crack")]
     [SerializeField] private LayerMask crackTargets = ~0;
@@ -296,18 +297,22 @@ public class ToolboxController : MonoBehaviour
             // Push pixel changes to GPU (subregion upload, cheap).
             _eraseService.Flush();
 
-            // Rebuild colliders on a timer so collisions catch up without per-frame cost.
+            // Split detection (whole-texture flood fill) is the expensive part — throttle it.
             if (Time.unscaledTime - _lastEraseRebuild > eraseRebuildInterval)
             {
-                _eraseService.RebuildModifiedColliders(eraseSimplifyLevel);
+                _eraseService.ProcessSplits(eraseSimplifyLevel);
                 _lastEraseRebuild = Time.unscaledTime;
             }
+
+            // Colliders follow the pixels every frame so erasing is physical instantly.
+            _eraseService.RefreshColliders(eraseSimplifyLevel, eraseColliderBudgetMs);
         }
 
-        // Always rebuild once on release so the final shape is correct.
+        // Finalize on release: last split check + colliders, no budget cap.
         if (Input.GetMouseButtonUp(0))
         {
-            _eraseService.RebuildModifiedColliders(eraseSimplifyLevel);
+            _eraseService.ProcessSplits(eraseSimplifyLevel);
+            _eraseService.RefreshColliders(eraseSimplifyLevel);
             _lastEraseRebuild = Time.unscaledTime;
         }
     }

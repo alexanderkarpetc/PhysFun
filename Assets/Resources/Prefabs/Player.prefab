@@ -905,6 +905,7 @@ GameObject:
   - component: {fileID: 931212627176725868}
   - component: {fileID: 4125614759584999805}
   - component: {fileID: 6977965931318034195}
+  - component: {fileID: 8811223344556677889}
   m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
@@ -971,17 +972,7 @@ MonoBehaviour:
   _groundMask:
     serializedVersion: 2
     m_Bits: 375
-  maxSpeed: 2
-  accel: 20
-  turnAccel: 40
-  airControl: 0.3
-  friction: 10
-  jumpVelocity: 4
-  jumpBuffer: 0.1
-  jumpCutMultiplier: 0.5
-  gravityMult: 0.7
-  fallGravityMult: 1.3
-  lowJumpGravityMult: 1.6
+  _config: {fileID: 11400000, guid: 5d7d37b8fe8b4f8281e913e38bb6df4e, type: 2}
 --- !u!50 &6477744581142097718
 Rigidbody2D:
   serializedVersion: 5
@@ -1108,3 +1099,23 @@ MonoBehaviour:
   minMass: 3
   maxMass: 300
   maxGrabRange: 6
+--- !u!114 &8811223344556677889
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6955944223260610957}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 12a83a4291f74176bac527e4db2e8bb1, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  worldOffset: {x: 0, y: 1.1}
+  barWidth: 46
+  barHeight: 6
+  backColor: {r: 0, g: 0, b: 0, a: 0.55}
+  fullColor: {r: 0.45, g: 0.85, b: 1, a: 0.95}
+  lowColor: {r: 1, g: 0.7, b: 0.2, a: 0.95}
+  emptyColor: {r: 1, g: 0.35, b: 0.35, a: 0.95}
+  hideDelay: 0.6

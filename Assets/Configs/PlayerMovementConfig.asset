@@ -11,21 +11,22 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5f28dab649d7473e98f76681be915b79, type: 3}
   m_Name: PlayerMovementConfig
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   maxSpeed: 3
   accel: 30
   turnAccel: 60
   airControl: 0.85
   friction: 14
+  airFriction: 5.2
   gravityScale: 2
-  fallGravityMult: 1.4
-  maxFallSpeed: 16
-  levitateForce: 34
-  maxRiseSpeed: 4.5
-  initialHopImpulse: 3.2
-  capacity: 1.6
+  fallGravityMult: 1
+  maxFallSpeed: 10
+  levitateForce: 25
+  maxRiseSpeed: 2.55
+  initialHopImpulse: 1.6
+  capacity: 3.12
   drainRate: 1
   groundRegenRate: 4
-  airRegenRate: 0.6
+  airRegenRate: 0
   regenDelay: 0.15
   refireThreshold: 0.15

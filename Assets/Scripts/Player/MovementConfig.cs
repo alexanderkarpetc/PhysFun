@@ -21,6 +21,8 @@ namespace Player
         [Range(0f, 1f)] public float airControl = 0.85f;
         [Tooltip("Deceleration applied on the ground when there is no input.")]
         [Range(0f, 60f)] public float friction = 14f;
+        [Tooltip("Deceleration applied in the air when there is no input — Noita brakes horizontal drift while flying. 0 = keep full momentum.")]
+        [Range(0f, 60f)] public float airFriction = 12f;
 
         [Header("Gravity")]
         [Tooltip("Base Rigidbody2D gravity scale (the pull you feel when neither rising nor levitating).")]

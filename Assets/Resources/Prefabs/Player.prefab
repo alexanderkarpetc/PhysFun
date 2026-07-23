@@ -906,6 +906,7 @@ GameObject:
   - component: {fileID: 4125614759584999805}
   - component: {fileID: 6977965931318034195}
   - component: {fileID: 8811223344556677889}
+  - component: {fileID: 8811223344556677890}
   m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
@@ -1112,10 +1113,28 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier:
   worldOffset: {x: 0, y: 1.1}
-  barWidth: 46
-  barHeight: 6
-  backColor: {r: 0, g: 0, b: 0, a: 0.55}
-  fullColor: {r: 0.45, g: 0.85, b: 1, a: 0.95}
-  lowColor: {r: 1, g: 0.7, b: 0.2, a: 0.95}
-  emptyColor: {r: 1, g: 0.35, b: 0.35, a: 0.95}
+  lowThreshold: 0.25
   hideDelay: 0.6
+--- !u!114 &8811223344556677890
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6955944223260610957}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name:
+  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
+  m_PanelSettings: {fileID: 11400000, guid: 3a291dd55ffddaa4197edd85ee6a5362, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: 5599cec32f66411cb8d3fd6291edf483, type: 3}
+  m_SortingOrder: 1
+  m_Position: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+  m_PivotReferenceSize: 0
+  m_Pivot: 0
+  m_WorldSpaceCollider: {fileID: 0}

@@ -1,0 +1,41 @@
+/* Noita-style levitation meter. Positioned in code to follow the player;
+   the C# only sets left/top and the fill width + state class. */
+
+.levitation-root {
+    position: absolute;
+    width: 48px;
+    height: 8px;
+    /* left/top are driven from code each frame (world -> panel). */
+    opacity: 1;
+    transition: opacity 0.18s ease-out;
+}
+
+/* Applied from code when full + grounded so the bar melts away when irrelevant. */
+.levitation-root--hidden {
+    opacity: 0;
+}
+
+.levitation-track {
+    flex-grow: 1;
+    background-color: rgba(0, 0, 0, 0.55);
+    border-radius: 3px;
+    border-width: 1px;
+    border-color: rgba(0, 0, 0, 0.65);
+    overflow: hidden;
+}
+
+.levitation-fill {
+    height: 100%;
+    width: 100%;                 /* code overrides via style.width percent */
+    background-color: rgb(115, 217, 255);   /* healthy: cyan */
+    border-radius: 2px;
+    transition: width 0.05s linear, background-color 0.15s ease-out;
+}
+
+.levitation-fill--low {
+    background-color: rgb(255, 179, 51);    /* under threshold: amber */
+}
+
+.levitation-fill--empty {
+    background-color: rgb(255, 89, 89);      /* drained / locked out: red */
+}

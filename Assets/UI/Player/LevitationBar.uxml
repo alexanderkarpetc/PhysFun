@@ -1,0 +1,8 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/Player/LevitationBar.uss" />
+    <ui:VisualElement name="levitation-root" class="levitation-root" picking-mode="Ignore">
+        <ui:VisualElement name="levitation-track" class="levitation-track" picking-mode="Ignore">
+            <ui:VisualElement name="levitation-fill" class="levitation-fill" picking-mode="Ignore" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

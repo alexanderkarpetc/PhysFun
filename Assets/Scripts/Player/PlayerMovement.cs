@@ -119,7 +119,14 @@ namespace Player
             {
                 v.x = Mathf.MoveTowards(v.x, 0f, _config.friction * dt);
             }
-            // else: airborne with no input — preserve momentum / external impulses.
+            else
+            {
+                // Airborne, no input: brake horizontal drift so releasing the key stops you
+                // (Noita-style flight). But don't fight big external launches (crack/throw
+                // impulses above walk speed) — only bleed off velocity down to walk range.
+                if (Mathf.Abs(v.x) <= _config.maxSpeed)
+                    v.x = Mathf.MoveTowards(v.x, 0f, _config.airFriction * dt);
+            }
         }
 
         private void UpdateLevitation(ref Vector2 v, float dt)

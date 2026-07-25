@@ -22,14 +22,17 @@ namespace Materials
             Swatch = new Color32(158, 108, 58, 255),
             Density = 0.6f,
             Flammable = true,
-            // At 40 ticks/s these give a pixel a ~0.4s life and a front that eats roughly
-            // 25 texture px per second — a 200px barrel is gone in about 8 seconds,
-            // a 500px crate in around 20.
-            BurnRate = 0.06f,
+            // Tuned for the 20 PPU art: at 20 ticks/s a pixel glows for about 3 seconds
+            // and the front creeps ~5 texture px/s, which at 40 texture px per world unit
+            // is the same world-space speed the 100 PPU art had. That leaves a ~15px band
+            // of the object visibly ablaze instead of a thin edge eating it like paper.
+            // BurnRate alone controls how long it burns; SpreadChance controls how fast
+            // the fire travels.
+            BurnRate = 0.017f,
             BurnRateJitter = 0.7f,
-            SpreadChance = 1f,
+            SpreadChance = 0.32f,
             SpreadUpBias = 0.6f,
-            SpreadDelay = 0.03f,
+            SpreadDelayTicks = 0.5f,
             // Burns away to nothing — no charcoal remnants. Leftover chunks also cost
             // real performance: every isolated speck becomes another collider path and
             // another connected component for the split scan.

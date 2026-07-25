@@ -30,19 +30,24 @@ namespace Materials
         // Fuel runs 1 → 0 per pixel. One "tick" is one fire simulation step.
 
         /// <summary>Fuel consumed per tick by a burning pixel. 1/BurnRate = pixel lifetime in ticks.</summary>
-        public float BurnRate = 0.06f;
+        public float BurnRate = 0.017f;
 
         /// <summary>±fraction of jitter on BurnRate, so pixels don't all die on the same tick.</summary>
         public float BurnRateJitter = 0.7f;
 
         /// <summary>Per-tick chance a burning pixel lights each unburnt neighbour.</summary>
-        public float SpreadChance = 1f;
+        public float SpreadChance = 0.32f;
 
         /// <summary>Extra spread bias for the neighbour that points world-up — flames climb.</summary>
         public float SpreadUpBias = 0.6f;
 
-        /// <summary>Fuel that must burn off before a pixel can light its neighbours.</summary>
-        public float SpreadDelay = 0.03f;
+        /// <summary>
+        /// Ticks a freshly-lit pixel waits before it can light its own neighbours.
+        /// Counted in ticks rather than fuel so that how long a pixel burns and how fast
+        /// the front travels stay independent — changing BurnRate alone changes duration
+        /// without dragging the spread speed along with it.
+        /// </summary>
+        public float SpreadDelayTicks = 0.5f;
 
         /// <summary>Fraction of the sprite left behind as charcoal. 0 = burns away completely.</summary>
         public float CharAmount;

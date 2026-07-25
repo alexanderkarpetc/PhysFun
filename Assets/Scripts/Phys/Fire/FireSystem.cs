@@ -22,7 +22,7 @@ namespace Phys.Fire
         private static void ResetForPlayMode() => Instance = new FireSystem();
 
         /// <summary>Simulation steps per second. Independent of framerate.</summary>
-        public static float TicksPerSecond = 40f;
+        public static float TicksPerSecond = 20f;
 
         /// <summary>Layers fire is allowed to jump to on contact.</summary>
         public static int ContactMask = ~0;
@@ -253,7 +253,8 @@ namespace Phys.Fire
             float wUp    = NeighbourWeight(mat.SpreadUpBias,  up.y);
             float wDown  = NeighbourWeight(mat.SpreadUpBias, -up.y);
 
-            float spreadThreshold = mat.SpreadDelay * 255f;
+            // How much fuel must burn off before a pixel can light neighbours.
+            float spreadThreshold = mat.SpreadDelayTicks * mat.BurnRate * 255f;
             b.Next.Clear();
             int cleared = 0;
 
@@ -470,17 +471,30 @@ namespace Phys.Fire
         // Look
         // ─────────────────────────────────────────────────────────────────────────
 
-        /// <summary>Ember colour for a pixel with <paramref name="fuel"/> left, plus a per-tick flicker.</summary>
+        /// <summary>
+        /// Ember colour for a pixel with <paramref name="fuel"/> left.
+        ///
+        /// The gradient is deliberately back-loaded: a pixel flashes bright just after it
+        /// catches, then spends most of its (multi-second) life as a darkening coal. A
+        /// uniform bright ramp over three seconds only makes the object look painted
+        /// orange. On top of that a sparse set of pixels flares to full heat each cycle,
+        /// which is what reads as flames licking over the bed.
+        /// </summary>
         private static Color32 Ember(Burn b, PhysMaterial mat, int fuel, int x, int y)
         {
             float t = fuel / 255f;
             Color32 c =
-                t >= 0.5f  ? Color32.Lerp(mat.EmberMid,  mat.EmberHot,  (t - 0.5f) / 0.5f) :
-                t >= 0.15f ? Color32.Lerp(mat.EmberCool, mat.EmberMid,  (t - 0.15f) / 0.35f) :
-                             Color32.Lerp(mat.Charcoal,  mat.EmberCool, t / 0.15f);
+                t >= 0.85f ? Color32.Lerp(mat.EmberMid,  mat.EmberHot,  (t - 0.85f) / 0.15f) :
+                t >= 0.35f ? Color32.Lerp(mat.EmberCool, mat.EmberMid,  (t - 0.35f) / 0.50f) :
+                             Color32.Lerp(mat.Charcoal,  mat.EmberCool, t / 0.35f);
 
-            // Cheap spatial+temporal hash so the flame shimmers instead of sitting flat.
-            float k = 0.80f + 0.20f * Hash01(x, y, b.Ticks);
+            // Re-rolled every other tick (~10Hz). Per-tick white noise on pixels this
+            // chunky reads as static rather than fire.
+            float n = Hash01(x, y, b.Ticks / 2);
+            if (n > 0.88f)
+                return Color32.Lerp(c, mat.EmberHot, (n - 0.88f) / 0.12f * 0.85f);
+
+            float k = 0.82f + 0.18f * n;
             return new Color32(
                 (byte)(c.r * k),
                 (byte)(c.g * k),

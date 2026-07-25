@@ -14,6 +14,9 @@
 # They also could contain extremely sensitive data
 /[Mm]emoryCaptures/
 
+# Pre-downscale copies written by PhysFun/Downscale Textures
+/TextureBackups/
+
 # Asset meta data should only be ignored when the corresponding asset is also ignored
 !/[Aa]ssets/**/*.meta
 

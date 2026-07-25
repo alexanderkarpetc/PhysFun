@@ -273,7 +273,9 @@ namespace Phys.Pixels
         /// Check whether any modified sprite fell apart into separate blobs and split
         /// it in place. Flood-fills the whole texture, so this is the throttled one.
         /// </summary>
-        public void ProcessSplits(int simplifyLevel, int minPixels = 64, bool force = false)
+        // 16px (a 4x4 chunk) is the smallest piece worth spawning a rigidbody for at the
+        // 20 PPU art size; the old 64 was tuned when sprites were 5x larger.
+        public void ProcessSplits(int simplifyLevel, int minPixels = 16, bool force = false)
         {
             if (_records.Count == 0) return;
             Flush();

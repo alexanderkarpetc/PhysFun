@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Phys.Pixels;
 using Spawners;
 using UnityEngine;
 
@@ -163,6 +164,9 @@ namespace Cracker
                 var (tex0, rect0) = parts[0];
                 ApplySpriteAndCollider(sr, tex0, ppu, simplifyLevel);
                 go.transform.SetPositionAndRotation(shardWorldPos[0], origRot);
+                // The sprite was swapped out from under the pixel tools — drop their
+                // stale mirror (and its now-unreferenced texture) before cloning.
+                PixelSpriteRegistry.Instance.Forget(go);
             }
 
 // Spawn others at their precomputed world positions (don’t recompute!)

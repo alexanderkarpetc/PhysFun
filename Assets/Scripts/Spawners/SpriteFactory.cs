@@ -1,11 +1,13 @@
-﻿using UnityEngine;
+﻿using Materials;
+using UnityEngine;
 
 namespace Spawners
 {
     public static class SpriteFactory
     {
         private static float allScale = 0.5f;
-        public static GameObject Create(Sprite sprite, Vector3 position, Transform parent = null, bool isTrigger = false, int simplifyLevel = 0)
+        public static GameObject Create(Sprite sprite, Vector3 position, Transform parent = null, bool isTrigger = false, int simplifyLevel = 0,
+                                        PhysMaterialId material = PhysMaterialId.Default)
         {
             var go = new GameObject(sprite.name);
             if (parent) go.transform.SetParent(parent, false);
@@ -19,6 +21,9 @@ namespace Spawners
 
             var rb = go.AddComponent<Rigidbody2D>();
             go.transform.localScale = new Vector3(allScale, allScale, allScale);
+
+            // Tag before the mass pass — density feeds into it.
+            MaterialView.Apply(go, material);
 
             // simplify after collider is created from sprite physics shape,
             // then derive mass from the final (simplified) shape

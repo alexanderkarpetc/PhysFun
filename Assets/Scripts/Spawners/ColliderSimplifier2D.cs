@@ -1,8 +1,13 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 public static class ColliderSimplifier2D
 {
+    // Reused across calls: a fire-ragged sprite can trace to hundreds of paths, and
+    // the array-returning GetPath/SetPath overloads allocate on every one of them.
+    private static readonly List<Vector2> RingBuf = new();
+    private static readonly List<Vector2> OpenBuf = new();
+
     /// <summary>
     /// Simplify all paths of a PolygonCollider2D using RDP. level: 0..5.
     /// </summary>
@@ -17,10 +22,9 @@ public static class ColliderSimplifier2D
         int pathCount = poly.pathCount;
         for (int p = 0; p < pathCount; p++)
         {
-            var path = poly.GetPath(p);
-            var simplified = SimplifyClosedPolygon(path, tol);
-            if (simplified.Length >= 3)
-                poly.SetPath(p, simplified);
+            poly.GetPath(p, RingBuf);
+            if (SimplifyClosedPolygon(RingBuf, tol, OpenBuf))
+                poly.SetPath(p, OpenBuf);
         }
     }
 
@@ -37,28 +41,31 @@ public static class ColliderSimplifier2D
     }
 
     // RDP for a closed polygon: run on open ring and re-close.
-    static Vector2[] SimplifyClosedPolygon(Vector2[] ring, float tolerance)
+    // Writes into <paramref name="result"/>; returns false to leave the path untouched.
+    static bool SimplifyClosedPolygon(List<Vector2> ring, float tolerance, List<Vector2> result)
     {
-        if (ring == null || ring.Length < 4) return ring; // need at least a triangle + closure
+        if (ring == null || ring.Count < 4) return false; // need at least a triangle + closure
+
         // Ensure first != last for processing
-        bool hadClosure = (ring[0] == ring[ring.Length - 1]);
-        int n = hadClosure ? ring.Length - 1 : ring.Length;
+        bool hadClosure = ring[0] == ring[ring.Count - 1];
+        int n = hadClosure ? ring.Count - 1 : ring.Count;
 
-        var open = new List<Vector2>(n);
-        for (int i = 0; i < n; i++) open.Add(ring[i]);
+        result.Clear();
+        for (int i = 0; i < n; i++) result.Add(ring[i]);
 
-        var simplifiedOpen = Spawners.DouglasPeucker2D.Simplify(open, tolerance);
+        var simplifiedOpen = Spawners.DouglasPeucker2D.Simplify(result, tolerance);
 
         // Re-close
-        if (simplifiedOpen.Count < 3)
-            return ring;
+        if (simplifiedOpen.Count < 3) return false;
 
         // Ensure orientation preserved roughly (optional)
-        if (Area(open) < 0f && Area(simplifiedOpen) > 0f)
+        if (Area(result) < 0f && Area(simplifiedOpen) > 0f)
             simplifiedOpen.Reverse();
 
-        simplifiedOpen.Add(simplifiedOpen[0]);
-        return simplifiedOpen.ToArray();
+        result.Clear();
+        result.AddRange(simplifiedOpen);
+        result.Add(simplifiedOpen[0]);
+        return true;
     }
 
     static float Area(List<Vector2> pts)

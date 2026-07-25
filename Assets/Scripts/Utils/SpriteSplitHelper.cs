@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Phys.Pixels;
 using Spawners;
 using UnityEngine;
 
@@ -13,12 +14,13 @@ public static class SpriteSplitHelper
 {
     /// <summary>
     /// Try splitting <paramref name="go"/>'s sprite into connected components.
-    /// Returns the resulting GameObjects (including <paramref name="go"/>) when a
-    /// split occurred, or null otherwise.
+    /// Returns each resulting piece (including <paramref name="go"/> itself, first)
+    /// paired with the source-texture rect it was cut from, or null when the sprite
+    /// is still one piece.
     /// Pass <paramref name="pixels"/> when the caller already keeps a CPU mirror of
     /// the sprite texture — skips a full-texture copy per call.
     /// </summary>
-    public static List<GameObject> TrySplitInPlace(
+    public static List<SplitPart> TrySplitInPlace(
         GameObject go,
         int simplifyLevel,
         float alphaThreshold = 0.1f,
@@ -73,17 +75,17 @@ public static class SpriteSplitHelper
             positions[i] = go.transform.TransformPoint(localOffset);
         }
 
-        var result = new List<GameObject>(parts.Count);
+        var result = new List<SplitPart>(parts.Count);
 
         ApplyPart(go, sr, parts[0].tex, ppu, simplifyLevel);
         go.transform.SetPositionAndRotation(positions[0], rotation);
-        result.Add(go);
+        result.Add(new SplitPart(go, parts[0].rect));
 
         for (int i = 1; i < parts.Count; i++)
         {
             var clone = Object.Instantiate(go, positions[i], rotation, parent);
             ApplyPart(clone, clone.GetComponent<SpriteRenderer>(), parts[i].tex, ppu, simplifyLevel);
-            result.Add(clone);
+            result.Add(new SplitPart(clone, parts[i].rect));
         }
 
         return result;

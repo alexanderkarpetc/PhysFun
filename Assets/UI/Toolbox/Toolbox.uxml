@@ -6,6 +6,7 @@
             <ui:Button name="tool-erase" text="Erase" class="tool-btn" />
             <ui:Button name="tool-crack" text="Crack" class="tool-btn" />
             <ui:Button name="tool-synth" text="Draw"  class="tool-btn" />
+            <ui:Button name="tool-ignite" text="Ignite" class="tool-btn" />
             <ui:Button name="tool-none"  text="None"  class="tool-btn tool-btn-secondary" />
         </ui:VisualElement>
 
@@ -15,10 +16,12 @@
         <!-- Spawn -->
         <ui:VisualElement name="panel-spawn" class="panel">
             <ui:Slider name="lod-slider" label="Simplification" low-value="0" high-value="6" value="3" show-input-field="true" />
+            <ui:Label class="section-label" text="Material" />
+            <ui:VisualElement name="material-row" class="material-row" />
             <ui:ScrollView name="items-scroll" mode="Vertical" class="items-scroll">
                 <ui:VisualElement name="items-grid" class="items-grid" />
             </ui:ScrollView>
-            <ui:Label class="hint" text="Click to select, drag into world to place." />
+            <ui:Label class="hint" text="Click to select, drag into world to place. Material also applies to drawings." />
         </ui:VisualElement>
 
         <!-- Erase -->
@@ -46,6 +49,12 @@
                 <ui:Button name="synth-clear"  text="Clear"  class="action-btn action-btn-secondary" />
             </ui:VisualElement>
             <ui:Label class="hint" text="LMB paints • RMB erases • Wheel resizes brush" />
+        </ui:VisualElement>
+
+        <!-- Ignite -->
+        <ui:VisualElement name="panel-ignite" class="panel">
+            <ui:Slider name="ignite-radius" label="Radius" low-value="0.03" high-value="1" value="0.12" show-input-field="true" />
+            <ui:Label class="hint" text="LMB sets flammable objects alight • RMB puts them out. Fire eats the sprite pixel by pixel and jumps to anything it touches." />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

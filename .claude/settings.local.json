@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(git rm *)",
-      "Bash(cd \"/c/Users/Александр/AppData/Local/Unity/Editor\" && tail -25 Editor.log)"
+      "Bash(cd \"/c/Users/Александр/AppData/Local/Unity/Editor\" && tail -25 Editor.log)",
+      "PowerShell(1..4 | ForEach-Object { [guid]::NewGuid\\(\\).ToString\\(\"N\"\\) })"
     ]
   }
 }

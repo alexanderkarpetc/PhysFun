@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Phys.Pixels;
+using Phys.Terrain;
 using Spawners;
 using UnityEngine;
 
@@ -7,6 +8,102 @@ namespace Cracker
 {
     public static class Cracker
     {
+        /// <summary>
+        /// Knock a bite out of standing terrain: only the pixels inside the impact circle
+        /// leave, and they leave as loose shards. The rest of the object keeps standing with
+        /// a hole in it — which is the difference from <see cref="Crack"/>, where the whole
+        /// sprite is what shatters.
+        ///
+        /// Pixels are removed through the shared <see cref="PixelSpriteRegistry"/> mirror, so
+        /// the hole is consistent with whatever the eraser and fire have already done, and
+        /// the usual per-frame pipeline retraces the collider and checks whether the
+        /// remaining terrain fell into separate pieces.
+        /// </summary>
+        public static void CrackTerrain(
+            GameObject go,
+            Vector3 impactWorld,
+            float worldRadius,
+            int pieceCount,
+            float impactImpulse = 0f,
+            float impactFalloff = 1f,
+            int simplifyLevel = 2,
+            int minPixels = 12,
+            int seed = -1)
+        {
+            if (!go || worldRadius <= 0f || pieceCount < 1) return;
+
+            var rec = PixelSpriteRegistry.Instance.Get(go);
+            if (rec == null) return;
+
+            rec.WorldToPixel(impactWorld, out int cx, out int cy);
+            int r = Mathf.Max(1, Mathf.CeilToInt(worldRadius * rec.PixelsPerWorldUnit));
+            int r2 = r * r;
+
+            int xmin = Mathf.Max(0, cx - r), xmax = Mathf.Min(rec.Width - 1, cx + r);
+            int ymin = Mathf.Max(0, cy - r), ymax = Mathf.Min(rec.Height - 1, cy + r);
+            if (xmax < xmin || ymax < ymin) return;
+
+            // Solid pixels under the impact — everything that is about to come loose.
+            var pix = rec.Pixels;
+            var region = new List<Vector2Int>(256);
+            for (int y = ymin; y <= ymax; y++)
+            {
+                int dy = y - cy;
+                int dy2 = dy * dy;
+                int row = y * rec.Width;
+                for (int x = xmin; x <= xmax; x++)
+                {
+                    int dx = x - cx;
+                    if (dx * dx + dy2 > r2) continue;
+                    if (pix[row + x].a == 0) continue;
+                    region.Add(new Vector2Int(x, y));
+                }
+            }
+            if (region.Count < minPixels) return;
+
+            var rng = (seed < 0) ? new System.Random() : new System.Random(seed);
+            var buckets = PartitionRegion(region, Mathf.Min(pieceCount, region.Count), rng);
+
+            // One shard per bucket. Buckets too small to deserve a rigid body are left in
+            // the terrain instead of being silently deleted.
+            var parts = new List<(Texture2D tex, RectInt rect)>(buckets.Length);
+            int cleared = 0;
+            foreach (var bucket in buckets)
+            {
+                if (bucket.Count < minPixels) continue;
+                parts.Add(BuildShard(pix, rec.Width, bucket));
+                foreach (var p in bucket)
+                {
+                    pix[p.y * rec.Width + p.x] = default;
+                    cleared++;
+                }
+            }
+            if (parts.Count == 0) return;
+
+            rec.MarkPixels(xmin, ymin, xmax, ymax, cleared);
+
+            // Shards are clones of the terrain, so they arrive with its material tag and
+            // TerrainBody; detaching flips them from static terrain to falling debris.
+            var parent = go.transform.parent;
+            var rotation = go.transform.rotation;
+            var shards = new List<GameObject>(parts.Count);
+            foreach (var (tex, rect) in parts)
+            {
+                var localOffset = new Vector3(
+                    (rect.x + rect.width * 0.5f - rec.PivotPx.x) / rec.Ppu,
+                    (rect.y + rect.height * 0.5f - rec.PivotPx.y) / rec.Ppu,
+                    0f);
+
+                var shard = Object.Instantiate(go, go.transform.TransformPoint(localOffset), rotation, parent);
+                shard.name = $"{go.name}_shard";
+                ApplySpriteAndCollider(shard.GetComponent<SpriteRenderer>(), tex, rec.Ppu, simplifyLevel);
+                TerrainBody.Detach(shard);
+                shards.Add(shard);
+            }
+
+            ApplyRadialImpulse(shards, impactWorld, impactImpulse, impactFalloff);
+        }
+
         public static void Crack(
             GameObject go,
             int pieceCount,
@@ -180,31 +277,102 @@ namespace Cracker
                 allShards.Add(clone);
             }
 
-            // Radial impulses from impact: closer shards get punched harder, far ones drift.
-            if (impactWorld.HasValue && impactImpulse > 0f)
-            {
-                Vector2 impactPt = impactWorld.Value;
-                float falloffWorld = Mathf.Max(0.01f, impactFalloff);
-                for (int i = 0; i < allShards.Count; i++)
-                {
-                    var shard = allShards[i];
-                    var rb = shard.GetComponent<Rigidbody2D>();
-                    if (!rb) continue;
+            // The whole thing came apart, so no shard is standing terrain anymore. Has to
+            // happen before the impulses — a static body ignores AddForce.
+            TerrainBody.DetachAll(allShards);
 
-                    Vector2 toShard = (Vector2)shard.transform.position - impactPt;
-                    float dist = toShard.magnitude;
-                    Vector2 dir;
-                    if (dist > 1e-4f) dir = toShard / dist;
-                    else { float ang = Random.value * Mathf.PI * 2f; dir = new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)); }
-                    float magnitude = impactImpulse / (1f + dist / falloffWorld);
-                    rb.AddForce(dir * magnitude, ForceMode2D.Impulse);
-                    // A little spin makes the burst feel less rigid.
-                    rb.AddTorque((Random.value - 0.5f) * magnitude * 0.5f, ForceMode2D.Impulse);
-                }
-            }
+            if (impactWorld.HasValue)
+                ApplyRadialImpulse(allShards, impactWorld.Value, impactImpulse, impactFalloff);
         }
 
         // ----- helpers -----
+
+        /// <summary>Punch shards away from the impact: closer ones harder, far ones drift.</summary>
+        static void ApplyRadialImpulse(List<GameObject> shards, Vector2 impactPt,
+                                       float impactImpulse, float impactFalloff)
+        {
+            if (impactImpulse <= 0f) return;
+
+            float falloffWorld = Mathf.Max(0.01f, impactFalloff);
+            for (int i = 0; i < shards.Count; i++)
+            {
+                var shard = shards[i];
+                if (!shard) continue;
+                var rb = shard.GetComponent<Rigidbody2D>();
+                if (!rb || rb.bodyType != RigidbodyType2D.Dynamic) continue;
+
+                Vector2 toShard = (Vector2)shard.transform.position - impactPt;
+                float dist = toShard.magnitude;
+                Vector2 dir;
+                if (dist > 1e-4f) dir = toShard / dist;
+                else { float ang = Random.value * Mathf.PI * 2f; dir = new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)); }
+                float magnitude = impactImpulse / (1f + dist / falloffWorld);
+                rb.AddForce(dir * magnitude, ForceMode2D.Impulse);
+                // A little spin makes the burst feel less rigid.
+                rb.AddTorque((Random.value - 0.5f) * magnitude * 0.5f, ForceMode2D.Impulse);
+            }
+        }
+
+        /// <summary>Split <paramref name="region"/> into Voronoi cells around random seeds
+        /// drawn from it. Used for the terrain bite, where only part of the sprite breaks.</summary>
+        static List<Vector2Int>[] PartitionRegion(List<Vector2Int> region, int cells, System.Random rng)
+        {
+            cells = Mathf.Max(1, cells);
+            var seeds = new List<Vector2Int>(cells);
+            for (int i = 0; i < cells; i++)
+            {
+                // A couple of retries is enough to keep seeds distinct without looping forever
+                // on a region that has fewer usable spots than requested cells.
+                for (int attempt = 0; attempt < 4; attempt++)
+                {
+                    var candidate = region[rng.Next(region.Count)];
+                    if (attempt == 3 || !seeds.Contains(candidate)) { seeds.Add(candidate); break; }
+                }
+            }
+
+            var buckets = new List<Vector2Int>[seeds.Count];
+            for (int i = 0; i < buckets.Length; i++) buckets[i] = new List<Vector2Int>(64);
+
+            foreach (var p in region)
+            {
+                int best = 0, bestD2 = int.MaxValue;
+                for (int s = 0; s < seeds.Count; s++)
+                {
+                    int dx = p.x - seeds[s].x, dy = p.y - seeds[s].y;
+                    int d2 = dx * dx + dy * dy;
+                    if (d2 < bestD2) { bestD2 = d2; best = s; }
+                }
+                buckets[best].Add(p);
+            }
+            return buckets;
+        }
+
+        /// <summary>Copy a bucket of pixels into a tightly-cropped texture.</summary>
+        static (Texture2D tex, RectInt rect) BuildShard(Color32[] src, int srcWidth, List<Vector2Int> pixels)
+        {
+            int minX = int.MaxValue, minY = int.MaxValue, maxX = -1, maxY = -1;
+            foreach (var p in pixels)
+            {
+                if (p.x < minX) minX = p.x;
+                if (p.y < minY) minY = p.y;
+                if (p.x > maxX) maxX = p.x;
+                if (p.y > maxY) maxY = p.y;
+            }
+
+            var rect = new RectInt(minX, minY, maxX - minX + 1, maxY - minY + 1);
+            var dst = new Color32[rect.width * rect.height];
+            foreach (var p in pixels)
+                dst[(p.y - rect.y) * rect.width + (p.x - rect.x)] = src[p.y * srcWidth + p.x];
+
+            var tex = new Texture2D(rect.width, rect.height, TextureFormat.ARGB32, false)
+            {
+                filterMode = FilterMode.Point,
+                wrapMode = TextureWrapMode.Clamp,
+            };
+            tex.SetPixels32(dst);
+            tex.Apply(false, false);
+            return (tex, rect);
+        }
 
         /// <summary>Readable pixels for the sprite. <paramref name="owned"/> is true when the
         /// returned texture is a temporary copy the caller must destroy.</summary>

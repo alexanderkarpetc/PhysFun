@@ -3,6 +3,7 @@ using System.Linq;
 using Materials;
 using Phys.Fire;
 using Phys.Pixels;
+using Phys.Terrain;
 using Spawners;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -369,7 +370,10 @@ public class ToolboxController : MonoBehaviour
         }
 
         // Finalize on release: last split check + colliders, no budget cap.
-        if (Input.GetMouseButtonUp(0)) PixelSpriteDriver.FinalizeNow();
+        if (!Input.GetMouseButtonUp(0)) return;
+        PixelSpriteDriver.FinalizeNow();
+        // Anything the stroke cut free from the terrain should drop on this frame.
+        TerrainSupportSystem.Refresh();
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -391,15 +395,39 @@ public class ToolboxController : MonoBehaviour
         Vector3 wp = _cam.ScreenToWorldPoint(Input.mousePosition); wp.z = 0f;
 
         var hits = Physics2D.OverlapCircleAll(wp, radius, _crackEffectiveMask);
+        bool hitTerrain = false;
         foreach (var h in hits)
         {
-            Cracker.Cracker.Crack(
-                h.gameObject,
-                pieces,
-                impactWorld: wp,
-                impactImpulse: crackImpactImpulse,
-                impactFalloff: crackImpactFalloff);
+            // Standing terrain only loses the bite under the cursor; a loose object shatters
+            // whole, the way it always has.
+            if (TerrainBody.IsAnchored(h.gameObject))
+            {
+                hitTerrain = true;
+                Cracker.Cracker.CrackTerrain(
+                    h.gameObject,
+                    wp,
+                    radius,
+                    pieces,
+                    crackImpactImpulse,
+                    crackImpactFalloff,
+                    eraseSimplifyLevel);
+            }
+            else
+            {
+                Cracker.Cracker.Crack(
+                    h.gameObject,
+                    pieces,
+                    impactWorld: wp,
+                    impactImpulse: crackImpactImpulse,
+                    impactFalloff: crackImpactFalloff);
+            }
         }
+
+        if (!hitTerrain) return;
+        // Settle the hole (collider + split scan) and re-check what the terrain still
+        // holds up, all on this frame — a one-shot impact shouldn't visibly lag.
+        PixelSpriteDriver.FinalizeNow();
+        TerrainSupportSystem.Refresh();
     }
 
     // ─────────────────────────────────────────────────────────────────────────

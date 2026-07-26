@@ -185,6 +185,38 @@ namespace Phys.Pixels
             return rec;
         }
 
+        /// <summary>
+        /// Take over a texture the caller built itself, reusing <paramref name="pixels"/> as
+        /// the CPU mirror. <see cref="Get"/> would otherwise clone the texture on first touch
+        /// and leave the original — an asset for imported art, but a runtime leak for
+        /// generated art like terrain chunks. The renderer on <paramref name="go"/> must
+        /// already be showing a sprite built on <paramref name="tex"/>.
+        /// </summary>
+        public Record Adopt(GameObject go, Texture2D tex, Color32[] pixels)
+        {
+            if (!go || !tex || pixels == null) return null;
+            if (pixels.Length != tex.width * tex.height) return null;
+
+            var sr = go.GetComponent<SpriteRenderer>();
+            if (!sr || !sr.sprite || sr.sprite.texture != tex) return null;
+
+            Forget(go);
+
+            var rec = new Record
+            {
+                Go = go,
+                Tex = tex,
+                Pixels = pixels,
+                Width = tex.width,
+                Height = tex.height,
+                Ppu = sr.sprite.pixelsPerUnit,
+                PivotPx = sr.sprite.pivot,
+                SolidCount = CountSolid(pixels),
+            };
+            _records[go] = rec;
+            return rec;
+        }
+
         public bool TryGet(GameObject go, out Record rec)
         {
             rec = null;

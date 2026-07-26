@@ -34,6 +34,33 @@ public static class SpriteTexUtil
 
         // Slow path: blit the source into a temp RenderTexture, then ReadPixels.
         // No import settings required — works at runtime on any sprite.
+        return ReadBack(src, x, y, w, h);
+    }
+
+    /// <summary>
+    /// Returns a new writable copy of a whole texture, whether or not the source has
+    /// Read/Write enabled. Same two paths as the sprite overload — imported art is
+    /// normally non-readable, so terrain tiles come in through the GPU blit.
+    /// </summary>
+    public static Texture2D CloneReadable(Texture2D src)
+    {
+        if (src == null) return null;
+
+        if (src.isReadable)
+        {
+            var tex = new Texture2D(src.width, src.height, TextureFormat.ARGB32, false);
+            tex.SetPixels32(src.GetPixels32());
+            tex.Apply(false, false);
+            return tex;
+        }
+
+        return ReadBack(src, 0, 0, src.width, src.height);
+    }
+
+    /// <summary>Blit <paramref name="src"/> through a temp RenderTexture and read a
+    /// sub-rect back to the CPU. No import settings required.</summary>
+    static Texture2D ReadBack(Texture src, int x, int y, int w, int h)
+    {
         var prev = RenderTexture.active;
         var rt = RenderTexture.GetTemporary(
             src.width, src.height, 0,

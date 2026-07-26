@@ -21,8 +21,15 @@ namespace Phys.Fire
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetForPlayMode() => Instance = new FireSystem();
 
-        /// <summary>Simulation steps per second. Independent of framerate.</summary>
+        /// <summary>
+        /// Simulation steps per second — fuel burn and spread only. Painting is separate
+        /// and runs every frame, so this can stay low without the fire *looking* like it
+        /// is running at this rate.
+        /// </summary>
         public static float TicksPerSecond = 20f;
+
+        /// <summary>How often each pixel's flicker re-rolls. Interpolated, so it stays smooth.</summary>
+        public static float FlickerHz = 11f;
 
         /// <summary>Layers fire is allowed to jump to on contact.</summary>
         public static int ContactMask = ~0;
@@ -117,7 +124,6 @@ namespace Phys.Fire
             int ymax = Mathf.Min(rec.Height - 1, cy + r);
             if (xmax < xmin || ymax < ymin) return false;
 
-            ResetStepRect(b);
             int lit = 0;
 
             for (int y = ymin; y <= ymax; y++)
@@ -134,17 +140,14 @@ namespace Phys.Fire
                     if (b.Alight[idx] || b.Fuel[idx] == 0) continue;
                     if (rec.Pixels[idx].a == 0) continue;
 
+                    // Colour comes from the paint pass later this frame.
                     b.Alight[idx] = true;
                     b.Active.Add(idx);
-                    rec.Pixels[idx] = Ember(b, mat, b.Fuel[idx], x, y);
-                    b.Touch(x, y);
                     lit++;
                 }
             }
 
-            if (lit == 0) return false;
-            rec.MarkPixels(b.sx0, b.sy0, b.sx1, b.sy1, 0, colliderChanged: false);
-            return true;
+            return lit > 0;
         }
 
         /// <summary>Put out the flames inside a world-space circle, leaving the pixels scorched.</summary>
@@ -215,6 +218,54 @@ namespace Phys.Fire
                 Step();
             }
             if (_accum >= step) _accum = 0f;
+
+            // Colour is refreshed every frame regardless of the tick rate. Repainting
+            // only on a tick is what made the fire read as a 20fps animation sitting on
+            // top of a 60fps game.
+            Paint(Time.time);
+        }
+
+        /// <summary>Recolour every burning pixel. Cheap: it only touches the active set.</summary>
+        private void Paint(float time)
+        {
+            _stepList.Clear();
+            foreach (var kv in _burns)
+            {
+                if (!kv.Key) continue;
+                if (!_reg.TryGet(kv.Key, out var rec) || rec != kv.Value.Rec) continue;
+                if (kv.Value.Active.Count > 0) _stepList.Add(kv.Value);
+            }
+
+            foreach (var b in _stepList) PaintBurn(b, time);
+        }
+
+        private static void PaintBurn(Burn b, float time)
+        {
+            var rec = b.Rec;
+            var pix = rec.Pixels;
+            var mat = b.Mat;
+            int w = rec.Width;
+
+            // Flicker slides along the object's up axis so licks travel upward even
+            // after the object has toppled over.
+            Vector2 up = b.Go.transform.InverseTransformDirection(Vector3.up);
+            if (up.sqrMagnitude > 1e-6f) up.Normalize();
+
+            ResetStepRect(b);
+
+            for (int i = 0; i < b.Active.Count; i++)
+            {
+                int idx = b.Active[i];
+                if (!b.Alight[idx]) continue;
+                if (pix[idx].a == 0) continue;
+
+                int x = idx % w, y = idx / w;
+                pix[idx] = Ember(mat, b.Fuel[idx], x, y, time, up.x, up.y);
+                b.Touch(x, y);
+            }
+
+            if (b.sx1 >= 0)
+                rec.MarkPixels(b.sx0, b.sy0, b.sx1, b.sy1, 0, colliderChanged: false);
         }
 
         private void Step()
@@ -292,8 +343,8 @@ namespace Phys.Fire
                 }
                 else
                 {
+                    // Fuel only — the paint pass turns it into a colour every frame.
                     b.Fuel[idx] = (byte)left;
-                    pix[idx] = Ember(b, mat, left, x, y);
                     b.Next.Add(idx);
 
                     if (255 - left >= spreadThreshold)
@@ -337,8 +388,6 @@ namespace Phys.Fire
 
             b.Alight[idx] = true;
             b.Next.Add(idx);
-            b.Rec.Pixels[idx] = Ember(b, b.Mat, b.Fuel[idx], x, y);
-            b.Touch(x, y);
         }
 
         /// <summary>Occasionally let a burning edge pixel set a touching flammable object alight.</summary>
@@ -480,7 +529,7 @@ namespace Phys.Fire
         /// orange. On top of that a sparse set of pixels flares to full heat each cycle,
         /// which is what reads as flames licking over the bed.
         /// </summary>
-        private static Color32 Ember(Burn b, PhysMaterial mat, int fuel, int x, int y)
+        private static Color32 Ember(PhysMaterial mat, int fuel, int x, int y, float time, float upX, float upY)
         {
             float t = fuel / 255f;
             Color32 c =
@@ -488,9 +537,16 @@ namespace Phys.Fire
                 t >= 0.35f ? Color32.Lerp(mat.EmberCool, mat.EmberMid,  (t - 0.35f) / 0.50f) :
                              Color32.Lerp(mat.Charcoal,  mat.EmberCool, t / 0.35f);
 
-            // Re-rolled every other tick (~10Hz). Per-tick white noise on pixels this
-            // chunky reads as static rather than fire.
-            float n = Hash01(x, y, b.Ticks / 2);
+            // Value noise in time: two hashes smoothly blended, so the flicker animates
+            // continuously at the display rate instead of snapping between discrete
+            // values. Offsetting the phase along the up axis makes licks travel upward.
+            float along = x * upX + y * upY;
+            float ft = (time - along * 0.03f) * FlickerHz;
+            int cell = Mathf.FloorToInt(ft);
+            float f = ft - cell;
+            f = f * f * (3f - 2f * f);                       // smoothstep
+            float n = Mathf.Lerp(Hash01(x, y, cell), Hash01(x, y, cell + 1), f);
+
             if (n > 0.88f)
                 return Color32.Lerp(c, mat.EmberHot, (n - 0.88f) / 0.12f * 0.85f);
 

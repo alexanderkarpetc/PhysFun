@@ -63,5 +63,47 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 953754963104206877, guid: 51a1fa99fa0c2fd418f67e714449225b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6309324205917993433}
   m_SourcePrefab: {fileID: 100100000, guid: 51a1fa99fa0c2fd418f67e714449225b, type: 3}
+--- !u!1 &725372513132166400 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 953754963104206877, guid: 51a1fa99fa0c2fd418f67e714449225b, type: 3}
+  m_PrefabInstance: {fileID: 517176601147125021}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6309324205917993433
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 725372513132166400}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: feeb4ba6b291a464fbc6477e1a93c4d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Ragdolls.RagdollSpawner
+  ragdollPrefab: {fileID: 4883200839610252308, guid: c3abfc54c103592429fe744c51f47e5f, type: 3}
+  poseSource: {fileID: 4595723371933877425}
+  facingSource: {fileID: 5444241432184842237}
+  body: {fileID: 4076812527511658111}
+  inheritVelocity: 1
+  spin: 0.05
+  destroySource: 1
+--- !u!50 &4076812527511658111 stripped
+Rigidbody2D:
+  m_CorrespondingSourceObject: {fileID: 4593352779727467362, guid: 51a1fa99fa0c2fd418f67e714449225b, type: 3}
+  m_PrefabInstance: {fileID: 517176601147125021}
+  m_PrefabAsset: {fileID: 0}
+--- !u!212 &4595723371933877425 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 4101138163522660780, guid: 51a1fa99fa0c2fd418f67e714449225b, type: 3}
+  m_PrefabInstance: {fileID: 517176601147125021}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &5444241432184842237 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5521613100481235680, guid: 51a1fa99fa0c2fd418f67e714449225b, type: 3}
+  m_PrefabInstance: {fileID: 517176601147125021}
+  m_PrefabAsset: {fileID: 0}

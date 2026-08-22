@@ -44,6 +44,8 @@ GameObject:
   - component: {fileID: 4593352779727467362}
   - component: {fileID: 2907559089585304437}
   - component: {fileID: 7277745269455351102}
+  - component: {fileID: 1286365054345040856}
+  - component: {fileID: 102287879811948200}
   m_Layer: 8
   m_Name: Shotgunner
   m_TagString: Untagged
@@ -179,6 +181,42 @@ CapsuleCollider2D:
   m_Offset: {x: 0, y: 0.0030249953}
   m_Size: {x: 0.57, y: 0.7698127}
   m_Direction: 0
+--- !u!114 &1286365054345040856
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 953754963104206877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: baa9384630d24df0977c63474029daee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Common.Damageable
+  maxHealth: 20
+  targetLayers:
+    serializedVersion: 2
+    m_Bits: 1
+  deathKick: 0.05
+--- !u!114 &102287879811948200
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 953754963104206877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: feeb4ba6b291a464fbc6477e1a93c4d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Ragdolls.RagdollSpawner
+  ragdollPrefab: {fileID: 6636060038746761732, guid: 6dc890d87a5ba3b409a43fbea07814ad, type: 3}
+  poseSource: {fileID: 4101138163522660780}
+  facingSource: {fileID: 5521613100481235680}
+  body: {fileID: 4593352779727467362}
+  inheritVelocity: 1
+  spin: 0.05
+  destroySource: 1
 --- !u!1 &1898188452667352375
 GameObject:
   m_ObjectHideFlags: 0
@@ -244,6 +282,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &4101138163522660780
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -262,6 +301,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -283,9 +324,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_Sprite: {fileID: -2134766677, guid: 59fbecba241460645ab447795fbc3599, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -295,5 +338,4 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0

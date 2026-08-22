@@ -44,6 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09c0888d1dce440ea1c472960f2491a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  map: {fileID: 11400000, guid: 3b38f757917d46e478e01d1dbe411c72, type: 2}
   pixelsPerUnit: 40
   chunkPixels: 64
   minChunkPixels: 24

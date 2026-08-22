@@ -12,12 +12,36 @@ public static class SliceFromXml
     private const string FolderPath = "Assets/Resources/Animations/Enemies/coward";
 
     [MenuItem("PhysFun/Slice From XML (Hardcoded)")]
-    public static void Run()
+    public static void Run() => RunFolder(FolderPath);
+
+    /// <summary>
+    /// Slice whichever creature folders are selected in the Project window. Ragdoll poses are
+    /// looked up by sprite name, so every creature that should leave a corpse needs its sheet
+    /// sliced this way — not just the hardcoded one.
+    /// </summary>
+    [MenuItem("PhysFun/Slice From XML (Selected Folders)")]
+    public static void RunSelection()
     {
-        string absFolder = Path.GetFullPath(FolderPath);
+        var folders = Selection.objects
+                               .Select(AssetDatabase.GetAssetPath)
+                               .Where(AssetDatabase.IsValidFolder)
+                               .ToArray();
+
+        if (folders.Length == 0)
+        {
+            Debug.LogError("Select one or more folders holding <creature>.xml + <creature>.png.");
+            return;
+        }
+
+        foreach (var folder in folders) RunFolder(folder);
+    }
+
+    public static void RunFolder(string folderPath)
+    {
+        string absFolder = Path.GetFullPath(folderPath);
         if (!Directory.Exists(absFolder))
         {
-            Debug.LogError($"Folder not found: {FolderPath}");
+            Debug.LogError($"Folder not found: {folderPath}");
             return;
         }
 
@@ -29,7 +53,7 @@ public static class SliceFromXml
 
         if (mainXmlAbs == null || mainPngAbs == null)
         {
-            Debug.LogError($"Missing main XML or PNG in {FolderPath}");
+            Debug.LogError($"Missing main XML or PNG in {folderPath}");
             return;
         }
 
@@ -88,7 +112,7 @@ public static class SliceFromXml
         if (!tex) { Debug.LogError($"Failed to load texture: {pngAssetPath}"); return; }
 
         int texW = tex.width, texH = tex.height;
-        var metas = new List<SpriteMetaData>();
+        var slices = new List<NoitaImport.SliceSpec>();
 
         foreach (var ra in sprite.Elements("RectAnimation"))
         {
@@ -123,24 +147,24 @@ public static class SliceFromXml
                     Mathf.Clamp01(frameH > 0 ? 1f - (float)offsetY / frameH : 0.5f)
                 );
 
-                metas.Add(new SpriteMetaData
+                slices.Add(new NoitaImport.SliceSpec
                 {
-                    alignment = (int)SpriteAlignment.Custom,
-                    border = Vector4.zero,
-                    name = $"{name}_{f:D2}",
-                    pivot = pivot,
-                    rect = new Rect(x, yUnity, frameW, frameH)
+                    Name = $"{name}_{f:D2}",
+                    Pivot = pivot,
+                    Rect = new Rect(x, yUnity, frameW, frameH)
                 });
             }
         }
 
-        if (metas.Count == 0) { Debug.LogError($"No frames generated for {pngAssetPath}"); return; }
+        if (slices.Count == 0) { Debug.LogError($"No frames generated for {pngAssetPath}"); return; }
 
-        ti.spritesheet = metas.ToArray();
+        // Settle the import settings first: the sprite data provider reads the import mode
+        // when it opens, and TextureImporter.spritesheet is a no-op in Unity 6.
         EditorUtility.SetDirty(ti);
         ti.SaveAndReimport();
+        NoitaImport.SpriteSlicer.Apply(ti, slices);
 
-        Debug.Log($"Sliced {metas.Count} sprites into {pngAssetPath}");
+        Debug.Log($"Sliced {slices.Count} sprites into {pngAssetPath}");
     }
 
     private static string ToAssetPath(string absPath)

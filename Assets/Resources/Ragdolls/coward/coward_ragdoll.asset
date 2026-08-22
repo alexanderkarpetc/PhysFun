@@ -1,0 +1,581 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8f1e07af96acd2418429a8e18e2602c, type: 3}
+  m_Name: coward_ragdoll
+  m_EditorClassIdentifier: Assembly-CSharp::Ragdolls.RagdollDefinition
+  creature: coward
+  frameWidth: 16
+  frameHeight: 22
+  originPx: {x: 8, y: 16}
+  pixelsPerUnit: 20
+  parts:
+  - name: torso
+    sprite: {fileID: -2025217246, guid: 82d9edcdb87799340a72c6a396dfefe4, type: 3}
+    parent: -1
+    pivotPx: {x: 6.5, y: 11.5}
+    anchorPx: {x: 0, y: 0}
+    useLimits: 0
+    limitLow: -70
+    limitHigh: 70
+    uvColor:
+      serializedVersion: 2
+      rgba: 4294902015
+  - name: head
+    sprite: {fileID: -499107214, guid: 82d9edcdb87799340a72c6a396dfefe4, type: 3}
+    parent: 0
+    pivotPx: {x: 7.5, y: 6}
+    anchorPx: {x: 7, y: 8}
+    useLimits: 1
+    limitLow: -70
+    limitHigh: 70
+    uvColor:
+      serializedVersion: 2
+      rgba: 4278255615
+  - name: foot_left
+    sprite: {fileID: 589067785, guid: 82d9edcdb87799340a72c6a396dfefe4, type: 3}
+    parent: 0
+    pivotPx: {x: 3.5, y: 16.5}
+    anchorPx: {x: 4, y: 15}
+    useLimits: 1
+    limitLow: -70
+    limitHigh: 70
+    uvColor:
+      serializedVersion: 2
+      rgba: 4278190335
+  - name: foot_right
+    sprite: {fileID: -861146235, guid: 82d9edcdb87799340a72c6a396dfefe4, type: 3}
+    parent: 0
+    pivotPx: {x: 8, y: 16.5}
+    anchorPx: {x: 8, y: 15}
+    useLimits: 1
+    limitLow: -70
+    limitHigh: 70
+    uvColor:
+      serializedVersion: 2
+      rgba: 4278190208
+  - name: hand
+    sprite: {fileID: 1966371106, guid: 82d9edcdb87799340a72c6a396dfefe4, type: 3}
+    parent: 0
+    pivotPx: {x: 10, y: 12.5}
+    anchorPx: {x: 9, y: 12}
+    useLimits: 1
+    limitLow: -70
+    limitHigh: 70
+    uvColor:
+      serializedVersion: 2
+      rgba: 4294901760
+  poses:
+  - anim: stand
+    frame: 0
+    positionsPx:
+    - {x: 6.5, y: 11.5}
+    - {x: 7.5, y: 6}
+    - {x: 3.5, y: 16.5}
+    - {x: 8, y: 16.5}
+    - {x: 10, y: 12.5}
+    rotations:
+    - -0
+    - -0
+    - -0
+    - -0
+    - -0
+  - anim: stand
+    frame: 1
+    positionsPx:
+    - {x: 6.5, y: 11.5}
+    - {x: 7.7442083, y: 6.0774617}
+    - {x: 3.5, y: 16.5}
+    - {x: 8, y: 16.5}
+    - {x: 10, y: 12.5}
+    rotations:
+    - -0
+    - -7.125021
+    - -0
+    - -0
+    - -0
+  - anim: stand
+    frame: 2
+    positionsPx:
+    - {x: 6.5, y: 12.5}
+    - {x: 7.7442083, y: 7.0774617}
+    - {x: 3.2928934, y: 17.414213}
+    - {x: 8, y: 17.5}
+    - {x: 10, y: 13.5}
+    rotations:
+    - -0
+    - -7.125021
+    - -8.130097
+    - -0
+    - -0
+  - anim: stand
+    frame: 3
+    positionsPx:
+    - {x: 6.5, y: 13.5}
+    - {x: 7.5, y: 8}
+    - {x: 2.881966, y: 18.118034}
+    - {x: 8, y: 18.5}
+    - {x: 10, y: 14.5}
+    rotations:
+    - -0
+    - -0
+    - -26.565052
+    - -0
+    - -0
+  - anim: stand
+    frame: 4
+    positionsPx:
+    - {x: 6.5, y: 13.5}
+    - {x: 7.3321824, y: 7.965386}
+    - {x: 2.881966, y: 18.118034}
+    - {x: 8, y: 18.5}
+    - {x: 10, y: 14.5}
+    rotations:
+    - -0
+    - 4.7636337
+    - -26.565052
+    - -0
+    - -0
+  - anim: stand
+    frame: 5
+    positionsPx:
+    - {x: 6.5, y: 12.5}
+    - {x: 7.3321824, y: 6.965386}
+    - {x: 3.2928934, y: 17.414213}
+    - {x: 8, y: 17.5}
+    - {x: 10, y: 13.5}
+    rotations:
+    - -0
+    - 4.7636337
+    - -8.130097
+    - -0
+    - -0
+  - anim: walk
+    frame: 0
+    positionsPx:
+    - {x: 6.5, y: 11.5}
+    - {x: 7.5, y: 6}
+    - {x: 3.122942, y: 16.315586}
+    - {x: 9.06066, y: 16.06066}
+    - {x: 10, y: 12.5}
+    rotations:
+    - -0
+    - -0
+    - -15.255118
+    - 45.000004
+    - -0
+  - anim: walk
+    frame: 1
+    positionsPx:
+    - {x: 6.5, y: 11.5}
+    - {x: 7.7442083, y: 6.0774617}
+    - {x: 2.881966, y: 16.118034}
+    - {x: 8.83205, y: 16.248075}
+    - {x: 10, y: 12.5}
+    rotations:
+    - -0
+    - -7.125021
+    - -26.565052
+    - 33.69007
+    - -0
+  - anim: walk
+    frame: 2
+    positionsPx:
+    - {x: 6.5, y: 12.5}
+    - {x: 7.3321824, y: 6.965386}
+    - {x: 3.9999998, y: 17.581139}
+    - {x: 8, y: 17.5}
+    - {x: 10, y: 13.5}
+    rotations:
+    - -0
+    - 4.7636337
+    - 18.43494
+    - -0
+    - -0
+  - anim: walk
+    frame: 3
+    positionsPx:
+    - {x: 6.5, y: 11.5}
+    - {x: 7.5, y: 6}
+    - {x: 5.118034, y: 16.118034}
+    - {x: 7.5256586, y: 16.423025}
+    - {x: 10, y: 12.5}
+    rotations:
+    - -0
+    - -0
+    - 63.434944
+    - -18.43494
+    - -0
+  - anim: walk
+    frame: 4
+    positionsPx:
+    - {x: 6.5, y: 11.5}
+    - {x: 7.7442083, y: 6.0774617}
+    - {x: 4.877058, y: 16.315588}
+    - {x: 7.32918, y: 16.34164}
+    - {x: 10, y: 12.5}
+    rotations:
+    - -0
+    - -7.125021
+    - 52.12501
+    - -26.565052
+    - -0
+  - anim: walk
+    frame: 5
+    positionsPx:
+    - {x: 6.5, y: 12.5}
+    - {x: 7.3321824, y: 6.965386}
+    - {x: 3.9999998, y: 17.581139}
+    - {x: 8, y: 17.5}
+    - {x: 10, y: 13.5}
+    rotations:
+    - -0
+    - 4.7636337
+    - 18.43494
+    - -0
+    - -0
+  - anim: run
+    frame: 0
+    positionsPx:
+    - {x: 6.5, y: 11.5}
+    - {x: 7.5, y: 6}
+    - {x: 3.122942, y: 16.315586}
+    - {x: 9.06066, y: 16.06066}
+    - {x: 10, y: 12.5}
+    rotations:
+    - -0
+    - -0
+    - -15.255118
+    - 45.000004
+    - -0
+  - anim: run
+    frame: 1
+    positionsPx:
+    - {x: 6.5, y: 11.5}
+    - {x: 7.7442083, y: 6.0774617}
+    - {x: 2.881966, y: 16.118034}
+    - {x: 8.83205, y: 16.248075}
+    - {x: 10, y: 12.5}
+    rotations:
+    - -0
+    - -7.125021
+    - -26.565052
+    - 33.69007
+    - -0
+  - anim: run
+    frame: 2
+    positionsPx:
+    - {x: 6.5, y: 12.5}
+    - {x: 7.3321824, y: 6.965386}
+    - {x: 3.9999998, y: 17.581139}
+    - {x: 8, y: 17.5}
+    - {x: 10, y: 13.5}
+    rotations:
+    - -0
+    - 4.7636337
+    - 18.43494
+    - -0
+    - -0
+  - anim: run
+    frame: 3
+    positionsPx:
+    - {x: 6.5, y: 11.5}
+    - {x: 7.5, y: 6}
+    - {x: 5.118034, y: 16.118034}
+    - {x: 7.5256586, y: 16.423025}
+    - {x: 10, y: 12.5}
+    rotations:
+    - -0
+    - -0
+    - 63.434944
+    - -18.43494
+    - -0
+  - anim: run
+    frame: 4
+    positionsPx:
+    - {x: 6.5, y: 11.5}
+    - {x: 7.7442083, y: 6.0774617}
+    - {x: 4.877058, y: 16.315588}
+    - {x: 7.32918, y: 16.34164}
+    - {x: 10, y: 12.5}
+    rotations:
+    - -0
+    - -7.125021
+    - 52.12501
+    - -26.565052
+    - -0
+  - anim: run
+    frame: 5
+    positionsPx:
+    - {x: 6.5, y: 12.5}
+    - {x: 7.3321824, y: 6.965386}
+    - {x: 3.9999998, y: 17.581139}
+    - {x: 8, y: 17.5}
+    - {x: 10, y: 13.5}
+    rotations:
+    - -0
+    - 4.7636337
+    - 18.43494
+    - -0
+    - -0
+  - anim: burn
+    frame: 0
+    positionsPx:
+    - {x: 6.5, y: 11.5}
+    - {x: 7.5, y: 6}
+    - {x: 3.122942, y: 16.315586}
+    - {x: 9.06066, y: 16.06066}
+    - {x: 10, y: 12.5}
+    rotations:
+    - -0
+    - -0
+    - -15.255118
+    - 45.000004
+    - -0
+  - anim: burn
+    frame: 1
+    positionsPx:
+    - {x: 6.5, y: 11.5}
+    - {x: 7.7442083, y: 6.0774617}
+    - {x: 2.881966, y: 16.118034}
+    - {x: 8.83205, y: 16.248075}
+    - {x: 10, y: 12.5}
+    rotations:
+    - -0
+    - -7.125021
+    - -26.565052
+    - 33.69007
+    - -0
+  - anim: burn
+    frame: 2
+    positionsPx:
+    - {x: 6.5, y: 12.5}
+    - {x: 7.3321824, y: 6.965386}
+    - {x: 3.9999998, y: 17.581139}
+    - {x: 8, y: 17.5}
+    - {x: 10, y: 13.5}
+    rotations:
+    - -0
+    - 4.7636337
+    - 18.43494
+    - -0
+    - -0
+  - anim: burn
+    frame: 3
+    positionsPx:
+    - {x: 6.5, y: 11.5}
+    - {x: 7.5, y: 6}
+    - {x: 5.118034, y: 16.118034}
+    - {x: 7.5256586, y: 16.423025}
+    - {x: 10, y: 12.5}
+    rotations:
+    - -0
+    - -0
+    - 63.434944
+    - -18.43494
+    - -0
+  - anim: burn
+    frame: 4
+    positionsPx:
+    - {x: 6.5, y: 11.5}
+    - {x: 7.7442083, y: 6.0774617}
+    - {x: 4.877058, y: 16.315588}
+    - {x: 7.32918, y: 16.34164}
+    - {x: 10, y: 12.5}
+    rotations:
+    - -0
+    - -7.125021
+    - 52.12501
+    - -26.565052
+    - -0
+  - anim: burn
+    frame: 5
+    positionsPx:
+    - {x: 6.5, y: 12.5}
+    - {x: 7.3321824, y: 6.965386}
+    - {x: 3.9999998, y: 17.581139}
+    - {x: 8, y: 17.5}
+    - {x: 10, y: 13.5}
+    rotations:
+    - -0
+    - 4.7636337
+    - 18.43494
+    - -0
+    - -0
+  - anim: attack_ranged
+    frame: 0
+    positionsPx:
+    - {x: 6.5, y: 11.5}
+    - {x: 7.5, y: 6}
+    - {x: 3.5, y: 16.5}
+    - {x: 8.474341, y: 16.423025}
+    - {x: 10, y: 12.5}
+    rotations:
+    - -0
+    - -0
+    - -0
+    - 18.434954
+    - -0
+  - anim: attack_ranged
+    frame: 1
+    positionsPx:
+    - {x: 5.5, y: 11.5}
+    - {x: 6.0542326, y: 5.939161}
+    - {x: 3.5, y: 16.5}
+    - {x: 8.06066, y: 16.06066}
+    - {x: 9.118034, y: 12}
+    rotations:
+    - -0
+    - 12.528808
+    - 36.869896
+    - 45.000004
+    - 26.565052
+  - anim: attack_ranged
+    frame: 2
+    positionsPx:
+    - {x: 5.5, y: 11.5}
+    - {x: 6.5, y: 6}
+    - {x: 3.5, y: 16.5}
+    - {x: 8.06066, y: 16.06066}
+    - {x: 9.118034, y: 12}
+    rotations:
+    - -0
+    - -0
+    - 36.869896
+    - 45.000004
+    - 26.565052
+  - anim: attack_ranged
+    frame: 3
+    positionsPx:
+    - {x: 6.5, y: 11.5}
+    - {x: 7.7442083, y: 6.0774617}
+    - {x: 3.5, y: 16.5}
+    - {x: 8, y: 16.5}
+    - {x: 10, y: 12.5}
+    rotations:
+    - -0
+    - -7.125021
+    - -0
+    - -0
+    - -0
+  - anim: fly_idle
+    frame: 0
+    positionsPx:
+    - {x: 6.5, y: 11.5}
+    - {x: 7.5, y: 6}
+    - {x: 2.881966, y: 16.118034}
+    - {x: 7.1679497, y: 16.248075}
+    - {x: 10, y: 12.5}
+    rotations:
+    - -0
+    - -0
+    - -26.565052
+    - -33.69006
+    - -0
+  - anim: fly_idle
+    frame: 1
+    positionsPx:
+    - {x: 6.5, y: 12.5}
+    - {x: 7.5, y: 7}
+    - {x: 2.881966, y: 17.118034}
+    - {x: 7.1679497, y: 17.248075}
+    - {x: 10, y: 13.5}
+    rotations:
+    - -0
+    - -0
+    - -26.565052
+    - -33.69006
+    - -0
+  - anim: fly_idle
+    frame: 2
+    positionsPx:
+    - {x: 6.5, y: 13.5}
+    - {x: 7.5, y: 8}
+    - {x: 2.881966, y: 18.118034}
+    - {x: 7.1679497, y: 18.248075}
+    - {x: 10, y: 14.5}
+    rotations:
+    - -0
+    - -0
+    - -26.565052
+    - -33.69006
+    - -0
+  - anim: fly_idle
+    frame: 3
+    positionsPx:
+    - {x: 6.5, y: 12.5}
+    - {x: 7.5, y: 7}
+    - {x: 2.881966, y: 17.118034}
+    - {x: 7.1679497, y: 17.248075}
+    - {x: 10, y: 13.5}
+    rotations:
+    - -0
+    - -0
+    - -26.565052
+    - -33.69006
+    - -0
+  - anim: fly_move
+    frame: 0
+    positionsPx:
+    - {x: 6.5, y: 11.5}
+    - {x: 8.106797, y: 6.2607474}
+    - {x: 2.881966, y: 16.118034}
+    - {x: 7.1679497, y: 16.248075}
+    - {x: 10, y: 12.5}
+    rotations:
+    - -0
+    - -18.434954
+    - -26.565052
+    - -33.69006
+    - -0
+  - anim: fly_move
+    frame: 1
+    positionsPx:
+    - {x: 6.5, y: 12.5}
+    - {x: 7.849706, y: 7.121703}
+    - {x: 2.881966, y: 17.118034}
+    - {x: 7.1679497, y: 17.248075}
+    - {x: 10, y: 13.5}
+    rotations:
+    - -0
+    - -10.304857
+    - -26.565052
+    - -33.69006
+    - -0
+  - anim: fly_move
+    frame: 2
+    positionsPx:
+    - {x: 6.5, y: 13.5}
+    - {x: 7.849706, y: 8.121703}
+    - {x: 2.881966, y: 18.118034}
+    - {x: 7.1679497, y: 18.248075}
+    - {x: 10, y: 14.5}
+    rotations:
+    - -0
+    - -10.304857
+    - -26.565052
+    - -33.69006
+    - -0
+  - anim: fly_move
+    frame: 3
+    positionsPx:
+    - {x: 6.5, y: 12.5}
+    - {x: 7.849706, y: 7.121703}
+    - {x: 2.881966, y: 17.118034}
+    - {x: 7.1679497, y: 17.248075}
+    - {x: 10, y: 13.5}
+    rotations:
+    - -0
+    - -10.304857
+    - -26.565052
+    - -33.69006
+    - -0
+  defaultAnim: stand

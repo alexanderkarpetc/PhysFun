@@ -4,9 +4,10 @@ using UnityEngine;
 namespace Enemy
 {
     /// <summary>
-    /// Lives up to its name. While it has not noticed anything it wanders about; the moment it
-    /// spots the player it turns tail, and it only ever stops to shoot once it has put some room
-    /// between them - or when it has run out of floor and has nothing left to lose.
+    /// Plain Noita-style ranged creature. Left alone it mooches about - a few steps, a pause, a
+    /// look around, turning back at walls and drops. Once it has seen the player it holds its
+    /// ground and shoots, closing in if the shot is too long and giving way if the player crowds
+    /// it. It keeps at it for a while after losing sight, then goes back to mooching.
     ///
     /// The code owns the state machine; the animator is a jukebox that plays whatever clip it is
     /// handed. Anything the physics does to this creature (a throw, an explosion, a plank to the
@@ -15,7 +16,7 @@ namespace Enemy
     [RequireComponent(typeof(Rigidbody2D))]
     public sealed class CowardController : MonoBehaviour
     {
-        private enum State { Idle, Patrol, Flee, Shoot, Flinch, Air }
+        private enum State { Idle, Wander, Combat, Attack, Flinch, Air }
 
         [Header("Refs")]
         [Tooltip("Visuals to mirror. Negative X scale means facing left.")]
@@ -24,7 +25,7 @@ namespace Enemy
 
         // All on this same object, so there is nothing to author: the animator it drives, the
         // collider the ground/wall/ledge probes are measured off, and the health that makes it
-        // panic when something hurts.
+        // flinch when something hurts.
         private Animator _animator;
         private Collider2D _hull;
         private Damageable _damageable;
@@ -33,37 +34,42 @@ namespace Enemy
         [Tooltip("Eye position relative to the root. X is mirrored with facing.")]
         [SerializeField] private Vector2 _eyeOffset = new(0.1f, 0.42f);
         [SerializeField] private float _sightRange = 11f;
-        [SerializeField] private float _fovDegrees = 140f;
-        [Tooltip("Anything this close is noticed even from behind - it is a jumpy thing.")]
+        [SerializeField] private float _fovDegrees = 160f;
+        [Tooltip("Anything this close is noticed even from behind.")]
         [SerializeField] private float _hearRange = 3f;
         [Tooltip("Walls and props that break line of sight. Must NOT contain the player layer.")]
         [SerializeField] private LayerMask _sightBlockers;
-        [Tooltip("How long it keeps panicking after losing sight of the player.")]
+        [Tooltip("How long it stays interested after losing sight of the player.")]
         [SerializeField] private float _memory = 4f;
 
         [Header("Wander")]
         [SerializeField] private float _walkSpeed = 1.2f;
-        [SerializeField] private Vector2 _idleTime = new(0.7f, 2.2f);
-        [SerializeField] private Vector2 _patrolTime = new(1f, 3f);
+        [SerializeField] private Vector2 _idleTime = new(0.8f, 2.6f);
+        [SerializeField] private Vector2 _wanderTime = new(1f, 3f);
+        [Tooltip("Chance it turns around instead of carrying on, each time it sets off.")]
+        [Range(0f, 1f)]
+        [SerializeField] private float _turnChance = 0.5f;
 
-        [Header("Panic")]
-        [SerializeField] private float _runSpeed = 3.4f;
-        [Tooltip("Room it wants before it dares turn around and shoot.")]
-        [SerializeField] private float _keepAway = 5f;
-        [SerializeField] private float _fireRange = 10f;
-        [SerializeField] private Vector2 _fireCooldown = new(0.9f, 1.7f);
-        [Tooltip("Cornered it fires this often instead - nothing left to lose.")]
-        [SerializeField] private float _corneredCooldown = 0.55f;
-        [SerializeField] private float _flinchTime = 0.3f;
+        [Header("Fight")]
+        [Tooltip("Longest shot it will take. Beyond this it closes in instead.")]
+        [SerializeField] private float _fireRange = 9f;
+        [Tooltip("Closer than this and it gives ground rather than shoot point blank.")]
+        [SerializeField] private float _minRange = 2.5f;
+        [Tooltip("Speed while closing the distance. Uses the run animation.")]
+        [SerializeField] private float _advanceSpeed = 2.6f;
+        [SerializeField] private Vector2 _fireCooldown = new(0.7f, 1.3f);
+        [Tooltip("Beat between spotting the player and the first shot, so it cannot snap-shoot.")]
+        [SerializeField] private float _reactionTime = 0.3f;
+        [SerializeField] private float _flinchTime = 0.25f;
 
         [Header("Gun")]
         [SerializeField] private Projectile _bolt;
         [Tooltip("Muzzle relative to the root. X is mirrored with facing.")]
-        [SerializeField] private Vector2 _muzzleOffset = new(0.3f, 0.24f);
+        [SerializeField] private Vector2 _muzzleOffset = new(0.3f, 0.25f);
         [SerializeField] private int _boltDamage = 6;
         [SerializeField] private float _boltSpeed = 13f;
-        [Tooltip("Aim error in degrees. Its hands shake.")]
-        [SerializeField] private float _spread = 5f;
+        [Tooltip("Aim error in degrees.")]
+        [SerializeField] private float _spread = 4f;
 
         [Header("Ground")]
         [Tooltip("Solid ground and walls. Feeds the ground, wall and ledge probes.")]
@@ -91,15 +97,14 @@ namespace Enemy
         private float _stateTimer;
         private float _fireTimer;
         private float _airTime;
-        private float _alert;            // seconds of panic left
+        private float _alert;             // seconds of interest left
         private float _lastFlinch = -99f;
         private bool _grounded;
         private bool _seesPlayer;
-        private bool _cornered;
         private bool _shotPending;
-        private Vector2 _threat;         // player position, or the side a hit came from
+        private Vector2 _targetPos;       // player position, or the side a hit came from
         private int _facing = 1;
-        private int _patrolDir = 1;
+        private int _wanderDir = 1;
         private int _moveDir;
         private float _moveSpeed;
         private int _clip;
@@ -107,9 +112,9 @@ namespace Enemy
         private void Awake()
         {
             if (!_rb) _rb = GetComponent<Rigidbody2D>();
-            if (!_hull) _hull = GetComponent<Collider2D>();
-            if (!_animator) _animator = GetComponent<Animator>();
-            if (!_damageable) _damageable = GetComponent<Damageable>();
+            _hull = GetComponent<Collider2D>();
+            _animator = GetComponent<Animator>();
+            _damageable = GetComponent<Damageable>();
             if (!_body)
             {
                 var view = transform.Find("View");
@@ -117,8 +122,8 @@ namespace Enemy
             }
 
             _facing = _body.localScale.x < 0f ? -1 : 1;
-            _patrolDir = _facing;
-            _threat = transform.position;
+            _wanderDir = _facing;
+            _targetPos = transform.position;
         }
 
         private void OnEnable()
@@ -148,9 +153,9 @@ namespace Enemy
             switch (_state)
             {
                 case State.Idle: TickIdle(); break;
-                case State.Patrol: TickPatrol(); break;
-                case State.Flee: TickFlee(); break;
-                case State.Shoot: TickShoot(); break;
+                case State.Wander: TickWander(); break;
+                case State.Combat: TickCombat(); break;
+                case State.Attack: TickAttack(); break;
                 case State.Flinch: TickFlinch(); break;
                 case State.Air: TickAir(); break;
             }
@@ -167,7 +172,7 @@ namespace Enemy
             float target = _moveDir * _moveSpeed;
 
             // Do not fight a big external shove either - bleed it off instead of deleting it.
-            bool launched = Mathf.Abs(v.x) > _runSpeed * 1.5f;
+            bool launched = Mathf.Abs(v.x) > _advanceSpeed * 1.5f;
             float a = launched ? _accel * 0.3f : _accel;
 
             v.x = Mathf.MoveTowards(v.x, target, a * Time.fixedDeltaTime);
@@ -184,13 +189,12 @@ namespace Enemy
             if (player)
             {
                 Vector2 p = player.position;
-                // Spotting someone takes looking their way. Keeping tabs on someone it is
-                // already running from does not - it glances over its shoulder, so a clear
-                // line is enough. Without this it would be blind to whatever it flees from.
+                // Noticing someone takes looking their way. Keeping track of someone it is
+                // already dealing with does not - a clear line is enough.
                 if (LineClear(p, _sightRange) && (_alert > 0f || InView(p)))
                 {
                     _seesPlayer = true;
-                    _threat = p;
+                    _targetPos = p;
                     _alert = _memory;
                 }
             }
@@ -222,88 +226,96 @@ namespace Enemy
         private Vector2 MuzzlePos =>
             (Vector2)transform.position + new Vector2(_muzzleOffset.x * _facing, _muzzleOffset.y);
 
+        private int DirToTarget => _targetPos.x < transform.position.x ? -1 : 1;
+
         // ------------------------------------------------------------------ states
 
         private void TickIdle()
         {
             Hold();
             if (LeftTheGround()) return;
-            if (_alert > 0f) { Enter(State.Flee); return; }
+            if (_alert > 0f) { Enter(State.Combat); return; }
 
             if (_stateTimer <= 0f)
             {
-                // A nervous glance over the shoulder before moving on.
-                if (Random.value < 0.5f) SetFacing(-_facing);
-                _patrolDir = _facing;
-                Enter(State.Patrol);
+                // A look around before setting off again.
+                if (Random.value < _turnChance) SetFacing(-_facing);
+                _wanderDir = _facing;
+                Enter(State.Wander);
             }
         }
 
-        private void TickPatrol()
+        private void TickWander()
         {
             if (LeftTheGround()) return;
-            if (_alert > 0f) { Enter(State.Flee); return; }
+            if (_alert > 0f) { Enter(State.Combat); return; }
 
-            if (!CanWalk(_patrolDir))
+            if (!CanWalk(_wanderDir))
             {
-                _patrolDir = -_patrolDir;
-                Enter(State.Idle);      // pause, turn, think about it
+                _wanderDir = -_wanderDir;
+                Enter(State.Idle);      // stop, turn, think about it
                 return;
             }
 
-            Walk(_patrolDir, _walkSpeed);
+            Walk(_wanderDir, _walkSpeed);
             if (_stateTimer <= 0f) Enter(State.Idle);
         }
 
-        private void TickFlee()
+        private void TickCombat()
         {
             if (LeftTheGround()) return;
             if (_alert <= 0f) { Enter(State.Idle); return; }
 
-            int away = _threat.x < transform.position.x ? 1 : -1;
-            float dist = Vector2.Distance(transform.position, _threat);
-            _cornered = !CanWalk(away);
+            int toward = DirToTarget;
+            float dist = Vector2.Distance(transform.position, _targetPos);
 
-            if (_cornered)
+            // Always keep it turned towards whatever it is dealing with.
+            SetFacing(toward);
+
+            if (dist > _fireRange)
             {
-                // Nowhere left to run: stand and fight, badly.
+                // Too far to hit anything - close in, if there is floor to close in on.
+                if (CanWalk(toward)) Walk(toward, _advanceSpeed);
+                else Hold();
+            }
+            else if (dist < _minRange)
+            {
+                // Crowded. Give ground, but keep facing them.
+                if (CanWalk(-toward)) { _moveDir = -toward; _moveSpeed = _walkSpeed; }
+                else Hold();
+            }
+            else
+            {
                 Hold();
-                SetFacing(-away);
-                if (_seesPlayer && dist <= _fireRange && _fireTimer <= 0f) Enter(State.Shoot);
-                return;
             }
 
-            Walk(away, _runSpeed);
-
-            // Enough of a head start to risk a shot over the shoulder.
-            if (_seesPlayer && dist >= _keepAway && dist <= _fireRange && _fireTimer <= 0f)
-                Enter(State.Shoot);
+            if (_seesPlayer && dist <= _fireRange && _fireTimer <= 0f) Enter(State.Attack);
         }
 
-        private void TickShoot()
+        private void TickAttack()
         {
             Hold();
             if (LeftTheGround()) return;
 
-            SetFacing(_threat.x < transform.position.x ? -1 : 1);
+            SetFacing(DirToTarget);
             if (_stateTimer > 0f) return;
 
             // Safety net: if the clip never raised its event, the shot still happens.
             FireIfPending();
-            _fireTimer = _cornered ? _corneredCooldown : Random.Range(_fireCooldown.x, _fireCooldown.y);
-            Enter(_alert > 0f ? State.Flee : State.Idle);
+            _fireTimer = Random.Range(_fireCooldown.x, _fireCooldown.y);
+            Enter(_alert > 0f ? State.Combat : State.Idle);
         }
 
         private void TickFlinch()
         {
             Hold();
             if (LeftTheGround()) return;
-            if (_stateTimer <= 0f) Enter(_alert > 0f ? State.Flee : State.Idle);
+            if (_stateTimer <= 0f) Enter(_alert > 0f ? State.Combat : State.Idle);
         }
 
         private void TickAir()
         {
-            if (_grounded) Enter(_alert > 0f ? State.Flee : State.Idle);
+            if (_grounded) Enter(_alert > 0f ? State.Combat : State.Idle);
         }
 
         private bool LeftTheGround()
@@ -315,6 +327,7 @@ namespace Enemy
 
         private void Enter(State next)
         {
+            bool wasFighting = _state == State.Combat || _state == State.Attack;
             _state = next;
             _shotPending = false;
             Hold();
@@ -324,13 +337,18 @@ namespace Enemy
                 case State.Idle:
                     _stateTimer = Random.Range(_idleTime.x, _idleTime.y);
                     break;
-                case State.Patrol:
-                    _stateTimer = Random.Range(_patrolTime.x, _patrolTime.y);
+                case State.Wander:
+                    _stateTimer = Random.Range(_wanderTime.x, _wanderTime.y);
                     break;
-                case State.Shoot:
+                case State.Combat:
+                    // Walking into a fight costs it a beat before the first shot.
+                    if (!wasFighting) _fireTimer = Mathf.Max(_fireTimer, _reactionTime);
+                    _stateTimer = 0f;
+                    break;
+                case State.Attack:
                     _stateTimer = ShootDuration;
                     _shotPending = true;
-                    SetFacing(_threat.x < transform.position.x ? -1 : 1);
+                    SetFacing(DirToTarget);
                     PlayClip(ShootTrig);   // restart it even if it was the last thing we played
                     break;
                 case State.Flinch:
@@ -348,8 +366,8 @@ namespace Enemy
             _alert = _memory;
 
             var player = App.Instance.PlayerTransform;
-            // If it cannot see who did it, it runs from whichever side the hit landed on.
-            _threat = _seesPlayer && player ? (Vector2)player.position : hitPoint;
+            // If it cannot see who did it, it at least looks at where the hit came from.
+            _targetPos = _seesPlayer && player ? (Vector2)player.position : hitPoint;
 
             if (Time.time - _lastFlinch < FlinchLockout) return;
             _lastFlinch = Time.time;
@@ -424,7 +442,7 @@ namespace Enemy
             }
 
             Vector2 muzzle = MuzzlePos;
-            Vector2 dir = _threat - muzzle;
+            Vector2 dir = _targetPos - muzzle;
             if (dir.sqrMagnitude < 0.0001f) dir = new Vector2(_facing, 0f);
             dir = Quaternion.Euler(0f, 0f, Random.Range(-_spread, _spread)) * dir.normalized;
 
@@ -438,13 +456,15 @@ namespace Enemy
         {
             if (!_animator) return;
 
+            bool moving = Mathf.Abs(_rb.linearVelocity.x) > 0.15f;
+
             int want = _state switch
             {
                 State.Air => AirTrig,
-                State.Shoot => ShootTrig,
-                State.Patrol => WalkTrig,
-                // Cornered it is still in Flee but standing still - do not slide on running legs.
-                State.Flee => Mathf.Abs(_rb.linearVelocity.x) > 0.15f ? RunTrig : IdleTrig,
+                State.Attack => ShootTrig,
+                State.Wander => WalkTrig,
+                // In a fight it closes at a run and backs off at a walk; often it just stands.
+                State.Combat => !moving ? IdleTrig : (_moveDir == _facing ? RunTrig : WalkTrig),
                 _ => IdleTrig,
             };
 
@@ -485,6 +505,11 @@ namespace Enemy
 
             Gizmos.color = new Color(1f, 0.4f, 0.1f, 0.4f);
             Gizmos.DrawWireSphere(eye, _hearRange);
+
+            // Shooting band: it fires between these two.
+            Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.35f);
+            Gizmos.DrawWireSphere(transform.position, _fireRange);
+            Gizmos.DrawWireSphere(transform.position, _minRange);
 
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(MuzzlePos, 0.05f);

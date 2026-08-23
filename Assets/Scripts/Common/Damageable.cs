@@ -14,6 +14,11 @@ namespace Common
         private bool _dead;
         private Rigidbody2D _rb;
 
+        /// <summary>Raised for every hit that lands: (amount, world point). Fires before death.</summary>
+        public event System.Action<int, Vector2> Damaged;
+
+        public bool IsDead => _dead;
+
         private void Awake()
         {
             _health = maxHealth;
@@ -62,6 +67,7 @@ namespace Common
             if (_dead) return;
 
             _health -= amount;
+            Damaged?.Invoke(amount, hitPoint);
             if (_health > 0f) return;
 
             _dead = true;

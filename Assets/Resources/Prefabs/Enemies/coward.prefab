@@ -63,7 +63,7 @@ PrefabInstance:
     - target: {fileID: 4101138163522660780, guid: 51a1fa99fa0c2fd418f67e714449225b, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 8436732701044238607, guid: 745634f0c3544504f99e2743c787fedc, type: 3}
+      objectReference: {fileID: -8399001688397855379, guid: 745634f0c3544504f99e2743c787fedc, type: 3}
     - target: {fileID: 6497749120725663814, guid: 51a1fa99fa0c2fd418f67e714449225b, type: 3}
       propertyPath: m_Controller
       value: 
@@ -80,17 +80,25 @@ PrefabInstance:
       propertyPath: m_Offset.y
       value: 0.2244061
       objectReference: {fileID: 0}
+    - target: {fileID: 1286365054345040856, guid: 51a1fa99fa0c2fd418f67e714449225b, type: 3}
+      propertyPath: maxHealth
+      value: 12
+      objectReference: {fileID: 0}
     - target: {fileID: 8633347657159511051, guid: 51a1fa99fa0c2fd418f67e714449225b, type: 3}
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2907559089585304437, guid: 51a1fa99fa0c2fd418f67e714449225b, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 953754963104206877, guid: 51a1fa99fa0c2fd418f67e714449225b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7437315573387619388}
+    - targetCorrespondingSourceObject: {fileID: 953754963104206877, guid: 51a1fa99fa0c2fd418f67e714449225b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7437315573387619389}
   m_SourcePrefab: {fileID: 100100000, guid: 51a1fa99fa0c2fd418f67e714449225b, type: 3}
 --- !u!1 &725372513132166400 stripped
 GameObject:
@@ -116,6 +124,50 @@ MonoBehaviour:
   inheritVelocity: 1
   spin: 0.05
   destroySource: 1
+--- !u!114 &7437315573387619389
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 725372513132166400}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0117a5d9ef34b1e8a2d6f5b71c40e93, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Enemy.CowardController
+  _body: {fileID: 5444241432184842237}
+  _rb: {fileID: 4076812527511658111}
+  _eyeOffset: {x: 0.1, y: 0.42}
+  _sightRange: 11
+  _fovDegrees: 160
+  _hearRange: 3
+  _sightBlockers:
+    serializedVersion: 2
+    m_Bits: 65
+  _memory: 4
+  _walkSpeed: 1.2
+  _idleTime: {x: 0.8, y: 2.6}
+  _wanderTime: {x: 1, y: 3}
+  _turnChance: 0.5
+  _fireRange: 9
+  _minRange: 2.5
+  _advanceSpeed: 2.6
+  _fireCooldown: {x: 0.7, y: 1.3}
+  _reactionTime: 0.3
+  _flinchTime: 0.25
+  _bolt: {fileID: 4820113507265539876, guid: d51c8a3f79b6420e93af5d80c14e7b26, type: 3}
+  _muzzleOffset: {x: 0.3, y: 0.25}
+  _boltDamage: 6
+  _boltSpeed: 16
+  _spread: 4
+  _groundMask:
+    serializedVersion: 2
+    m_Bits: 65
+  _accel: 20
+  _wallProbe: 0.14
+  _ledgeDrop: 0.7
+  _airGrace: 0.12
 --- !u!50 &4076812527511658111 stripped
 Rigidbody2D:
   m_CorrespondingSourceObject: {fileID: 4593352779727467362, guid: 51a1fa99fa0c2fd418f67e714449225b, type: 3}

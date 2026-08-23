@@ -753,6 +753,8 @@ GameObject:
   - component: {fileID: 519420032}
   - component: {fileID: 519420031}
   - component: {fileID: 519420029}
+  - component: {fileID: 519420033}
+  - component: {fileID: 519420034}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -803,7 +805,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 6.5
+  orthographic size: 6.05
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -834,6 +836,41 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &519420033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2d47b91c5a34f0e8b6172af39d5c084, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Siege.CameraFollow
+  _target: {fileID: 0}
+  _targetOffset: {x: 0, y: 0.15}
+  _pixelsPerUnit: 20
+  _viewHeightPixels: 242
+  _snapToPixelGrid: 1
+  _followLag: 0.12
+  _velocityLead: 0.1
+  _maxVelocityLead: 1.5
+  _cursorWeight: 0.32
+  _maxCursorLean: {x: 3.2, y: 1.8}
+  _cursorLag: 0.14
+--- !u!114 &519420034
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d15453de6eecac47814674068bf4b2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Siege.CameraShake
 --- !u!1 &801071536
 GameObject:
   m_ObjectHideFlags: 0
@@ -3431,6 +3468,10 @@ PrefabInstance:
     - target: {fileID: 725372513132166400, guid: a1fd7e760dbb26c4b93770c6618a709a, type: 3}
       propertyPath: m_Name
       value: coward
+      objectReference: {fileID: 0}
+    - target: {fileID: 725372513132166400, guid: a1fd7e760dbb26c4b93770c6618a709a, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2822663299540363305, guid: a1fd7e760dbb26c4b93770c6618a709a, type: 3}
       propertyPath: m_LocalPosition.x

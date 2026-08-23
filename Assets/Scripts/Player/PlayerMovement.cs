@@ -37,6 +37,8 @@ namespace Player
         private static readonly int WalkTrig = Animator.StringToHash("Walk");
         private static readonly int WalkBackTrig = Animator.StringToHash("WalkBack");
         private static readonly int JumpTrig = Animator.StringToHash("Jump");
+        // Scales walk playback so the stride matches the ground speed instead of skating.
+        private static readonly int SpeedParam = Animator.StringToHash("Speed");
 
         private enum State { Idle, Walk, WalkBack, Air }
         private State _state = State.Idle;
@@ -86,6 +88,7 @@ namespace Player
             }
 
             HandleTurn(mouseW);
+            UpdateStride();
         }
 
         private void FixedUpdate()
@@ -202,7 +205,28 @@ namespace Player
         {
             if (_state == next) return;
             _state = next;
-            if (_animator) _animator.SetTrigger(trigger);
+            if (!_animator) return;
+
+            // A trigger no transition consumed stays raised and fires later out of nowhere,
+            // so only ever one of them is live at a time.
+            _animator.ResetTrigger(IdleTrig);
+            _animator.ResetTrigger(WalkTrig);
+            _animator.ResetTrigger(WalkBackTrig);
+            _animator.ResetTrigger(JumpTrig);
+            _animator.SetTrigger(trigger);
+        }
+
+        /// <summary>Play the walk cycle at the speed we are actually moving, within reason.</summary>
+        private void UpdateStride()
+        {
+            if (!_animator) return;
+
+            float cadence = _config.maxSpeed > 0.01f
+                ? Mathf.Abs(_rigidbody.linearVelocity.x) / _config.maxSpeed
+                : 1f;
+
+            // Floored so shoving into a wall shuffles rather than freezes mid-step.
+            _animator.SetFloat(SpeedParam, Mathf.Clamp(cadence, 0.35f, 1.6f));
         }
 
         private void HandleTurn(Vector3 mouseW)

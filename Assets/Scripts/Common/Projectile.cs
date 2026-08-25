@@ -14,8 +14,6 @@ namespace Common
         [Tooltip("Impulse handed to whatever it hits, and to the corpse if the hit kills.")]
         [SerializeField] private float impactImpulse = 0.6f;
         [SerializeField] private float lifetime = 3f;
-        [Tooltip("Camera kick when it is the player that gets hit.")]
-        [SerializeField] private float shake = 0.12f;
         [Tooltip("Point the sprite along the direction of travel.")]
         [SerializeField] private bool faceVelocity = true;
 
@@ -73,17 +71,11 @@ namespace Common
                 ? _rb.linearVelocity.normalized
                 : (Vector2)transform.right;
 
+            // The floating number and the camera kick are the victim's business, not ours.
             var victim = c.collider.GetComponentInParent<Damageable>();
             if (victim)
-            {
-                victim.ApplyDamage(damage, dir * impactImpulse, point);
-
-                if (App.Instance.Hud.DamageHud != null)
-                    App.Instance.Hud.DamageHud.ShowDamage(point, damage);
-
-                if (App.Instance.PlayerGo && victim.gameObject == App.Instance.PlayerGo)
-                    Siege.CameraShake.Kick(shake);
-            }
+                victim.ApplyDamage(new DamageInfo(
+                    damage, DamageType.Projectile, point, dir, dir * impactImpulse, gameObject));
 
             // Even a miss should push the thing it lands on.
             if (c.rigidbody) c.rigidbody.AddForceAtPosition(dir * impactImpulse, point, ForceMode2D.Impulse);

@@ -1627,6 +1627,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Scavsmg
       objectReference: {fileID: 0}
+    - target: {fileID: 725372513132166400, guid: 0709b6d7830337b459c4bc57ba2870e5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2822663299540363305, guid: 0709b6d7830337b459c4bc57ba2870e5, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.6447699
@@ -2508,6 +2512,10 @@ PrefabInstance:
     - target: {fileID: 953754963104206877, guid: 51a1fa99fa0c2fd418f67e714449225b, type: 3}
       propertyPath: m_Name
       value: Shotgunner
+      objectReference: {fileID: 0}
+    - target: {fileID: 953754963104206877, guid: 51a1fa99fa0c2fd418f67e714449225b, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2306261030665585972, guid: 51a1fa99fa0c2fd418f67e714449225b, type: 3}
       propertyPath: m_LocalPosition.x
@@ -4688,7 +4696,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8381359912583987621, guid: 9a0f2e8cc78f1f044b57b527b5d404b7, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

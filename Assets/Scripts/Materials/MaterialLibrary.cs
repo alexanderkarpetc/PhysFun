@@ -21,6 +21,8 @@ namespace Materials
             DisplayName = "Wood",
             Swatch = new Color32(158, 108, 58, 255),
             Density = 0.6f,
+            // A plank stings, but it gives where a stone block does not.
+            ImpactDamageMultiplier = 0.85f,
             Flammable = true,
             // Tuned for the 20 PPU art: at 20 ticks/s a pixel glows for about 3 seconds
             // and the front creeps ~5 texture px/s, which at 40 texture px per world unit

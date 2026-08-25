@@ -24,6 +24,13 @@ namespace Materials
         /// <summary>Multiplier on the collider-area mass baseline.</summary>
         public float Density = 1f;
 
+        /// <summary>
+        /// How hard this stuff hits when it is thrown at something. <see cref="Density"/> already
+        /// carries most of it through mass; this is only the extra bite a hard material has over a
+        /// soft one of the same weight. 1 = neutral.
+        /// </summary>
+        public float ImpactDamageMultiplier = 1f;
+
         public bool Flammable;
 
         // ── Burn tuning (see Phys.Fire.FireSystem) ────────────────────────────

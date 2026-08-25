@@ -360,14 +360,14 @@ namespace Enemy
             }
         }
 
-        private void OnDamaged(int amount, Vector2 hitPoint)
+        private void OnDamaged(DamageInfo info)
         {
             // Being hurt is proof enough that something is out there.
             _alert = _memory;
 
             var player = App.Instance.PlayerTransform;
             // If it cannot see who did it, it at least looks at where the hit came from.
-            _targetPos = _seesPlayer && player ? (Vector2)player.position : hitPoint;
+            _targetPos = _seesPlayer && player ? (Vector2)player.position : info.Point;
 
             if (Time.time - _lastFlinch < FlinchLockout) return;
             _lastFlinch = Time.time;

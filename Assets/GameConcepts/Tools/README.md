@@ -84,11 +84,23 @@ if __name__ == "__main__":
 - **Look at the png.** Every one of these sheets needed two or three passes purely on
   composition; the code being right is not the same as the picture reading right.
 
-### Sheets keep their labels
+### Sheets keep their labels — except where a sheet is asked to drop them
 
 `LevelConcept_DeepCut.png` is the reference: title bar, numbered callouts on leader lines,
 BEATS legend in a corner. The callouts are the part that carries the design intent, so a
 new sheet ends with `vignette()` and then the sheet furniture, never without it.
+
+Sheets 15-20 are the deliberate exception, drawn to order: no title bar, no callouts, no
+legend, and no surface layer either — the whole sheet is underground. Two things follow
+from that:
+
+- **No `sky()`, and no topsoil band.** `rock_mass(0, soil=ROCK, soil_lit=ROCK_M)` fills the
+  canvas edge to edge with stone; passing rock colours as the soil is what stops row 0 from
+  reading as a strip of dirt with nothing above it.
+- **The art has to say what the callout used to.** Without text, a room only reads if its
+  silhouette does: circles chew, chevrons drag, timber holds, ember means it has already
+  started. Ceilings get `rock_teeth()` so a carve line does not read as a drawn box, and
+  every room wants enough props that the air in it looks occupied rather than empty.
 
 ## Existing sheets
 
@@ -107,3 +119,9 @@ new sheet ends with `vignette()` and then the sheet furniture, never without it.
 | 12 `magnethall.py` | ceiling coils overrule telekinesis; only wood and stone stay put |
 | 13 `ventshafts.py` | air is the level — updrafts, drifting throws, and a draught that carries fire |
 | 14 `slagfoundry.py` | a working foundry that has no idea you are in it |
+| 15 `quarryteeth.py` | crusher plant, no surface — belts feed meshing wheels, timber holds the west end |
+| 16 `timberdeep.py` | the mine's own sawmill: the roof is held up by the stock the saws are cutting |
+| 17 `hollowcolumn.py` | one hoist shaft through the whole sheet; everything dropped down it lands on one heap |
+| 18 `pendulumworks.py` | weight on chains — the room is a clock, and each arc is floor you cannot use |
+| 19 `thewarren.py` | fifty small dirt tunnels; the shortest route between two of them is a wall |
+| 20 `cribworks.py` | one slab of roof on six timber cribs — a countable load path per tower |

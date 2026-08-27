@@ -76,3 +76,7 @@ crashlytics-build.properties
 #MyStuff
 *contentModel.xml
 .idea/*.xml
+# Python tooling under Assets (concept-art generators)
+__pycache__/
+*.pyc
+__pycache__.meta

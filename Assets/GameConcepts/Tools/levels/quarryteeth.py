@@ -120,11 +120,12 @@ def drive_belt(x0, y0, x1, y1):
 
 def build():
     new_canvas(400, 225, seed=51501)
+    cw, ch = canvas_size()
 
     # ── solid rock, edge to edge - no surface on this sheet ──────────────────
     rock_mass(0, soil=ROCK, soil_lit=ROCK_M, strata=22)
     for _ in range(40):                                  # deeper mottle up top
-        rect(rnd() * W, rnd() * 20, rnd() * W + 6, rnd() * 20 + 1, ROCK_D, 0.5)
+        rect(rnd() * cw, rnd() * 20, rnd() * cw + 6, rnd() * 20 + 1, ROCK_D, 0.5)
 
     ROOMS = [
         (6, 14, 168, 52),       # feed gallery

@@ -146,11 +146,12 @@ def falling_chunk(x, y, s=4):
 
 def build():
     new_canvas(400, 225, seed=51703)
+    cw, ch = canvas_size()
 
     # ── rock everywhere; the sheet never leaves it ──────────────────────────
     rock_mass(0, soil=ROCK, soil_lit=ROCK_M, strata=24)
     for _ in range(44):
-        rect(rnd() * W, rnd() * 16, rnd() * W + 6, rnd() * 16 + 1, ROCK_D, 0.5)
+        rect(rnd() * cw, rnd() * 16, rnd() * cw + 6, rnd() * 16 + 1, ROCK_D, 0.5)
 
     ROOMS = [
         (SX0, 4, SX1, 220),     # the shaft

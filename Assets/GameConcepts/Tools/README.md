@@ -26,6 +26,35 @@ if it only makes sense for that one level (a headframe, a frozen mech), keep it 
 to the scene file. That split is what keeps a new sheet down to an afternoon's worth
 of describing rooms rather than rewriting a renderer.
 
+## Mazes
+
+`maze_links(cols, rows, braid=...)` returns `{cell: {neighbour, ...}}` for a maze
+generated on the sheet's own `rnd()` — so the layout is part of what the canvas seed
+fixes, and a maze sheet still diffs like any other. `braid` re-opens that fraction of
+dead ends into loops (0 = a perfect maze, ~0.5 = somewhere you can be chased).
+`maze_dead_ends(links)` and `maze_runs(links, horizontal=True, least=3)` are the two
+queries the sheets actually place art with: put the working faces and the guards at the
+dead ends, and the track, the belt and the sightlines down the straight runs.
+
+`masonry_block(links, cell_box, cols, rows, ...)` draws the built version of a maze for
+you: shell, a wall on every edge the maze does not link, a doorway with an `iron_door` on
+every edge it does, and a floor hatch with a ladder where the link runs down. `breaches`
+names edges as `(cell, 'E')` / `(cell, 'S')` and draws those already broken. It leaves the
+cells empty on purpose — furnishing them is the whole scene. `masonry`, `breach`,
+`iron_door`, `sconce`, `wall_slot` and `rock_teeth` live in the kit alongside it, and
+`STONE`/`STONE_L`/`STONE_D` are the laid-block colours, as against `ROCK_*` country rock.
+
+Cell size is the dial that changes what a block sheet can hold. Sheet 23 runs 9x4 cells at
+39x44 and the cells take one prop each; sheets 24-26 run 5x3 at 70x60 — roughly double —
+and a bay then has room for machinery, a mezzanine, cover and a fight. Bigger cells also
+want something threaded through every wall (`wall_slot` plus a fuse, a line shaft, a cam
+shaft) or the bays read as unrelated rooms that happen to share a wall.
+
+The three maze sheets draw the same data three ways — square drifts (21), round bores
+following a vein (22), and masonry walls where a link is *absent* (23). That last one is
+the trick worth remembering: draw the walls, not the corridors, and the same generator
+gives you a built labyrinth instead of a dug one.
+
 ## Writing a new sheet
 
 Copy the shape below into `levels/<name>.py`. Everything after `carve_all` is just
@@ -67,6 +96,21 @@ if __name__ == "__main__":
     build()
 ```
 
+### Sheets with a spine
+
+16, 17 and 27-29 are the ones the art director keeps coming back to, and they have one
+thing in common: a single continuous element crossing the whole sheet, with the rooms hung
+off it. A shaft (17), a line shaft through a sawmill (16), an incline (27), the dip of an
+ore body (28), a ropeway (29). Two rules that fall out of it:
+
+- **Give the spine its own function, sampled everywhere.** `slope_at(x)` /
+  `hanging(x)` / `foot(x)` return the spine's geometry at any x, and every prop on it is
+  placed by calling that rather than by hand-tuned coordinates — which is what makes a
+  diagonal or a curve cheap enough to draw a hundred props along.
+- **A void needs a lit edge to read as a void.** A carve alone is a black shape the same
+  value as everything else; what sells it is a bright line under the roof and a `floor_slab`
+  -style sill at the bottom. The Great Stope was unreadable until both were in.
+
 ### Things learned the hard way
 
 - **Contrast first.** If the rock is as dark as the carved air, every room merges
@@ -81,6 +125,12 @@ if __name__ == "__main__":
   and let the leader line do the work.
 - **Sheet furniture last.** `vignette()` before `title_bar`/`callout`/`legend`, or the
   darkening eats the text.
+- **Never use bare `W` / `H` in a scene.** A scene does `from conceptkit import *`, which
+  copies those two by value at import time — when they are still `0` — so `range(W)` in a
+  scene silently draws nothing and `slab(0, W - 1, ...)` draws an empty rect. Call
+  `canvas_size()` instead: `cw, ch = canvas_size()`. Sheets 02-14 predate this note and
+  still read the bare globals in a few places (`coldvault` and `fungalsink` lose a ridge
+  line and a grass fringe to it); worth fixing next time one of them is edited.
 - **Look at the png.** Every one of these sheets needed two or three passes purely on
   composition; the code being right is not the same as the picture reading right.
 
@@ -90,7 +140,7 @@ if __name__ == "__main__":
 BEATS legend in a corner. The callouts are the part that carries the design intent, so a
 new sheet ends with `vignette()` and then the sheet furniture, never without it.
 
-Sheets 15-20 are the deliberate exception, drawn to order: no title bar, no callouts, no
+Sheets 15 on are the deliberate exception, drawn to order: no title bar, no callouts, no
 legend, and no surface layer either — the whole sheet is underground. Two things follow
 from that:
 
@@ -125,3 +175,12 @@ from that:
 | 18 `pendulumworks.py` | weight on chains — the room is a clock, and each arc is floor you cannot use |
 | 19 `thewarren.py` | fifty small dirt tunnels; the shortest route between two of them is a wall |
 | 20 `cribworks.py` | one slab of roof on six timber cribs — a countable load path per tower |
+| 21 `theknot.py` | a real maze of square drifts; faces at the dead ends, track down the straights |
+| 22 `veinruns.py` | the same maze bored round and sloped, following ore — ropes, stulls, false leads |
+| 23 `assayblock.py` | a masonry labyrinth in a cavern: the only maze here whose walls are worth attacking |
+| 24 `powdermagazine.py` | same block, double cells: fifteen powder bays and a fuse main through every wall |
+| 25 `windinghouse.py` | the block as a machine — line shafts, winding drums, brakes, and a shaft head through all three floors |
+| 26 `stamphall.py` | stamp batteries in every bay, fed by chutes and emptied onto one belt out |
+| 27 `theincline.py` | one rope-haulage incline corner to corner, with every room hung off it |
+| 28 `thegreatstope.py` | a single slanted void; stulls, staging and ore passes are the only floors in it |
+| 29 `thespan.py` | a chasm crossed by a ropeway on two rock pinnacles — buckets, a footbridge, or the long way round |

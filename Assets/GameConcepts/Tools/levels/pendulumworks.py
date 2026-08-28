@@ -123,11 +123,12 @@ def pit_prop(x, y0, y1, cracked=False, gone=False):
 
 def build():
     new_canvas(400, 225, seed=51804)
+    cw, ch = canvas_size()
 
     # ── rock, edge to edge ─────────────────────────────────────────────────
     rock_mass(0, soil=ROCK, soil_lit=ROCK_M, strata=22)
     for _ in range(42):
-        rect(rnd() * W, rnd() * 16, rnd() * W + 6, rnd() * 16 + 1, ROCK_D, 0.5)
+        rect(rnd() * cw, rnd() * 16, rnd() * cw + 6, rnd() * 16 + 1, ROCK_D, 0.5)
 
     ROOMS = [
         (18, 34, 252, 152),     # the swing hall

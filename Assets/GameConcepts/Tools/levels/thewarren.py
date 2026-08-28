@@ -86,12 +86,13 @@ def collapse_scar(cx, y0, y1, w=26):
 
 def build():
     new_canvas(400, 225, seed=51905)
+    cw, ch = canvas_size()
 
     # ── the seam: soft, warm, and solid to every edge ───────────────────────
     rock_mass(0, base=SEAM, dark=SEAM_D, mid=SEAM_M, soil=SEAM, soil_lit=SEAM_M, strata=26)
     for _ in range(60):                                  # gravel bands through the dirt
-        yy = rnd() * H
-        x = rnd() * W
+        yy = rnd() * ch
+        x = rnd() * cw
         rect(x, yy, x + 6 + rnd() * 22, yy, ROCK_D if chance(0.5) else ROCK_M, 0.55)
 
     # ── the honeycomb ──────────────────────────────────────────────────────

@@ -135,11 +135,12 @@ def kiln(x, y, w=40, h=26):
 
 def build():
     new_canvas(400, 225, seed=51602)
+    cw, ch = canvas_size()
 
     # ── solid rock, top to bottom ───────────────────────────────────────────
     rock_mass(0, soil=ROCK, soil_lit=ROCK_M, strata=20)
     for _ in range(40):
-        rect(rnd() * W, rnd() * 18, rnd() * W + 6, rnd() * 18 + 1, ROCK_D, 0.5)
+        rect(rnd() * cw, rnd() * 18, rnd() * cw + 6, rnd() * 18 + 1, ROCK_D, 0.5)
 
     ROOMS = [
         (8, 12, 186, 60),       # log store

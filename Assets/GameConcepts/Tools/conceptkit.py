@@ -38,6 +38,10 @@ DIRT_D  = (55, 48, 38)
 DIRT    = (81, 72, 54)
 DIRT_L  = (149, 134, 101)
 
+STONE   = (126, 118, 100)   # laid block, as opposed to ROCK_* country rock
+STONE_L = (168, 158, 136)
+STONE_D = (78, 72, 60)
+
 MET_D   = (52, 52, 52)
 MET     = (99, 99, 99)
 MET_L   = (135, 135, 135)
@@ -86,6 +90,13 @@ def new_canvas(w=400, h=225, seed=1337, bg=VOID):
     global W, H, buf, _seed
     W, H, _seed = w, h, seed
     buf = [[bg for _ in range(w)] for _ in range(h)]
+
+
+def canvas_size():
+    """Use this from a scene, never the bare `W`/`H`. A scene does `from conceptkit
+    import *`, which copies W and H by value at import time - when they are still 0 -
+    so `range(W)` in a scene silently draws nothing. This reads them live."""
+    return W, H
 
 
 def rnd():
@@ -575,6 +586,213 @@ def out_path(name):
     """Sheets land next to the scene scripts' parent — Assets/GameConcepts/."""
     here = os.path.dirname(os.path.abspath(__file__))
     return os.path.abspath(os.path.join(here, "..", name))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Mazes — layout, not drawing. The sheets from 21 on lay their rooms out on one
+#  of these instead of by hand, then draw the corridors however that level wants.
+# ─────────────────────────────────────────────────────────────────────────────
+def maze_links(cols, rows, braid=0.0):
+    """A maze on a cols x rows cell grid, returned as {cell: {neighbour, ...}}.
+
+    Recursive backtracker driven by this sheet's own `rnd()`, so the maze is part of
+    what the canvas seed fixes: same seed, same maze, and a scene edit still diffs.
+    `braid` re-opens that fraction of dead ends into loops — a perfect maze is a
+    puzzle, a braided one is somewhere you can be chased.
+    """
+    links = {(i, j): set() for i in range(cols) for j in range(rows)}
+
+    def join(a, b):
+        links[a].add(b)
+        links[b].add(a)
+
+    def around(cell):
+        cx, cy = cell
+        return [(cx + dx, cy + dy) for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
+                if (cx + dx, cy + dy) in links]
+
+    stack = [(0, 0)]
+    seen = {(0, 0)}
+    while stack:
+        cell = stack[-1]
+        fresh = [n for n in around(cell) if n not in seen]
+        if not fresh:
+            stack.pop()
+            continue
+        n = pick(fresh)
+        join(cell, n)
+        seen.add(n)
+        stack.append(n)
+
+    if braid:
+        for cell in [c for c in links if len(links[c]) == 1]:
+            if not chance(braid):
+                continue
+            shut = [n for n in around(cell) if n not in links[cell]]
+            if shut:
+                join(cell, pick(shut))
+    return links
+
+
+def maze_dead_ends(links):
+    """The cells worth putting something at the end of."""
+    return [c for c in sorted(links) if len(links[c]) == 1]
+
+
+def maze_runs(links, horizontal=True, least=3):
+    """Straight runs of `least`+ cells in a row — where a maze will take a cart, a
+    belt, or a sightline, and the only part of it that reads as a corridor at a
+    glance rather than as texture."""
+    runs = []
+    cols = max(c[0] for c in links) + 1
+    rows = max(c[1] for c in links) + 1
+    outer, inner = (rows, cols) if horizontal else (cols, rows)
+    for a in range(outer):
+        run = []
+        for b in range(inner):
+            cell = (b, a) if horizontal else (a, b)
+            nxt = (b + 1, a) if horizontal else (a, b + 1)
+            run.append(cell)
+            if nxt not in links.get(cell, ()):
+                if len(run) >= least:
+                    runs.append(list(run))
+                run = []
+        if len(run) >= least:
+            runs.append(run)
+    return runs
+
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Masonry blocks — a maze someone built, drawn as walls where a link is absent.
+#  Sheets 23 on drop one of these into a cavern and then furnish the cells.
+# ─────────────────────────────────────────────────────────────────────────────
+def rock_teeth(x0, x1, y, n=12, c=ROCK_M, tip=ROCK_L):
+    """Stone hanging off a ceiling. Cheap, and it stops a carve line reading as a box."""
+    for _ in range(n):
+        x = x0 + int(rnd() * (x1 - x0))
+        ln = 2 + int(rnd() * 7)
+        for k in range(ln):
+            half = max((ln - k) // 4, 0)
+            rect(x - half, y + k, x + half, y + k, c if k < ln - 1 else tip)
+
+
+def masonry(x0, y0, x1, y1, course=5):
+    """Coursed block. The joints are the point: this is a wall somebody laid, so the
+    player reads it as a thing that can be taken back apart."""
+    rect(x0, y0, x1, y1, STONE)
+    rect(x0, y0, x1, y0, STONE_L)
+    rect(x0, y1, x1, y1, STONE_D)
+    for y in range(int(y0), int(y1) + 1, course):
+        rect(x0, y, x1, y, STONE_D, 0.55)
+        off = 0 if (y // course) % 2 else course // 2
+        for x in range(int(x0) + off, int(x1), course + 2):
+            rect(x, y, x, min(y + course - 1, y1), STONE_D, 0.4)
+    for _ in range(int(abs(x1 - x0) + abs(y1 - y0)) // 3):
+        px(x0 + rnd() * (x1 - x0), y0 + rnd() * (y1 - y0), STONE_L, 0.25)
+
+
+def breach(x0, y0, x1, y1):
+    """A wall that is no longer one: a stub off the header, a stub out of the floor, and
+    the courses that used to be between them, spread either side of the gap."""
+    masonry(x0, y0 - 6, x1, y0 + 3)
+    for _ in range(14):
+        px(x0 + rnd() * (x1 - x0), y0 + 3 + rnd() * 4, pick([STONE_D, STONE]), 0.9)
+    masonry(x0, y1 - 5, x1, y1)
+    for _ in range(10):
+        px(x0 + rnd() * (x1 - x0), y1 - 8 + rnd() * 3, pick([STONE_D, STONE]), 0.9)
+    for _ in range(26):
+        bx = x0 - 16 + rnd() * (x1 - x0 + 32)
+        by = y1 - 2 - rnd() * 5
+        rect(bx, by, bx + 2 + rnd() * 5, by + 1 + rnd() * 2, pick([STONE, STONE_D, ROCK_M]))
+    for _ in range(14):
+        disc(x0 + (rnd() - 0.5) * 26, y0 + rnd() * (y1 - y0), 1 + rnd() * 3,
+             (150, 144, 130), 0.12)
+
+
+def iron_door(x, y, w=3, h=20, open_=False):
+    """Seen side-on, in the thickness of a wall: lintel, jambs, and a leaf either
+    filling the opening or swung flat against the wall beside it."""
+    rect(x - 1, y - 2, x + w + 1, y - 1, MET_D)
+    rect(x - 1, y - 2, x + w + 1, y - 2, MET_L)
+    for jx in (x - 1, x + w + 1):
+        rect(jx, y - 1, jx, y + h, STONE_D)
+    if open_:
+        rect(x + w + 2, y, x + w + 4, y + h, MET_D)
+        rect(x + w + 2, y, x + w + 4, y, MET_L)
+        px(x + w + 2, y + h // 2, MET_XL)
+        return
+    rect(x, y, x + w, y + h, MET)
+    rect(x, y, x, y + h, MET_L)
+    rect(x + w, y, x + w, y + h, MET_D)
+    for k in range(3):
+        rect(x, y + 3 + k * 6, x + w, y + 3 + k * 6, MET_D)
+    px(x + w - 1, y + h // 2, MET_XL)
+
+
+def sconce(x, y, side=1, tint=F_MID):
+    """Open flame on a bracket. Where one of these is, and is not, is level design."""
+    rect(x, y, x + 2 * side, y + 1, MET_D)
+    disc(x + 3 * side, y, 1.8, tint)
+    glow(x + 3 * side, y, 18, tint, 0.24)
+    for _ in range(5):
+        px(x + 3 * side + (rnd() - 0.5) * 3, y - 2 - rnd() * 4, pick([F_HOT, tint]), 0.6)
+
+
+def wall_slot(x, y, w=5, h=5):
+    """A hole left in a wall for a belt, a rope or a pipe to pass through."""
+    rect(x, y, x + w, y + h, CAVE)
+    rect(x, y, x + w, y, STONE_D)
+    rect(x, y + h, x + w, y + h, STONE_L)
+
+
+def masonry_block(links, cell_box, cols, rows, wall=3, door_h=20, hatch=13,
+                  breaches=(), door_shut=0.45, ladders=True):
+    """Draw a built maze: shell, a wall on every edge the maze does not link, a doorway
+    with an iron door on every edge it does, and a floor hatch with a ladder where the
+    link runs down. `breaches` names edges as (cell, 'E') / (cell, 'S') and draws those
+    as already-broken instead. The cells themselves are left to the scene to furnish."""
+    x0, y0, _, _ = cell_box((0, 0))
+    _, _, x1, y1 = cell_box((cols - 1, rows - 1))
+    masonry(x0 - 4, y0 - 4, x1 + 4, y0)                  # cap
+    masonry(x0 - 4, y1, x1 + 4, y1 + 4)                  # sill
+    masonry(x0 - 4, y0, x0, y1)                          # west
+    masonry(x1, y0, x1 + 4, y1)                          # east
+
+    for j in range(rows):
+        for i in range(cols):
+            cell = (i, j)
+            cx0, cy0, cx1, cy1 = cell_box(cell)
+            east, south = (i + 1, j), (i, j + 1)
+
+            if i < cols - 1:                             # the wall to the east
+                wx = cx1 - wall // 2 - 1
+                if (cell, 'E') in breaches or (east, 'E') in breaches:
+                    breach(wx - 3, cy0 + 6, wx + wall + 2, cy1 - 2)
+                elif east in links[cell]:
+                    masonry(wx, cy0, wx + wall, cy1 - door_h - 4)
+                    masonry(wx, cy1 - 3, wx + wall, cy1)
+                    iron_door(wx, cy1 - door_h - 3, wall, door_h,
+                              open_=not chance(door_shut))
+                else:
+                    masonry(wx, cy0, wx + wall, cy1)
+
+            if j < rows - 1:                             # the floor to the south
+                fy = cy1 - 2
+                if (cell, 'S') in breaches:
+                    breach(cx0 + 8, fy - 4, cx1 - 8, fy + 4)
+                    masonry(cx0, fy, cx0 + 8, fy + 3)
+                    masonry(cx1 - 8, fy, cx1, fy + 3)
+                elif south in links[cell]:
+                    gx = cx0 + 8 + int(rnd() * max(int(cx1 - cx0) - hatch - 18, 1))
+                    masonry(cx0, fy, gx, fy + 3)
+                    masonry(gx + hatch, fy, cx1, fy + 3)
+                    rect(gx, fy, gx, fy + 3, STONE_D)
+                    rect(gx + hatch, fy, gx + hatch, fy + 3, STONE_D)
+                    if ladders:
+                        ladder(gx + 3, fy + 3, cell_box(south)[3] - 8, w=5, step=7)
+                else:
+                    masonry(cx0, fy, cx1, fy + 3)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

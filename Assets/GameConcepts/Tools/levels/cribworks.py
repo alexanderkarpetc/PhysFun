@@ -120,11 +120,12 @@ def slab(x0, x1, y0, y1, sag_at=None):
 
 def build():
     new_canvas(400, 225, seed=52006)
+    cw, ch = canvas_size()
 
     # ── rock to every edge ─────────────────────────────────────────────────
     rock_mass(0, soil=ROCK, soil_lit=ROCK_M, strata=20)
     for _ in range(40):
-        rect(rnd() * W, rnd() * 14, rnd() * W + 6, rnd() * 14 + 1, ROCK_D, 0.5)
+        rect(rnd() * cw, rnd() * 14, rnd() * cw + 6, rnd() * 14 + 1, ROCK_D, 0.5)
 
     ROOMS = [
         (10, 16, 390, 44),      # haulage on top of the slab
@@ -139,7 +140,7 @@ def build():
     carve_all(ROOMS)
 
     # ── 1  the slab ────────────────────────────────────────────────────────
-    slab(0, W - 1, SLAB_TOP, SLAB_BOT, sag_at=(352, 9))
+    slab(0, cw - 1, SLAB_TOP, SLAB_BOT, sag_at=(352, 9))
 
     carve(352, 44, 380, 84, rough=3)                      # the corner's drop, punched through
     for _ in range(18):

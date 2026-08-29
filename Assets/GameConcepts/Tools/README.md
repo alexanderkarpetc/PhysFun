@@ -18,6 +18,7 @@ upscaled x4 nearest). Pure stdlib, no pip install, no Unity involvement.
 | `conceptkit.py` | everything shared: palette, primitives, the label font, the props library |
 | `levels/*.py` | one scene per level — only what that level contains |
 | `build.py` | renders every scene |
+| `icons.py` | the 32x32 object icons — see **Object icons** below |
 
 
 `conceptkit` is the part that should grow. If a new sheet needs a prop that another
@@ -25,6 +26,76 @@ sheet could plausibly want (a belt, a gear, a door, a barrel), it belongs in the
 if it only makes sense for that one level (a headframe, a frozen mech), keep it local
 to the scene file. That split is what keeps a new sheet down to an afternoon's worth
 of describing rooms rather than rewriting a renderer.
+
+## Object icons
+
+```bash
+python Assets/GameConcepts/Tools/icons.py
+```
+
+Writes 55 icons to `Assets/GameConcepts/Icons/Icon_<Name>.png` (**transparent background**,
+upscaled x4). Most are 32x32 native, but an icon may declare its own size as a fourth
+element of its catalogue entry - `("BlastDoors", "BLAST DOORS", blast_doors, (28, 48))` -
+because a door is twice as tall as it is wide and a length of roadway is wider than it is
+tall, and squeezing either into the square is what makes it look compressed. The contact
+sheet lays mixed sizes out left to right and wraps. and two labelled contact sheets,
+`Assets/GameConcepts/IconSheet_Objects.png` and `IconSheet_Lab.png`. Same palette as the level sheets, so an icon
+and the thing it stands for on a concept sheet look like the same game.
+
+Six of them are objects the project already has — `Hazards/Conveyor`, `Hazards/Grinder`,
+`BridgeBuilder2D`, `StaticObjects/spinning_plank`, `Player/Telekinesis`, `Phys/Fire`. The
+other 24 are proposals, and the bar for being on the sheet was that the existing systems
+can already express it: a hinge, a kinematic mover, a joint with a break force, a flammable
+body, or terrain that loses its support.
+
+| group | icons |
+|---|---|
+| in the project now | conveyor, grinder, rope bridge, spinning plank, telekinesis, fire |
+| machines | winch drum, cage lift, counterweight, piston press, pile driver, saw on a rail |
+| hazards | wrecking ball, hung boulder, spike bed, runaway cart, vent/updraft, magnet coil |
+| structure | pit prop, timber crib, breakable wall, trapdoor, ore chute, ladder |
+| triggers | lever, pressure plate, valve wheel |
+| fire and powder | powder keg, fuse line, brazier |
+| carried and thrown | boulder, explosive crate, explosive barrel, coal sack |
+| track and rolling stock | rail track, mine cart, lab cart — the track is its own icon, the carts sit on nothing |
+| lab: power and heat | muffle furnace, dynamo, battery bank, transformer, arc lamp, spark gap (Wimshurst) |
+| lab: pressure and gas | gas cylinders, gauges + relief valve, air manifold |
+| lab: control | knife-switch board, electromagnet, alarm bell + interlock lamps |
+| lab: carried | battery cell, hand magnet |
+| lab: containment | blast shield, blast doors, airlock pair, sample cores |
+
+The lab set is for underground laboratory sections - an assay lab, an explosives testing
+gallery, or a deep physics lab bored off a haulage level, all of which are real things to
+find in a mine. It stays dry on purpose: no beakers or vats, because there is no liquid
+simulation - the equivalents are powders, gas, vacuum and hot solids.
+
+A group wider than six wraps onto another row, so a catalogue is not capped by the sheet.
+Adding one is a draw function plus a line in `ICONS` or `LAB_ICONS` (each catalogue gets
+its own sheet through `build_sheet`). Two things the format needs:
+
+- **Draw through the `R`/`P`/`LN`/`DC` wrappers, not the kit's own primitives.** They add
+  the current offset, which is what lets the same function render both its own icon file
+  and its cell of the contact sheet.
+- **Carryables are drawn empty-handed and container-shaped.** The tub, the trolley and the
+  crate are containers; what goes in them is a separate icon. That is why the carts are
+  empty and the explosive crate has its lid off - an item's second job is being the thing
+  in the cart, and a cart of kegs should not need its own artwork.
+- **Every pixel collides, so draw what is solid.** Most 2D games can draw a door as a
+  panel facing the camera because the panel lives in a background layer that nothing
+  collides with. This game has no such layer - if a pixel is there, it stops you. A door
+  is therefore the slab that fills the gap between roof and floor: closed means the pixels
+  are in the opening, open means they are gone into a recess. Hazard stripes are what say
+  *door* rather than *wall*; a handle and a panelled leaf say nothing at this size and are
+  wrong besides. The same test applies to everything else on these sheets: if the art sits
+  in a space the player has to walk through, it had better be something they cannot walk
+  through.
+- **Do not blend against the background.** Icons are drawn on `KEY` (magenta), which
+  `save_keyed` turns into alpha 0. `px` deliberately ignores the alpha argument when the
+  destination is `KEY` — blending there is how magenta fringes end up in the art. Where you
+  want a soft edge, pick a darker colour instead of a lower alpha.
+
+In Unity these want **Point (no filter)** sampling, **no compression**, and for UI use
+Sprite (2D and UI); at 4x they can also be dropped in a scene at 20 PPU and stay crisp.
 
 ## Mazes
 

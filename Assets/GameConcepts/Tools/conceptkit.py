@@ -72,6 +72,8 @@ F_MID   = (255, 146, 34)    # EmberMid
 F_COOL  = (146, 34, 12)     # EmberCool
 CHAR    = (30, 26, 25)      # Charcoal
 
+KEY     = (255, 0, 255)     # colour-key background: written out as alpha 0 by save_keyed
+
 SKY_HI  = (147, 159, 183)
 SKY_LO  = (90, 96, 110)
 LABEL   = (223, 232, 192)
@@ -125,10 +127,12 @@ def jitter(c, amount=14):
 def px(x, y, c, a=1.0):
     x, y = int(x), int(y)
     if 0 <= x < W and 0 <= y < H:
-        if a >= 1.0:
+        o = buf[y][x]
+        if a >= 1.0 or o == KEY:
+            # Nothing sensible to blend with over a transparent icon background, and
+            # blending anyway is how magenta ends up in the artwork.
             buf[y][x] = c
         else:
-            o = buf[y][x]
             buf[y][x] = tuple(int(o[i] + (c[i] - o[i]) * a) for i in range(3))
 
 
@@ -580,6 +584,51 @@ def save(path, scale=4):
     write_png(path, rows)
     print("wrote %s  %dx%d" % (path, W * scale, H * scale))
     return path
+
+
+def save_keyed(path, scale=4, key=KEY):
+    """Save with every `key`-coloured pixel transparent. Icons are drawn on a keyed
+    canvas so they can sit on any background in Unity's UI."""
+    rows = []
+    for row in buf:
+        big = []
+        for c in row:
+            big.extend([(0, 0, 0, 0) if c == key else (c[0], c[1], c[2], 255)] * scale)
+        for _ in range(scale):
+            rows.append(big)
+    write_png(path, rows)
+    return path
+
+
+def snapshot():
+    """A copy of the canvas, for blitting somewhere else later (see `blit`)."""
+    return [row[:] for row in buf]
+
+
+def blit(rows, x, y, key=KEY):
+    """Paste a snapshot, skipping its keyed pixels. What builds a contact sheet out of
+    icons that were each drawn on their own little canvas."""
+    for j, row in enumerate(rows):
+        for i, c in enumerate(row):
+            if c != key:
+                px(x + i, y + j, c)
+
+
+def outline(x0, y0, x1, y1, c=INK, key=KEY):
+    """Ring every drawn pixel in the box with one dark pixel. At icon size this is the
+    difference between a shape and a smudge - it is what keeps the silhouette readable
+    against a light background as well as a dark one."""
+    edge = []
+    for y in range(int(y0), int(y1) + 1):
+        for x in range(int(x0), int(x1) + 1):
+            if at(x, y) != key:
+                continue
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                if 0 <= x + dx < W and 0 <= y + dy < H and at(x + dx, y + dy) not in (key, c):
+                    edge.append((x, y))
+                    break
+    for x, y in edge:
+        px(x, y, c)
 
 
 def out_path(name):

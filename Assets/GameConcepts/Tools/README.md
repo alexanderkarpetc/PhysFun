@@ -255,3 +255,22 @@ from that:
 | 27 `theincline.py` | one rope-haulage incline corner to corner, with every room hung off it |
 | 28 `thegreatstope.py` | a single slanted void; stulls, staging and ore passes are the only floors in it |
 | 29 `thespan.py` | a chasm crossed by a ropeway on two rock pinnacles — buckets, a footbridge, or the long way round |
+
+## Pulley wheel sprites
+
+```bash
+python Assets/GameConcepts/Tools/wheels.py            # all three
+python Assets/GameConcepts/Tools/wheels.py wood       # just one
+python Assets/GameConcepts/Tools/wheels.py --preview  # + PulleyWheels.png, x4, for eyeballing
+```
+
+Unlike everything else here these are **game sprites, not concept art**: `wheels.py` writes
+80x80 native pngs with real alpha to `Assets/Sprites/Props/PulleyWheel_<Plain|Wood|Metal>.png`,
+importer settings cloned from `Sprites/Hazards/Gear.png` (point filter, 40 pixels per unit,
+centre pivot). Drop one on a `PulleyWheel2D` and give the `CircleCollider2D` radius `0.975`
+and it sits on the drawn rim.
+
+The wheels spin, so the light is radial rather than directional and every feature repeats
+around the disc - a wheel lit from the top-left strobes as it turns. The three finishes are
+a plain cast disc with four lightening holes, a timber sheave in an iron tyre, and a
+five-spoke steel sheave with the web cut right through.

@@ -915,6 +915,117 @@ def hand_magnet():
 
 
 # ── the catalogue ───────────────────────────────────────────────────────────
+# ── cradles: the wood-and-iron stands a load is set into and lashed down ────
+def cradle(c=WOOD, lit=WOOD_L, dark=WOOD_D, y=23, bed=2, horn=12):
+    """The shape the whole group is built on - a flat bed with both ends splayed up and
+    out, so a load rolls to the middle and a lashing over the horns pulls it down."""
+    R(9, y - bed + 1, 22, y, c)                            # the bed
+    R(9, y - bed + 1, 22, y - bed + 1, lit)
+    R(9, y + 1, 22, y + 1, dark)
+    for k in range(2):                                     # the two splayed horns
+        LN(9 + k, y, 4 + k, horn, lit if k else c)
+        LN(22 - k, y, 27 - k, horn, lit if k else c)
+
+
+def tie(x, y, c=MET_XL, r=WOOD_L, rd=WOOD_D):
+    """The iron band at a horn with a rope loop through it - where a lashing gets made
+    off. Two of these are what say `tie something on` rather than `shelf`."""
+    R(x - 1, y, x + 1, y, c)
+    P(x, y - 1, r)
+    P(x - 1, y - 2, r)
+    P(x + 1, y - 2, rd)
+    P(x, y - 3, r)
+
+
+def timber_cradle():
+    cradle()
+    for x in (12, 16, 20):                                 # the boards read across it
+        R(x, 22, x, 23, WOOD_D, 0.6)
+    for x in (10, 19):                                     # skids under the bed
+        R(x, 24, x + 3, 25, WOOD_D)
+        R(x, 24, x + 3, 24, WOOD)
+    tie(4, 12)
+    tie(27, 12)
+
+
+def iron_cradle():
+    cradle(MET_D, MET_L, MET_D)
+    for x in range(11, 22, 3):                             # rivets down the bed
+        P(x, 22, MET_XL)
+    for y in (15, 18):                                     # and up the horns
+        P(4 + (23 - y), y, MET_XL)
+        P(27 - (23 - y), y, MET_XL)
+    for x in (11, 19):                                     # short feet
+        R(x, 24, x + 1, 26, MET_D)
+        R(x, 24, x + 1, 24, MET_L)
+    tie(4, 12, MET_XL, MET_L, MET_D)
+    tie(27, 12, MET_XL, MET_L, MET_D)
+
+
+def banded_cradle():
+    cradle()
+    for x in (12, 16, 20):
+        R(x, 22, x, 23, WOOD_D, 0.6)
+    for k in range(2):                                     # iron straps up both horns
+        LN(8 - k, 21 - k * 5, 6 - k, 17 - k * 5, MET_L)
+        LN(23 + k, 21 - k * 5, 25 + k, 17 - k * 5, MET_L)
+    for x, y in ((7, 19), (24, 19), (5, 14), (26, 14)):
+        P(x, y, MET_XL)
+    R(8, 24, 23, 25, MET_D)                                # the iron skid it stands on
+    R(8, 24, 23, 24, MET_L)
+    R(9, 21, 22, 21, MET, 0.7)                             # a plate lining the bed
+    tie(4, 12)
+    tie(27, 12)
+
+
+def lashed_load():
+    cradle()
+    DC(16, 19, 5, ROCK_M)                                  # the load dropped in
+    RG(16, 19, 5, ROCK_L)
+    for x, y in ((14, 17), (18, 20), (15, 21)):
+        P(x, y, ROCK_D)
+    LN(5, 13, 11, 15, DIRT_L)                              # the lashing over the top
+    LN(11, 15, 21, 15, DIRT_L)
+    LN(21, 15, 26, 13, DIRT_L)
+    for x in (8, 13, 18, 24):
+        P(x, 14 if x in (8, 24) else 15, DIRT)
+    R(15, 15, 17, 16, DIRT_L)                              # the knot pulling it down
+    P(16, 17, DIRT)
+    for x in (10, 19):
+        R(x, 24, x + 3, 25, WOOD_D)
+    tie(4, 12)
+    tie(27, 12)
+
+
+def slung_cradle():
+    RG(16, 4, 2, MET_XL)                                   # the ring it hangs from
+    P(16, 6, MET_D)
+    rope(16, 6, 5, 14)                                     # the two legs of the sling
+    rope(16, 6, 26, 14)
+    cradle(WOOD, WOOD_L, WOOD_D, y=26, horn=15)
+    for x in (12, 16, 20):
+        R(x, 25, x, 26, WOOD_D, 0.6)
+    R(12, 19, 20, 24, MET_D)                               # a case of something in it
+    R(12, 19, 20, 19, MET_L)
+    for k in range(2):
+        R(12, 21 + k * 2, 20, 21 + k * 2, MET, 0.8)
+    tie(5, 15, MET_XL, MET_L, MET_D)
+    tie(26, 15, MET_XL, MET_L, MET_D)
+
+
+def cradle_stand():
+    cradle(WOOD, WOOD_L, WOOD_D, y=18, horn=7)
+    for x in (12, 16, 20):
+        R(x, 17, x, 18, WOOD_D, 0.6)
+    R(9, 19, 22, 19, MET_L)                                # iron shoe under the bed
+    for x in (10, 20):                                     # the trestle it stands on
+        post(x, 20, 27, 2, WOOD_D, WOOD)
+    R(11, 23, 21, 24, WOOD_D)                              # the tie between the legs
+    R(11, 23, 21, 23, WOOD)
+    tie(4, 7)
+    tie(27, 7)
+
+
 ICONS = [
     ("IN THE PROJECT NOW", [
         ("Conveyor", "CONVEYOR", conveyor),
@@ -968,6 +1079,14 @@ ICONS = [
         ("RailTrack", "RAIL TRACK", rail_track),
         ("MineCart", "MINE CART", mine_cart, (36, 30)),
         ("LabCart", "LAB CART", lab_cart, (40, 23)),
+    ]),
+    ("CRADLES AND SLINGS", [
+        ("TimberCradle", "TIMBER CRADLE", timber_cradle),
+        ("IronCradle", "IRON CRADLE", iron_cradle),
+        ("BandedCradle", "BANDED CRADLE", banded_cradle),
+        ("LashedLoad", "LASHED LOAD", lashed_load),
+        ("SlungCradle", "SLUNG CRADLE", slung_cradle),
+        ("CradleStand", "CRADLE ON TRESTLE", cradle_stand),
     ]),
 ]
 

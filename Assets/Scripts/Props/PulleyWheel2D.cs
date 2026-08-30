@@ -76,6 +76,24 @@ namespace Props
             _rb = GetComponent<Rigidbody2D>();
             if (radius <= 0f && TryGetComponent<CircleCollider2D>(out var col))
                 radius = col.radius * Mathf.Abs(transform.lossyScale.x);
+
+            RepinToWorld();
+        }
+
+        /// <summary>
+        /// Moves the pin to wherever the wheel is now.
+        ///
+        /// A hinge with no connected body holds a point in world space, written down once when the
+        /// joint was set up. Drag the rig across the level afterwards and the wheel still answers
+        /// to the old spot — it looks fine until play starts, then snaps back to it. Nothing about
+        /// this wheel wants that, so the pin is simply re-read on the way in.
+        /// </summary>
+        [ContextMenu("Repin To Current Position")]
+        public void RepinToWorld()
+        {
+            if (!TryGetComponent<HingeJoint2D>(out var hinge) || hinge.connectedBody) return;
+            hinge.autoConfigureConnectedAnchor = false;
+            hinge.connectedAnchor = transform.TransformPoint(hinge.anchor);
         }
 
         private void FixedUpdate()

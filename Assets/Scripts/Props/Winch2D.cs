@@ -156,6 +156,13 @@ namespace Props
             float before = cableLength;
             cableLength = Mathf.Clamp(cableLength - input * motorSpeed * dt, minLength, maxLength);
 
+            // The moment the drum turns, whatever is on the end of the cable is no longer resting.
+            if (!Mathf.Approximately(before, cableLength))
+            {
+                if (loadA) loadA.WakeUp();
+                if (loadB) loadB.WakeUp();
+            }
+
             if (drum)
             {
                 _drumAngle += (before - cableLength) / drumRadius * Mathf.Rad2Deg;
@@ -258,6 +265,11 @@ namespace Props
         private static void Apply(Row row, float lambda)
         {
             float j = row.scale * lambda;
+
+            // A load hanging still goes to sleep, and a sleeping body ignores anything written to
+            // its velocity — the cable would pull in total silence and nothing would move.
+            if (j != 0f) row.rb.WakeUp();
+
             row.rb.linearVelocity += row.invM * j * -row.dir;
             row.rb.angularVelocity += row.invI * j * row.ang * Mathf.Rad2Deg;
         }

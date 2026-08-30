@@ -283,6 +283,14 @@ namespace Props
         public void ClearBuilt()
         {
             IsTearingDown = true;
+
+            // Destroy is deferred in play mode: these links call back at the end of the frame,
+            // by which time the rope has been rebuilt and would read that as a fresh break. Cut
+            // them loose first — a link with no rope has nothing to report to.
+            if (_root)
+                foreach (var link in _root.GetComponentsInChildren<RopeLink>(includeInactive: true))
+                    link.rope = null;
+
             _links.Clear();
             _anchorJoint = null;
             _pinnedA = _pinnedB = false;
@@ -448,6 +456,11 @@ namespace Props
             float cdot = Vector2.Dot(n, b.linearVelocity - (bodyA ? bodyA.linearVelocity : Vector2.zero));
             float lambda = -cdot / k;
             if (lambda > 0f) lambda = 0f;                            // pull only
+
+            // Same trap as the winch: a settled link sleeps, and a sleeping body throws away
+            // whatever is written to its velocity.
+            b.WakeUp();
+            if (bodyA) bodyA.WakeUp();
 
             b.linearVelocity += n * (lambda * invB);
             if (bodyA) bodyA.linearVelocity -= n * (lambda * invA);

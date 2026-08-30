@@ -54,7 +54,24 @@ namespace Props
         public bool selfCollision;
         public PhysicsMaterial2D segmentMaterial;
 
+        [Header("Tension")]
+        [Tooltip("Run an extra length pass over the chain every step. Unity's solver gives up on " +
+                 "a light rope pulled by something heavy — this is what stops it stretching.")]
+        public bool inextensible = true;
+        [Tooltip("Passes along the chain per step. More = stiffer rope, linear cost.")]
+        [Range(1, 16)] public int tensionIterations = 6;
+        [Tooltip("Share of the leftover stretch pulled out by moving the links outright. " +
+                 "0 = velocity only (softer), 1 = snapped straight (can shove links through thin walls).")]
+        [Range(0f, 1f)] public float stretchCorrection = 0.4f;
+
         [Header("Breaking")]
+        [Tooltip("Load the rope parts at, in newtons. 0 = it never parts from being pulled. " +
+                 "Roughly: a hanging mass of m kg pulls m * 9.81 N.")]
+        [Min(0f)] public float maxTension;
+        [Tooltip("Tension has to hold for this long to count. Filters out one-frame spikes from impacts.")]
+        [Min(0f)] public float overloadGrace = 0.1f;
+        [Tooltip("Also let Unity break the hinges on raw joint force. Redundant with maxTension " +
+                 "and far less predictable — off by default.")]
         public bool breakable;
         [Min(0f)] public float breakForce = 400f;
 
@@ -82,6 +99,11 @@ namespace Props
         private readonly List<Rigidbody2D> _links = new();
         private HingeJoint2D _anchorJoint;   // pin of the topmost payed-out link, re-made while spooling
         private float _linkLength;           // actual link length after the path was divided up
+        private Rigidbody2D _pinBodyA, _pinBodyB;   // what the ends are tied to, if anything
+        private Vector2 _pinLocalA, _pinLocalB;     // tie point, in that body's space or in the world
+        private bool _pinnedA, _pinnedB;
+        private float _overloadFor;
+        private int _worstLink = -1;
         private int _first;                  // first link off the drum; the ones before it are spooled up
         private int _severed = -1;
 
@@ -241,8 +263,17 @@ namespace Props
 
             _first = 0;
             _severed = -1;
-            if (pinStart) _anchorJoint = PinToAnchor(_links[0], new Vector2(-half, 0f), anchorA, nodes[0]);
-            if (pinEnd) PinToAnchor(_links[^1], new Vector2(half, 0f), anchorB, nodes[^1]);
+            _overloadFor = 0f;
+            if (pinStart)
+            {
+                _anchorJoint = PinToAnchor(_links[0], new Vector2(-half, 0f), anchorA, nodes[0]);
+                RecordPin(ref _pinnedA, ref _pinBodyA, ref _pinLocalA, anchorA, nodes[0]);
+            }
+            if (pinEnd)
+            {
+                PinToAnchor(_links[^1], new Vector2(half, 0f), anchorB, nodes[^1]);
+                RecordPin(ref _pinnedB, ref _pinBodyB, ref _pinLocalB, anchorB, nodes[^1]);
+            }
 
             IgnoreInternalCollisions();
             if (render) SetupLine();
@@ -254,6 +285,8 @@ namespace Props
             IsTearingDown = true;
             _links.Clear();
             _anchorJoint = null;
+            _pinnedA = _pinnedB = false;
+            _pinBodyA = _pinBodyB = null;
             _first = 0;
             _severed = -1;
             if (_root) DestroyBuilt(_root.gameObject);
@@ -336,6 +369,124 @@ namespace Props
             if (_anchorJoint) DestroyBuilt(_anchorJoint);
             _anchorJoint = PinToAnchor(_links[_first], new Vector2(-half, 0f), anchorA,
                                        anchorA ? (Vector2)anchorA.position : WorldPath()[0]);
+        }
+
+        // ── Tension ───────────────────────────────────────────────────────────
+
+        private void FixedUpdate()
+        {
+            if (!inextensible || _links.Count < 1) return;
+            SolveTension(Time.fixedDeltaTime);
+        }
+
+        /// <summary>
+        /// Holds the chain to its built length, and reads off what that costs.
+        ///
+        /// Unity solves a hinge chain from both ends inwards a fixed number of times, so a light
+        /// rope pulled by something heavy — a player walking off with the end of it — never
+        /// converges: the links stretch apart, snap back, and the whole thing rings. This is a
+        /// Gauss-Seidel pass over the same chain treating each link as a rope segment that can
+        /// pull but not push, which is the part the hinges are bad at. The hinges are still what
+        /// hold the rope together; this only takes the stretch out.
+        ///
+        /// The impulse each link needs is its tension, so breaking under load falls out of the
+        /// same pass for free — and it is a far steadier number than joint break force, which
+        /// reads whatever the solver happened to be doing that frame.
+        /// </summary>
+        private void SolveTension(float dt)
+        {
+            float rest = LinkLength;
+            float half = rest * 0.5f;
+            float peak = 0f;
+            int worst = -1;
+
+            for (int it = 0; it < tensionIterations; it++)
+            {
+                // Alternate direction each pass: a one-way sweep converges from the anchor end
+                // and leaves the far end soft.
+                bool forward = (it & 1) == 0;
+
+                if (_pinnedA) Pull(null, PinPoint(_pinBodyA, _pinLocalA), _pinBodyA, _links[_first], half, dt, ref peak, ref worst, _first);
+
+                for (int k = 0; k < _links.Count - _first - 1; k++)
+                {
+                    int i = forward ? _first + k : _links.Count - 2 - k;
+                    if (i < _first || i == _severed) continue;   // never pull across a parted link
+                    Pull(_links[i], default, null, _links[i + 1], rest, dt, ref peak, ref worst, i);
+                }
+
+                if (_pinnedB && _severed < 0)
+                    Pull(null, PinPoint(_pinBodyB, _pinLocalB), _pinBodyB, _links[^1], half, dt, ref peak, ref worst, _links.Count - 1);
+            }
+
+            _worstLink = worst;
+            CheckOverload(peak, dt);
+        }
+
+        /// <summary>
+        /// One pull between two points that must not drift further apart than <paramref name="rest"/>.
+        /// Pass <paramref name="a"/> as null for a fixed end, and give its world point instead.
+        /// Returns nothing; the tension it took is folded into <paramref name="peak"/>.
+        /// </summary>
+        private void Pull(Rigidbody2D a, Vector2 aPoint, Rigidbody2D aBody, Rigidbody2D b,
+                          float rest, float dt, ref float peak, ref int worst, int index)
+        {
+            Rigidbody2D bodyA = a ? a : aBody;                       // may still be null: pinned to the world
+            Vector2 pa = a ? a.worldCenterOfMass : aPoint;
+            Vector2 pb = b.worldCenterOfMass;
+
+            Vector2 d = pb - pa;
+            float len = d.magnitude;
+            if (len < 1e-5f || len <= rest) return;                  // slack: a rope pulls, it never pushes
+            Vector2 n = d / len;
+
+            float invA = InvMass(bodyA);
+            float invB = InvMass(b);
+            float k = invA + invB;
+            if (k <= 0f) return;
+
+            float cdot = Vector2.Dot(n, b.linearVelocity - (bodyA ? bodyA.linearVelocity : Vector2.zero));
+            float lambda = -cdot / k;
+            if (lambda > 0f) lambda = 0f;                            // pull only
+
+            b.linearVelocity += n * (lambda * invB);
+            if (bodyA) bodyA.linearVelocity -= n * (lambda * invA);
+
+            // Whatever stretch the velocity pass could not reach, take out of the positions.
+            if (stretchCorrection > 0f)
+            {
+                float pull = (len - rest) * stretchCorrection;
+                b.position -= n * (pull * invB / k);
+                if (bodyA) bodyA.position += n * (pull * invA / k);
+            }
+
+            float tension = -lambda / dt;
+            if (tension > peak) { peak = tension; worst = index; }
+        }
+
+        private void CheckOverload(float peak, float dt)
+        {
+            if (maxTension <= 0f || _severed >= 0) return;
+
+            _overloadFor = peak > maxTension ? _overloadFor + dt : 0f;
+            if (_overloadFor < overloadGrace) return;
+
+            // Parts where it was pulling hardest, which is where a real rope goes.
+            Cut(Mathf.Clamp(_worstLink, _first, _links.Count - 2));
+        }
+
+        private static float InvMass(Rigidbody2D rb) =>
+            rb && rb.bodyType == RigidbodyType2D.Dynamic && rb.mass > 0f ? 1f / rb.mass : 0f;
+
+        private static Vector2 PinPoint(Rigidbody2D body, Vector2 local) =>
+            body ? (Vector2)body.transform.TransformPoint(local) : local;
+
+        private static void RecordPin(ref bool pinned, ref Rigidbody2D body, ref Vector2 local,
+                                      Transform anchor, Vector2 worldPoint)
+        {
+            pinned = true;
+            body = anchor ? anchor.GetComponentInParent<Rigidbody2D>() : null;
+            local = body ? (Vector2)body.transform.InverseTransformPoint(worldPoint) : worldPoint;
         }
 
         // ── Joints ────────────────────────────────────────────────────────────

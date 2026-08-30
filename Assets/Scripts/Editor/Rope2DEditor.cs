@@ -24,9 +24,16 @@ namespace Editor
             DrawDefaultInspector();
 
             EditorGUILayout.Space();
+
+            // Newtons mean nothing at a glance, so say what they hold.
+            string load = rope.maxTension > 0f
+                ? $"Parts at {rope.maxTension:0} N — about {rope.maxTension / 9.81f:0.0} kg hung still."
+                : "Never parts under load.";
+
             EditorGUILayout.HelpBox(
                 $"Path {rope.PathLength():0.00} m → {rope.PlannedLinkCount()} links " +
                 $"of {rope.PathLength() / Mathf.Max(1, rope.PlannedLinkCount()):0.00} m.\n" +
+                $"{load}\n" +
                 "Drag the dots in the scene to route it. + inserts a point, × removes one.",
                 MessageType.None);
 

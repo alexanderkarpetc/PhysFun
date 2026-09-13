@@ -29,11 +29,11 @@ namespace Editor
     /// </summary>
     public static class SoldierBuilder
     {
-        private const string Source = "Assets/Sprites/Enemies/soldier.aseprite";
-        private const string ControllerDir = "Assets/Resources/Animations/Enemies/Soldier";
-        private const string ControllerPath = ControllerDir + "/SoldierAnimator.controller";
+        private const string Source = "Assets/Sprites/Enemies/swat.aseprite";
+        private const string ControllerDir = "Assets/Resources/Animations/Enemies/Swat";
+        private const string ControllerPath = ControllerDir + "/SwatAnimator.controller";
         private const string PrefabDir = "Assets/Resources/Prefabs/Enemies";
-        private const string PrefabPath = PrefabDir + "/Soldier.prefab";
+        private const string PrefabPath = PrefabDir + "/Swat.prefab";
 
         /// <summary>The pixel scale the rest of the cast is drawn at. 18px tall becomes 0.9 units.</summary>
         private const float PixelsPerUnit = 20f;
@@ -114,13 +114,20 @@ namespace Editor
         /// One state per tag, all of them reachable from Any State, because the controller is not
         /// the one deciding anything — <see cref="RegularEnemyController"/> is, and it says so by
         /// firing a trigger. Transitions are instant: at three states there is nothing to blend.
+        ///
+        /// An existing controller is emptied and refilled rather than deleted and remade: deleting
+        /// it hands the rebuilt one a new guid, and anything already pointing at the old one — an
+        /// enemy standing in an open scene, most of all — is left holding nothing, which shows up
+        /// in play mode as "Animator is not playing an AnimatorController".
         /// </summary>
         private static AnimatorController BuildController(Dictionary<string, AnimationClip> clips)
         {
             EnsureFolder(ControllerDir);
-            AssetDatabase.DeleteAsset(ControllerPath);
 
-            var controller = AnimatorController.CreateAnimatorControllerAtPath(ControllerPath);
+            var controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
+            if (controller) Empty(controller);
+            else controller = AnimatorController.CreateAnimatorControllerAtPath(ControllerPath);
+
             var machine = controller.layers[0].stateMachine;
 
             // Nothing plays until the first trigger lands, so he does not walk on frame one.
@@ -146,6 +153,18 @@ namespace Editor
             return controller;
         }
 
+        /// <summary>Everything out, guid kept: what is left is the same asset, ready to be refilled.</summary>
+        private static void Empty(AnimatorController controller)
+        {
+            while (controller.parameters.Length > 0) controller.RemoveParameter(0);
+
+            var machine = controller.layers[0].stateMachine;
+            foreach (var transition in machine.anyStateTransitions.ToArray())
+                machine.RemoveAnyStateTransition(transition);
+            foreach (var state in machine.states.ToArray())
+                machine.RemoveState(state.state);
+        }
+
         // ------------------------------------------------------------------ prefab
 
         /// <summary>
@@ -157,7 +176,7 @@ namespace Editor
         {
             EnsureFolder(PrefabDir);
 
-            var root = new GameObject("Soldier") { layer = EnemyLayer };
+            var root = new GameObject("Swat") { layer = EnemyLayer };
 
             var view = new GameObject("View") { layer = EnemyLayer };
             view.transform.SetParent(root.transform, false);

@@ -1,0 +1,78 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8f1e07af96acd2418429a8e18e2602c, type: 3}
+  m_Name: swat_ragdoll
+  m_EditorClassIdentifier: Assembly-CSharp::Ragdolls.RagdollDefinition
+  creature: swat
+  frameWidth: 20
+  frameHeight: 22
+  originPx: {x: 10, y: 22}
+  pixelsPerUnit: 20
+  parts:
+  - name: torso
+    sprite: {fileID: -925407939, guid: be097e7403ca85e47a9e5625a3ec59b8, type: 3}
+    parent: -1
+    pivotPx: {x: 8.5, y: 10.5}
+    anchorPx: {x: 8.5, y: 10.5}
+    useLimits: 0
+    limitLow: -55
+    limitHigh: 55
+    uvColor:
+      serializedVersion: 2
+      rgba: 0
+  - name: head
+    sprite: {fileID: -1479010859, guid: be097e7403ca85e47a9e5625a3ec59b8, type: 3}
+    parent: 0
+    pivotPx: {x: 10, y: 4}
+    anchorPx: {x: 10, y: 6.5}
+    useLimits: 1
+    limitLow: -55
+    limitHigh: 55
+    uvColor:
+      serializedVersion: 2
+      rgba: 0
+  - name: leg_l
+    sprite: {fileID: -638081799, guid: be097e7403ca85e47a9e5625a3ec59b8, type: 3}
+    parent: 0
+    pivotPx: {x: 6, y: 16.5}
+    anchorPx: {x: 6.5, y: 14.5}
+    useLimits: 1
+    limitLow: -55
+    limitHigh: 55
+    uvColor:
+      serializedVersion: 2
+      rgba: 0
+  - name: leg_r
+    sprite: {fileID: 1026350897, guid: be097e7403ca85e47a9e5625a3ec59b8, type: 3}
+    parent: 0
+    pivotPx: {x: 11.5, y: 16.5}
+    anchorPx: {x: 11, y: 14.5}
+    useLimits: 1
+    limitLow: -55
+    limitHigh: 55
+    uvColor:
+      serializedVersion: 2
+      rgba: 0
+  poses:
+  - anim: Frame
+    frame: 0
+    positionsPx:
+    - {x: 8.5, y: 10.5}
+    - {x: 10, y: 4}
+    - {x: 6, y: 16.5}
+    - {x: 11.5, y: 16.5}
+    rotations:
+    - 0
+    - 0
+    - 0
+    - 0
+  defaultAnim: Frame

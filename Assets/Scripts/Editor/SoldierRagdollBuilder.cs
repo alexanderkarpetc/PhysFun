@@ -1,6 +1,7 @@
 using System.Linq;
 using NoitaImport;
 using Ragdolls;
+using Spawners;
 using UnityEditor;
 using UnityEditor.U2D.Aseprite;
 using UnityEngine;
@@ -28,10 +29,10 @@ namespace Editor
     /// </summary>
     public static class SoldierRagdollBuilder
     {
-        private const string Source = "Assets/Sprites/Enemies/soldier.aseprite";
-        private const string Creature = "soldier";
-        private const string EnemyPrefabPath = "Assets/Resources/Prefabs/Enemies/Soldier.prefab";
-        public const string RagdollPrefabPath = "Assets/Resources/Ragdolls/soldier/SoldierRagdoll.prefab";
+        private const string Source = "Assets/Sprites/Enemies/swat.aseprite";
+        private const string Creature = "swat";
+        private const string EnemyPrefabPath = "Assets/Resources/Prefabs/Enemies/Swat.prefab";
+        public const string RagdollPrefabPath = "Assets/Resources/Ragdolls/swat/SwatRagdoll.prefab";
 
         /// <summary>Matches <see cref="SoldierBuilder"/>; the corpse has to be drawn at his scale.</summary>
         private const float PixelsPerUnit = 20f;
@@ -54,8 +55,9 @@ namespace Editor
         {
             public readonly string Name;
 
-            /// <summary>Canvas pixels this piece takes, top-down. The blocks never overlap.</summary>
-            public readonly RectInt Region;
+            /// <summary>Canvas pixels this piece takes, top-down. The blocks never overlap, and
+            /// whatever no block claims is left out of the corpse altogether.</summary>
+            public readonly RectInt[] Regions;
 
             /// <summary>Index into <see cref="Cuts"/>, -1 for the piece everything else hangs off.</summary>
             public readonly int Parent;
@@ -66,28 +68,40 @@ namespace Editor
             /// <summary>Sorting order inside the corpse, back to front.</summary>
             public readonly int Order;
 
-            public Cut(string name, RectInt region, int parent, Vector2 anchor, int order)
+            public Cut(string name, int parent, Vector2 anchor, int order, params RectInt[] regions)
             {
                 Name = name;
-                Region = region;
+                Regions = regions;
                 Parent = parent;
                 Anchor = anchor;
                 Order = order;
             }
+
+            public bool Contains(int x, int y)
+            {
+                foreach (var r in Regions)
+                    if (x >= r.xMin && x < r.xMax && y >= r.yMin && y < r.yMax)
+                        return true;
+                return false;
+            }
         }
 
         /// <summary>
-        /// The soldier read off his idle frame: the head above the shoulders, the gun arm out to
-        /// the right of the body, the two legs below the hips, and the torso as whatever is left.
-        /// The torso comes first because a hinge needs its parent to exist already.
+        /// The SWAT read off his idle frame: helmet down to row 6, legs from row 15, torso between.
+        /// The rifle is in none of them — it lies across his chest out to column 17, and a corpse
+        /// that keeps it is a corpse with a plank bolted to its ribs. So the chest rows stop at
+        /// column 10 and the gun is dropped: what no block claims is not part of the body. The
+        /// torso comes first because a hinge needs its parent to exist already.
         /// </summary>
         private static readonly Cut[] Cuts =
         {
-            new("torso", new RectInt(0, 8, 11, 8), -1, Vector2.zero, 1),
-            new("head", new RectInt(0, 0, 16, 8), 0, new Vector2(8.5f, 7.5f), 3),
-            new("arm", new RectInt(11, 8, 5, 8), 0, new Vector2(10.5f, 10.5f), 4),
-            new("leg_l", new RectInt(0, 16, 7, 6), 0, new Vector2(5f, 15.5f), 2),
-            new("leg_r", new RectInt(7, 16, 9, 6), 0, new Vector2(9f, 15.5f), 0),
+            new("torso", -1, Vector2.zero, 1,
+                new RectInt(0, 7, 14, 2),    // shoulders, out to the far edge of the body
+                new RectInt(0, 9, 11, 4),    // chest, cut short of the rifle
+                new RectInt(0, 13, 14, 2)),  // hips
+            new("head", 0, new Vector2(10f, 6.5f), 3, new RectInt(0, 0, 20, 7)),
+            new("leg_l", 0, new Vector2(6.5f, 14.5f), 2, new RectInt(0, 15, 9, 7)),
+            new("leg_r", 0, new Vector2(11f, 14.5f), 0, new RectInt(9, 15, 11, 7)),
         };
 
         [MenuItem("PhysFun/Enemies/Build Soldier Ragdoll", false, 201)]
@@ -125,6 +139,7 @@ namespace Editor
                 BuildPrefab = true
             });
 
+            TightenColliders(build, def);
             AttachToEnemy();
 
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(RagdollPrefabPath);
@@ -244,10 +259,10 @@ namespace Editor
                 };
 
                 int minX = int.MaxValue, minY = int.MaxValue, maxX = int.MinValue, maxY = int.MinValue;
-                for (int y = cut.Region.yMin; y < cut.Region.yMax; y++)
-                for (int x = cut.Region.xMin; x < cut.Region.xMax; x++)
+                for (int y = 0; y < canvas.y; y++)
+                for (int x = 0; x < canvas.x; x++)
                 {
-                    if (x < 0 || y < 0 || x >= canvas.x || y >= canvas.y) continue;
+                    if (!cut.Contains(x, y)) continue;
 
                     int i = y * canvas.x + x;
                     if (frame[i].a == 0) continue;
@@ -262,8 +277,8 @@ namespace Editor
 
                 if (part.Solid.Count == 0)
                 {
-                    Debug.LogError($"[PhysFun] Nothing is drawn where the soldier's {cut.Name} should be " +
-                                   $"({cut.Region}). The art moved on the canvas, so the cuts in " +
+                    Debug.LogError($"[PhysFun] Nothing is drawn where the soldier's {cut.Name} should be. " +
+                                   $"The art moved on the canvas, so the cuts in " +
                                    $"{nameof(SoldierRagdollBuilder)} have to move with it.");
                     return null;
                 }
@@ -298,6 +313,52 @@ namespace Editor
 
             for (int i = 0; i < build.Parts.Count; i++) pose.Pos[i] = build.Parts[i].PivotPx;
             return pose;
+        }
+
+        /// <summary>
+        /// The importer asks Unity for a collider off each part's sprite, and at this size what
+        /// comes back is the sprite's whole rect, padding and all — a leg two pixels wide ends up
+        /// inside a hull wider than the body. Replace every one with the box its own opaque pixels
+        /// fill, which for a limb is the limb.
+        /// </summary>
+        private static void TightenColliders(RagdollBuild build, RagdollDefinition def)
+        {
+            var root = PrefabUtility.LoadPrefabContents(RagdollPrefabPath);
+            try
+            {
+                for (int i = 0; i < def.parts.Count; i++)
+                {
+                    var piece = root.transform.Find(def.parts[i].name);
+                    if (!piece) continue;
+
+                    var poly = piece.GetComponent<PolygonCollider2D>();
+                    if (!poly) continue;
+
+                    var bounds = build.Parts[i].Bounds;
+                    var pivot = build.Parts[i].PivotPx;
+
+                    // Pixel edges, not centres: the box has to cover the outermost pixels whole.
+                    var tl = def.PixelToLocalDelta(new Vector2(bounds.xMin - 0.5f - pivot.x, bounds.yMin - 0.5f - pivot.y));
+                    var br = def.PixelToLocalDelta(new Vector2(bounds.xMax - 0.5f - pivot.x, bounds.yMax - 0.5f - pivot.y));
+
+                    poly.pathCount = 1;
+                    poly.SetPath(0, new[]
+                    {
+                        new Vector2(tl.x, br.y),
+                        new Vector2(br.x, br.y),
+                        new Vector2(br.x, tl.y),
+                        new Vector2(tl.x, tl.y)
+                    });
+
+                    MassRecalculator.SetMass(def.parts[i].sprite, piece.GetComponent<Rigidbody2D>(), poly);
+                }
+
+                PrefabUtility.SaveAsPrefabAsset(root, RagdollPrefabPath);
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
         }
 
         // ------------------------------------------------------------------ the live soldier

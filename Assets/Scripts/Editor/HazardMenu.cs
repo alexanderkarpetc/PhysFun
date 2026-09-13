@@ -14,12 +14,20 @@ namespace Editor
     {
         private const string ConveyorPrefab = "Assets/Resources/Prefabs/Hazards/Conveyor.prefab";
         private const string GrinderPrefab = "Assets/Resources/Prefabs/Hazards/Grinder.prefab";
+        private const string SoldierPrefab = "Assets/Resources/Prefabs/Enemies/Soldier.prefab";
 
         [MenuItem("PhysFun/Create/Conveyor", false, 100)]
         private static void CreateConveyor() => PlacePrefab(ConveyorPrefab, "Create Conveyor");
 
         [MenuItem("PhysFun/Create/Grinder", false, 101)]
         private static void CreateGrinder() => PlacePrefab(GrinderPrefab, "Create Grinder");
+
+        /// <summary>
+        /// One soldier, standing where you put him. Built by <see cref="SoldierBuilder"/> — if the
+        /// prefab is not there yet, that menu item is what makes it.
+        /// </summary>
+        [MenuItem("PhysFun/Create/Soldier", false, 103)]
+        private static void CreateSoldier() => PlacePrefab(SoldierPrefab, "Create Soldier");
 
         /// <summary>
         /// The factory has no art of its own, so there is no prefab to place — it is a bare

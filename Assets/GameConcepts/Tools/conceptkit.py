@@ -1010,3 +1010,139 @@ def mushroom(x, base, h=14, cap=18, stem=(210, 200, 180), skin=(150, 90, 110),
     disc(x, base - h - 2, cap / 2.4, skin, 0.9)
     rect(x - cap // 2, base - h - 1, x + cap // 2, base - h, gills, 0.8)
     glow(x, base - h - 2, cap, (120, 200, 150), 0.10)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Metro / transit — the tube station kit (sheets 30-32)
+# ─────────────────────────────────────────────────────────────────────────────
+TILE    = (196, 198, 186)   # station tiling, the one bright surface underground
+TILE_D  = (128, 132, 124)
+LIVERY  = (150, 62, 58)     # rolling-stock skirt band
+
+def tube_lining(x0, x1, y, ribs=19, plate=12):
+    """Cast-iron segments overhead: a band, bolted joints, and a rib every few feet."""
+    rect(x0, y, x1, y + 3, MET_D)
+    rect(x0, y, x1, y, MET_L)
+    for x in range(int(x0), int(x1), plate):
+        rect(x, y, x, y + 3, MET, 0.8)
+        px(x + 1, y + 1, MET_L)
+        px(x + 1, y + 3, MET_L)
+    for x in range(int(x0) + 6, int(x1) - 2, ribs):
+        rect(x, y + 3, x + 1, y + 6, MET)
+        px(x, y + 3, MET_L)
+
+
+def tiled_wall(x0, y0, x1, y1, band_y=None):
+    """Station tiling. Pale enough to be the one bright surface down here."""
+    rect(x0, y0, x1, y1, TILE)
+    for y in range(int(y0), int(y1) + 1, 4):
+        rect(x0, y, x1, y, TILE_D, 0.55)
+        off = 0 if (y // 4) % 2 else 4
+        for x in range(int(x0) + off, int(x1), 8):
+            rect(x, y, x, min(y + 3, y1), TILE_D, 0.45)
+    rect(x0, y0, x1, y0, (232, 234, 224))
+    if band_y is not None:
+        rect(x0, band_y, x1, band_y + 4, LIVERY)
+        rect(x0, band_y, x1, band_y, (196, 96, 84))
+
+
+def live_rail(x0, x1, y, arc_at=None):
+    """Conductor rail on pot insulators - the level's ambient hazard."""
+    for x in range(int(x0), int(x1), 11):
+        rect(x, y + 1, x + 2, y + 3, (52, 40, 36))
+        rect(x, y + 1, x, y + 3, (92, 74, 62))
+    rect(x0, y - 1, x1, y, MET_XL)
+    rect(x0, y, x1, y, MET)
+    glow((x0 + x1) / 2, y, (x1 - x0) * 0.35, CYAN, 0.06)
+    if arc_at is not None:
+        sparks(arc_at, y - 2, 18, 14, CYAN)
+        glow(arc_at, y - 2, 14, CYAN, 0.34)
+
+
+def buffer_stop(x, y):
+    rect(x, y - 10, x + 3, y, MET_D)
+    rect(x, y - 10, x, y, MET_L)
+    rect(x - 4, y - 11, x + 7, y - 8, MET)
+    line(x + 3, y - 9, x + 10, y, MET_D)
+    for k in range(3):
+        rect(x - 4, y - 11 + k, x + 7, y - 11 + k, F_MID if k % 2 else MET_XL, 0.8)
+
+
+def train_car(x0, y, w=94, h=26, nose=False, doors=(26, 62), lit_windows=True,
+              rolling=False):
+    """A car, drawn as the solid it is: body, skirt, bogies, doors that are holes."""
+    rect(x0, y, x0 + w, y + h, MET)
+    rect(x0, y, x0 + w, y, MET_XL)                       # roof line
+    rect(x0, y + 1, x0 + w, y + 2, MET_L)
+    rect(x0, y + h - 5, x0 + w, y + h, LIVERY)           # skirt band
+    rect(x0, y + h - 5, x0 + w, y + h - 5, (196, 96, 84))
+    for wx in range(int(x0) + 8, int(x0 + w) - 8, 14):   # window strip
+        rect(wx, y + 6, wx + 8, y + 13, (34, 40, 48))
+        if lit_windows and chance(0.6):
+            rect(wx + 1, y + 7, wx + 7, y + 12, (168, 176, 150), 0.55)
+        rect(wx, y + 6, wx + 8, y + 6, MET_D)
+    for dx in doors:                                     # doorway: pixels gone, not a panel
+        rect(x0 + dx, y + 4, x0 + dx + 9, y + h - 6, (24, 27, 32))
+        rect(x0 + dx - 1, y + 4, x0 + dx - 1, y + h - 6, MET_XL)
+        rect(x0 + dx + 10, y + 4, x0 + dx + 10, y + h - 6, MET_XL)
+    if nose:
+        rect(x0 - 3, y + 3, x0, y + h - 2, MET)
+        rect(x0 - 3, y + 3, x0 - 3, y + h - 2, MET_XL)
+        rect(x0 - 2, y + 6, x0 - 1, y + 12, (34, 40, 48))
+        disc(x0 - 2, y + h - 6, 2, PALE_G)               # marker light
+        glow(x0 - 3, y + h - 6, 16, (255, 236, 170), 0.20)
+    for bx in (x0 + 12, x0 + w - 22):                    # bogies
+        rect(bx, y + h, bx + 12, y + h + 2, MET_D)
+        for wx in (bx + 2, bx + 10):
+            disc(wx, y + h + 4, 2.4, INK)
+            disc(wx, y + h + 4, 1.3, MET_L)
+    rect(x0 + w, y + h - 12, x0 + w + 3, y + h - 9, MET_D)   # coupler
+    if rolling:
+        for i in range(9):
+            px(x0 - 6 - i * 3, y + h + 4 - int(rnd() * 3), MET_L, 0.35)
+
+
+def escalator(x0, y0, x1, y1, tread=6, rail=True):
+    """Truss, treads and balustrade. Steps are a conveyor that happens to be a slope."""
+    n = int(max(abs(x1 - x0), abs(y1 - y0)) / tread)
+    line(x0, y0 + 4, x1, y1 + 4, MET_D)                  # truss underside
+    line(x0, y0 + 6, x1, y1 + 6, MET_D)
+    for i in range(n + 1):
+        t = i / max(n, 1)
+        x = x0 + (x1 - x0) * t
+        y = y0 + (y1 - y0) * t
+        rect(x, y, x + tread - 1, y + 1, MET_XL)         # tread
+        rect(x, y + 2, x + tread - 1, y + 3, MET)
+        rect(x + tread - 1, y, x + tread - 1, y + 5, MET_D)
+    if rail:
+        line(x0, y0 - 12, x1, y1 - 12, MET_D)
+        line(x0, y0 - 13, x1, y1 - 13, MET_XL)
+        for i in range(0, n + 1, 3):
+            t = i / max(n, 1)
+            line(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t - 12,
+                 x0 + (x1 - x0) * t, y0 + (y1 - y0) * t - 1, MET_D, 0.7)
+    for cx, cy in ((x0, y0), (x1, y1)):                  # comb plates
+        rect(cx - 4, cy - 1, cx + 5, cy + 1, MET_XL)
+        rect(cx - 4, cy + 2, cx + 5, cy + 3, MET_D)
+
+
+def turnstile(x, y):
+    rect(x, y - 11, x + 4, y, MET)
+    rect(x, y - 11, x, y, MET_L)
+    rect(x, y - 11, x + 4, y - 11, MET_XL)
+    for a in (-0.5, 0.7, 2.2):
+        line(x + 2, y - 8, x + 2 + math.cos(a) * 8, y - 8 + math.sin(a) * 8, MET_XL)
+
+
+def cable_rack(x0, x1, y, runs=3):
+    for i in range(runs):
+        cable(x0, y + i * 3, x1, y + i * 3, 3, MET_D)
+    for x in range(int(x0) + 8, int(x1), 26):
+        rect(x, y - 2, x + 1, y + runs * 3, MET_D)
+
+
+def sign_board(x, y, w=26):
+    rect(x, y, x + w, y + 9, (36, 42, 52))
+    rect(x, y, x + w, y, BLUE_L)
+    rect(x + 2, y + 3, x + w - 2, y + 5, BLUE_XL, 0.8)
+    glow(x + w // 2, y + 4, 14, BLUE_L, 0.14)

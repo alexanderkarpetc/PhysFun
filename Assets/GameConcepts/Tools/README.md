@@ -255,6 +255,8 @@ from that:
 | 27 `theincline.py` | one rope-haulage incline corner to corner, with every room hung off it |
 | 28 `thegreatstope.py` | a single slanted void; stulls, staging and ore passes are the only floors in it |
 | 29 `thespan.py` | a chasm crossed by a ropeway on two rock pinnacles — buckets, a footbridge, or the long way round |
+| 30 `theinterchange.py` | tube station: a dead car on a rail that leaves the sheet at both ends, and a live conductor rail |
+
 
 ## Pulley wheel sprites
 

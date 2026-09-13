@@ -18,6 +18,10 @@ namespace Editor
     /// prefab, hinges, masses — is <see cref="NoitaRagdollImporter"/>'s, so the soldier's body
     /// behaves like everyone else's.
     ///
+    /// The cuts belong to this drawing and nothing else: the dark soldier stands on a 20px canvas
+    /// with a shorter head, and his corpse was built by running this once with his rows and his
+    /// paths. Another palette means reading its idle frame and doing the same.
+    ///
     /// Run it after <see cref="SoldierBuilder"/>: it reads the frame through the import settings
     /// that one applies, and it is what puts the <see cref="RagdollSpawner"/> on the live soldier.
     /// Re-running overwrites what it made last time.

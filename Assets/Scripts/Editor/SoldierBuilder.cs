@@ -19,6 +19,10 @@ namespace Editor
     /// the tags and the hull is the sprite's own bounds. Re-run it whenever the art changes and it
     /// overwrites what it made last time, keeping every reference to the prefab intact.
     ///
+    /// The dark soldier was made by pointing this file and <see cref="SoldierRagdollBuilder"/> at
+    /// his own .aseprite for one run. His assets are checked in, so both builders are kept on the
+    /// one soldier: they are the worked example for the next palette, not a pipeline.
+    ///
     /// One thing the art does not carry yet is a shot: the importer only turns Aseprite user data
     /// into animation events, and there is none on the Shoot frames, so nothing calls
     /// RegularEnemyController.Shoot(). Tag a frame in Aseprite when the muzzle should flash.

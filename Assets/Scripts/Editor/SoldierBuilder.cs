@@ -191,6 +191,10 @@ namespace Editor
             WireController(root.AddComponent<RegularEnemyController>(), view.transform, body, animator, eye.transform);
             WireHealth(root.AddComponent<Damageable>());
 
+            // The corpse is a separate build and he stands up fine without one, so this only
+            // takes if PhysFun/Enemies/Build Soldier Ragdoll has already been run.
+            SoldierRagdollBuilder.WireSpawner(root);
+
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             Object.DestroyImmediate(root);
             return prefab;

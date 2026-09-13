@@ -189,6 +189,7 @@ GameObject:
   - component: {fileID: 1892984128607236142}
   - component: {fileID: 7044517094096353997}
   - component: {fileID: 930366397515077052}
+  - component: {fileID: 8077373476292324551}
   m_Layer: 8
   m_Name: Soldier
   m_TagString: Untagged
@@ -322,3 +323,22 @@ MonoBehaviour:
   config: {fileID: 0}
   takesPhysicsDamage: 1
   showDamageNumbers: 1
+--- !u!114 &8077373476292324551
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8666127740443770330}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: feeb4ba6b291a464fbc6477e1a93c4d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Ragdolls.RagdollSpawner
+  ragdollPrefab: {fileID: 7583020597788532137, guid: eb0ac9f1557752f48a9d1360813d012c, type: 3}
+  poseSource: {fileID: 1052722090386138420}
+  facingSource: {fileID: 1653403570204640222}
+  body: {fileID: 837572233467329222}
+  inheritVelocity: 1
+  spin: 0.05
+  destroySource: 1

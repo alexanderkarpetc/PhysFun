@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -47,10 +47,26 @@ namespace NoitaImport
                 return false;
             }
 
-            string folder = EnsureFolder(settings.OutputRoot, creature);
-            string sheetPath = $"{folder}/{creature}_parts.png";
-            string defPath = $"{folder}/{creature}_ragdoll.asset";
-            string prefabPath = $"{folder}/{Capitalize(creature)}Ragdoll.prefab";
+            Write(build, settings);
+
+            log.AppendLine($"  {build.Parts.Count} parts, {build.Poses.Count} poses");
+            log.Append("  ").Append(HierarchyText(build));
+            report = $"{creature}: ok\n{log}";
+            return true;
+        }
+
+        /// <summary>
+        /// The Unity half of an import: part sheet, definition and prefab for a corpse whose
+        /// pieces are already worked out. Split off from <see cref="Import"/> so a creature that
+        /// does not come from Noita's data — a hand-drawn .aseprite, say — still leaves behind
+        /// the same kind of body, built by the same code.
+        /// </summary>
+        public static RagdollDefinition Write(RagdollBuild build, Settings settings)
+        {
+            string folder = EnsureFolder(settings.OutputRoot, build.Creature);
+            string sheetPath = $"{folder}/{build.Creature}_parts.png";
+            string defPath = $"{folder}/{build.Creature}_ragdoll.asset";
+            string prefabPath = $"{folder}/{Capitalize(build.Creature)}Ragdoll.prefab";
 
             var placements = PackAtlas(build, settings, sheetPath);
             var sprites = SliceAtlas(sheetPath, placements, build, settings);
@@ -58,10 +74,8 @@ namespace NoitaImport
             var def = WriteDefinition(defPath, build, sprites, settings);
             if (settings.BuildPrefab) BuildPrefab(prefabPath, def, build, settings);
 
-            log.AppendLine($"  {build.Parts.Count} parts, {build.Poses.Count} poses");
-            log.Append("  ").Append(HierarchyText(build));
-            report = $"{creature}: ok\n{log}";
-            return true;
+            AssetDatabase.SaveAssets();
+            return def;
         }
 
         // ─────────────────────────────────────────────────────────────────────────────

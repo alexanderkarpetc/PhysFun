@@ -29,10 +29,10 @@ namespace Editor
     /// </summary>
     public static class SoldierRagdollBuilder
     {
-        private const string Source = "Assets/Sprites/Enemies/swat.aseprite";
-        private const string Creature = "swat";
-        private const string EnemyPrefabPath = "Assets/Resources/Prefabs/Enemies/Swat.prefab";
-        public const string RagdollPrefabPath = "Assets/Resources/Ragdolls/swat/SwatRagdoll.prefab";
+        private const string Source = "Assets/Sprites/Enemies/wizard.aseprite";
+        private const string Creature = "wizard";
+        private const string EnemyPrefabPath = "Assets/Resources/Prefabs/Enemies/Wizard.prefab";
+        public const string RagdollPrefabPath = "Assets/Resources/Ragdolls/wizard/WizardRagdoll.prefab";
 
         /// <summary>Matches <see cref="SoldierBuilder"/>; the corpse has to be drawn at his scale.</summary>
         private const float PixelsPerUnit = 20f;
@@ -87,21 +87,31 @@ namespace Editor
         }
 
         /// <summary>
-        /// The SWAT read off his idle frame: helmet down to row 6, legs from row 15, torso between.
-        /// The rifle is in none of them — it lies across his chest out to column 17, and a corpse
-        /// that keeps it is a corpse with a plank bolted to its ribs. So the chest rows stop at
-        /// column 10 and the gun is dropped: what no block claims is not part of the body. The
-        /// torso comes first because a hinge needs its parent to exist already.
+        /// The wizard read off his idle frame: hat and face down to row 9, sleeves out to both sides
+        /// on rows 11-13, and the robe below.
+        ///
+        /// The robe below the waist is cut into two legs even though the drawing has none: in one
+        /// piece it is a rigid slab with a flat bottom and no joint anywhere under the shoulders, so
+        /// the corpse lands on it and stands there. As two legs it buckles the way the soldier does.
+        ///
+        /// The seam runs straight down the middle, which halves the placket instead of leaving it
+        /// on the body. Leaving it would make the torso an L, and a part gets the box its pixels
+        /// fill — an L-shaped torso would get a box swallowing both legs, and he would rest on that
+        /// box with his legs dangling inside it. Two pixels of trim split down the seam is cheaper.
+        ///
+        /// The torso comes first because a hinge needs its parent to exist already.
         /// </summary>
         private static readonly Cut[] Cuts =
         {
-            new("torso", -1, Vector2.zero, 1,
-                new RectInt(0, 7, 14, 2),    // shoulders, out to the far edge of the body
-                new RectInt(0, 9, 11, 4),    // chest, cut short of the rifle
-                new RectInt(0, 13, 14, 2)),  // hips
-            new("head", 0, new Vector2(10f, 6.5f), 3, new RectInt(0, 0, 20, 7)),
-            new("leg_l", 0, new Vector2(6.5f, 14.5f), 2, new RectInt(0, 15, 9, 7)),
-            new("leg_r", 0, new Vector2(11f, 14.5f), 0, new RectInt(9, 15, 11, 7)),
+            new("torso", -1, Vector2.zero, 2,
+                new RectInt(0, 10, 20, 1),   // shoulders
+                new RectInt(9, 11, 4, 3),    // chest, the strip the sleeves leave between them
+                new RectInt(0, 14, 20, 2)),  // waist
+            new("leg_l", 0, new Vector2(7.5f, 15.5f), 1, new RectInt(0, 16, 10, 6)),
+            new("leg_r", 0, new Vector2(12f, 15.5f), 0, new RectInt(10, 16, 10, 6)),
+            new("head", 0, new Vector2(10f, 9.5f), 4, new RectInt(0, 0, 20, 10)),
+            new("arm_l", 0, new Vector2(8.5f, 11.5f), 0, new RectInt(0, 11, 9, 3)),
+            new("arm_r", 0, new Vector2(12.5f, 11.5f), 3, new RectInt(13, 11, 7, 3)),
         };
 
         [MenuItem("PhysFun/Enemies/Build Soldier Ragdoll", false, 201)]

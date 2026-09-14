@@ -1,0 +1,104 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8f1e07af96acd2418429a8e18e2602c, type: 3}
+  m_Name: wizard_ragdoll
+  m_EditorClassIdentifier: Assembly-CSharp::Ragdolls.RagdollDefinition
+  creature: wizard
+  frameWidth: 20
+  frameHeight: 22
+  originPx: {x: 10, y: 22}
+  pixelsPerUnit: 20
+  parts:
+  - name: torso
+    sprite: {fileID: -1304302246, guid: 6196d3112b2affa48b94a3f6b73df89e, type: 3}
+    parent: -1
+    pivotPx: {x: 9.5, y: 12.5}
+    anchorPx: {x: 9.5, y: 12.5}
+    useLimits: 0
+    limitLow: -55
+    limitHigh: 55
+    uvColor:
+      serializedVersion: 2
+      rgba: 0
+  - name: leg_l
+    sprite: {fileID: 894257138, guid: 6196d3112b2affa48b94a3f6b73df89e, type: 3}
+    parent: 0
+    pivotPx: {x: 7, y: 18}
+    anchorPx: {x: 7.5, y: 15.5}
+    useLimits: 1
+    limitLow: -55
+    limitHigh: 55
+    uvColor:
+      serializedVersion: 2
+      rgba: 0
+  - name: leg_r
+    sprite: {fileID: 44644853, guid: 6196d3112b2affa48b94a3f6b73df89e, type: 3}
+    parent: 0
+    pivotPx: {x: 12.5, y: 18}
+    anchorPx: {x: 12, y: 15.5}
+    useLimits: 1
+    limitLow: -55
+    limitHigh: 55
+    uvColor:
+      serializedVersion: 2
+      rgba: 0
+  - name: head
+    sprite: {fileID: -968226122, guid: 6196d3112b2affa48b94a3f6b73df89e, type: 3}
+    parent: 0
+    pivotPx: {x: 9, y: 6}
+    anchorPx: {x: 10, y: 9.5}
+    useLimits: 1
+    limitLow: -55
+    limitHigh: 55
+    uvColor:
+      serializedVersion: 2
+      rgba: 0
+  - name: arm_l
+    sprite: {fileID: 587474130, guid: 6196d3112b2affa48b94a3f6b73df89e, type: 3}
+    parent: 0
+    pivotPx: {x: 6, y: 12}
+    anchorPx: {x: 8.5, y: 11.5}
+    useLimits: 1
+    limitLow: -55
+    limitHigh: 55
+    uvColor:
+      serializedVersion: 2
+      rgba: 0
+  - name: arm_r
+    sprite: {fileID: 1762030832, guid: 6196d3112b2affa48b94a3f6b73df89e, type: 3}
+    parent: 0
+    pivotPx: {x: 14.5, y: 12}
+    anchorPx: {x: 12.5, y: 11.5}
+    useLimits: 1
+    limitLow: -55
+    limitHigh: 55
+    uvColor:
+      serializedVersion: 2
+      rgba: 0
+  poses:
+  - anim: Frame
+    frame: 0
+    positionsPx:
+    - {x: 9.5, y: 12.5}
+    - {x: 7, y: 18}
+    - {x: 12.5, y: 18}
+    - {x: 9, y: 6}
+    - {x: 6, y: 12}
+    - {x: 14.5, y: 12}
+    rotations:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+  defaultAnim: Frame

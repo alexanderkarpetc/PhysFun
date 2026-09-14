@@ -29,11 +29,11 @@ namespace Editor
     /// </summary>
     public static class SoldierBuilder
     {
-        private const string Source = "Assets/Sprites/Enemies/swat.aseprite";
-        private const string ControllerDir = "Assets/Resources/Animations/Enemies/Swat";
-        private const string ControllerPath = ControllerDir + "/SwatAnimator.controller";
+        private const string Source = "Assets/Sprites/Enemies/wizard.aseprite";
+        private const string ControllerDir = "Assets/Resources/Animations/Enemies/Wizard";
+        private const string ControllerPath = ControllerDir + "/WizardAnimator.controller";
         private const string PrefabDir = "Assets/Resources/Prefabs/Enemies";
-        private const string PrefabPath = PrefabDir + "/Swat.prefab";
+        private const string PrefabPath = PrefabDir + "/Wizard.prefab";
 
         /// <summary>The pixel scale the rest of the cast is drawn at. 18px tall becomes 0.9 units.</summary>
         private const float PixelsPerUnit = 20f;
@@ -43,8 +43,17 @@ namespace Editor
         /// <summary>What the eye is allowed to be stopped by: the world, and the player himself.</summary>
         private const int SightMask = (1 << 0) | (1 << 7);
 
-        // Tag names in the .aseprite, which are also the clip names and the trigger names.
-        private static readonly string[] States = { "Idle", "Walk", "Shoot" };
+        /// <summary>
+        /// The trigger <see cref="RegularEnemyController"/> fires, and the .aseprite tag whose clip
+        /// plays for it. Usually the same word; the wizard calls his third one Attack, because that
+        /// is what it looks like, while the trigger is still Shoot.
+        /// </summary>
+        private static readonly (string Trigger, string Tag)[] States =
+        {
+            ("Idle", "Idle"),
+            ("Walk", "Walk"),
+            ("Shoot", "Attack"),
+        };
 
         [MenuItem("PhysFun/Enemies/Build Soldier", false, 200)]
         private static void Build()
@@ -62,10 +71,10 @@ namespace Editor
                 .OfType<AnimationClip>()
                 .ToDictionary(c => c.name);
 
-            var missing = States.Where(s => !clips.ContainsKey(s)).ToArray();
+            var missing = States.Where(s => !clips.ContainsKey(s.Tag)).Select(s => s.Tag).ToArray();
             if (missing.Length > 0)
             {
-                Debug.LogError($"[PhysFun] soldier.aseprite has no tag(s) named {string.Join(", ", missing)}. " +
+                Debug.LogError($"[PhysFun] {Source} has no tag(s) named {string.Join(", ", missing)}. " +
                                "The controller needs one tag per state.");
                 return;
             }
@@ -134,15 +143,15 @@ namespace Editor
             var empty = machine.AddState("Empty");
             machine.defaultState = empty;
 
-            foreach (var state in States)
+            foreach (var (trigger, tag) in States)
             {
-                controller.AddParameter(state, AnimatorControllerParameterType.Trigger);
+                controller.AddParameter(trigger, AnimatorControllerParameterType.Trigger);
 
-                var node = machine.AddState(state);
-                node.motion = clips[state];
+                var node = machine.AddState(trigger);
+                node.motion = clips[tag];
 
                 var transition = machine.AddAnyStateTransition(node);
-                transition.AddCondition(AnimatorConditionMode.If, 0f, state);
+                transition.AddCondition(AnimatorConditionMode.If, 0f, trigger);
                 transition.hasExitTime = false;
                 transition.duration = 0f;
                 transition.canTransitionToSelf = false;
@@ -176,7 +185,7 @@ namespace Editor
         {
             EnsureFolder(PrefabDir);
 
-            var root = new GameObject("Swat") { layer = EnemyLayer };
+            var root = new GameObject("Wizard") { layer = EnemyLayer };
 
             var view = new GameObject("View") { layer = EnemyLayer };
             view.transform.SetParent(root.transform, false);

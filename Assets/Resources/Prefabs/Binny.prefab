@@ -227,16 +227,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Binny.BinnyController
   _rb: {fileID: 2426526453974382834}
   _view: {fileID: 1048811831507123509}
+  _shape: {fileID: 6149572065129733968}
   _callKey: 98
   _cruiseSpeed: 7
   _acceleration: 22
   _braking: 26
   _arriveRadius: 0.15
-  _standoff: {x: 2, y: 1.2}
+  _standoff: {x: 2, y: 1.6}
+  _obstacles:
+    serializedVersion: 2
+    m_Bits: 65
+  _cellSize: 0.5
+  _skin: 0.1
+  _searchRange: 30
+  _searchBudget: 800
+  _replanInterval: 0.35
   _bobHeight: 0.12
   _bobPeriod: 2.4
   _swayWidth: 0.06
-  _arrivalCheer: 1.1
+  _arrivalFace: 1.1
+  _drawRoute: 1
 --- !u!1 &2918700945797100958
 GameObject:
   m_ObjectHideFlags: 0

@@ -18,8 +18,8 @@ namespace Editor
     /// change if the art is ever recut, and near enough to read against the table.
     ///
     /// It also fixes the import settings on the way past. Point filter, no compression and the
-    /// chassis at one world unit are not negotiable for pixel art of this size, and the pngs come
-    /// in with Unity's photo defaults, which smear him.
+    /// game's own pixel scale are not negotiable for pixel art of this size, and the pngs come in
+    /// with Unity's photo defaults, which smear him.
     ///
     /// Re-run it whenever the art changes: it overwrites the prefab it made last time, so anything
     /// already standing in a scene keeps its link and just gets rebuilt.
@@ -61,6 +61,13 @@ namespace Editor
         /// with, and what things get thrown at once there is something to throw.
         /// </summary>
         private static readonly Rect Hull = new(2f, 0f, 40f, 41f);
+
+        /// <summary>
+        /// What he has to fly round: the world (Default) and the bedrock (Untouchable). Not the
+        /// player, who he is on his way to, and not the enemies — he would stop dead at the first
+        /// one in a corridor, and a bin bumping into a soldier is their problem, not his.
+        /// </summary>
+        private const int ObstacleMask = (1 << 0) | (1 << 6);
 
         [MenuItem("PhysFun/Binny/Build Binny", false, 300)]
         private static void Build()
@@ -183,7 +190,7 @@ namespace Editor
             hull.offset = new Vector2((Hull.center.x - origin.x) / PixelsPerUnit,
                                       (origin.y - Hull.center.y) / PixelsPerUnit);
 
-            WireController(root.AddComponent<BinnyController>(), rb, binnyView);
+            WireController(root.AddComponent<BinnyController>(), rb, binnyView, hull);
 
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             UnityEngine.Object.DestroyImmediate(root);
@@ -232,11 +239,13 @@ namespace Editor
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        private static void WireController(BinnyController binny, Rigidbody2D rb, BinnyView view)
+        private static void WireController(BinnyController binny, Rigidbody2D rb, BinnyView view, Collider2D shape)
         {
             var so = new SerializedObject(binny);
             so.FindProperty("_rb").objectReferenceValue = rb;
             so.FindProperty("_view").objectReferenceValue = view;
+            so.FindProperty("_shape").objectReferenceValue = shape;
+            so.FindProperty("_obstacles").intValue = ObstacleMask;
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 

@@ -53,6 +53,10 @@ namespace Editor
         private Vector3 _lastPaintPos;
         private bool _hasLastPaintPos;
 
+        /// <summary>The map as it was before the current stroke. Undo has to be registered with
+        /// this in place, see <see cref="EndStroke"/>.</summary>
+        private TerrainMap.State _beforeStroke;
+
         private void OnEnable()
         {
             LoadTiles();
@@ -69,12 +73,46 @@ namespace Editor
             Tools.hidden = false;
         }
 
+        /// <summary>
+        /// The preview chunks are <see cref="HideFlags.DontSave"/>, which keeps them out of the
+        /// saved scene but also means Unity carries them across the swap into play mode — where
+        /// the textures they render have already been unloaded, so they come back as colliders
+        /// with nothing drawn on them, on top of the ones <c>Awake</c> builds properly. So tear
+        /// the preview down on the way in, and build it again on the way out: outside of play
+        /// there is no <c>Awake</c>, and without this the scene stays empty until someone
+        /// presses Rebuild.
+        ///
+        /// Hooked statically rather than from the window, so it holds whether or not the
+        /// painter happens to be open.
+        /// </summary>
+        [InitializeOnLoadMethod]
+        private static void HookPlayModeTransitions()
+        {
+            EditorApplication.playModeStateChanged += change =>
+            {
+                bool leaving = change == PlayModeStateChange.ExitingEditMode;
+                bool returned = change == PlayModeStateChange.EnteredEditMode;
+                if (!leaving && !returned) return;
+
+                foreach (var builder in
+                         FindObjectsByType<TerrainBuilder>(FindObjectsSortMode.None))
+                {
+                    if (leaving) builder.ClearPreview();
+                    else builder.Build();
+                }
+                SceneView.RepaintAll();
+            };
+        }
+
         private void OnUndoRedo()
         {
             // Undo swaps the map's cell buffer out from under the chunks, so the view has to be
             // regenerated — but only once this window has actually changed a map. Otherwise every
             // unrelated undo in the editor would pay for a full terrain rebuild.
             if (!_editedMap || !builder) return;
+            // Undo writes the map's serialized bytes directly; the expanded buffer it was
+            // handing out is now the *pre-undo* picture and has to be thrown away.
+            if (builder.Map) builder.Map.InvalidateCells();
             builder.Build();
             SceneView.RepaintAll();
         }
@@ -151,7 +189,8 @@ namespace Editor
                 {
                     if (GUILayout.Button("Apply region"))
                     {
-                        Undo.RecordObject(map, "Resize Terrain Map");
+                        map.Flush();
+                        Undo.RegisterCompleteObjectUndo(map, "Resize Terrain Map");
                         map.Resize(_regionMin, cellsWide, cellsHigh, _regionResolution);
                         builder.Build();
                         Finish(map);
@@ -198,7 +237,8 @@ namespace Editor
 
                 if (GUILayout.Button("Bake features"))
                 {
-                    Undo.RecordObject(map, "Bake Terrain Features");
+                    map.Flush();
+                    Undo.RegisterCompleteObjectUndo(map, "Bake Terrain Features");
                     builder.BakeFeaturesIntoMap();
                     builder.Build();
                     Finish(map);
@@ -208,7 +248,8 @@ namespace Editor
                     EditorUtility.DisplayDialog("Clear terrain map",
                         "Erase every painted cell? This can be undone.", "Clear", "Cancel"))
                 {
-                    Undo.RecordObject(map, "Clear Terrain Map");
+                    map.Flush();
+                    Undo.RegisterCompleteObjectUndo(map, "Clear Terrain Map");
                     map.Clear();
                     builder.Build();
                     Finish(map);
@@ -420,7 +461,12 @@ namespace Editor
             _erasing = erase;
             _hasStrokeRect = false;
             _hasLastPaintPos = false;
-            Undo.RecordObject(builder.Map, erase ? "Erase Terrain" : "Paint Terrain");
+
+            // Recording here would capture the stroke's *first frame* only: Unity diffs a
+            // recorded object at the end of the frame it was recorded in, and a drag keeps
+            // writing cells for many frames after that. So just remember the starting point
+            // and register the whole stroke on mouse up.
+            _beforeStroke = builder.Map.Capture();
         }
 
         private void EndStroke()
@@ -430,11 +476,21 @@ namespace Editor
 
             if (_hasStrokeRect)
             {
+                var map = builder.Map;
+
+                // Undo records what the object looks like *now*, so the pre-stroke state has to
+                // be back in place for the length of the call, and the stroke re-applied after.
+                var after = map.Capture();
+                map.Restore(_beforeStroke);
+                Undo.RegisterCompleteObjectUndo(map, _erasing ? "Erase Terrain" : "Paint Terrain");
+                map.Restore(after);
+
                 // Colliders are the expensive half, so the whole stroke pays for them once.
                 builder.RefreshArea(_strokeRect, rebuildColliders: true);
-                Finish(builder.Map);
+                Finish(map);
             }
             _hasStrokeRect = false;
+            _beforeStroke = default;
         }
 
         /// <summary>Paint from the last brush position to this one, so a fast drag leaves a
@@ -513,6 +569,7 @@ namespace Editor
         private void Finish(TerrainMap map)
         {
             _editedMap = true;
+            map.Flush();            // cells live outside serialization; push them in before saving
             EditorUtility.SetDirty(map);
             AssetDatabase.SaveAssetIfDirty(map);
             Repaint();

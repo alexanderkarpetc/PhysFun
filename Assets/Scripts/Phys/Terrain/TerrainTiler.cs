@@ -75,7 +75,11 @@ namespace Phys.Terrain
             if (!readable) return Solid(new Color32(120, 118, 112, 255));
 
             var tile = new Tile(readable.GetPixels32(), readable.width, readable.height);
-            Object.Destroy(readable);   // pixels are on the CPU now
+
+            // Pixels are on the CPU now. Destroy throws in edit mode, which would take the
+            // whole palette load — and with it the terrain build — down with it.
+            if (Application.isPlaying) Object.Destroy(readable);
+            else Object.DestroyImmediate(readable);
             return tile;
         }
 

@@ -488,6 +488,10 @@ namespace Phys.Terrain
                 FillChunk(chunk, px0, py0);
                 chunk.Tex.SetPixels32(chunk.Pixels);
                 chunk.Tex.Apply(false, false);
+
+                // A Sprite freezes the geometry it was built from, so a chunk whose pixels
+                // changed needs a new one before anything reads that geometry again.
+                if (rebuildCollider) ReSprite(chunk);
             }
 
             MaterialView.Apply(chunk.Go, _palette[dominant - 1].material);
@@ -517,6 +521,12 @@ namespace Phys.Terrain
             {
                 filterMode = FilterMode.Point,
                 wrapMode = TextureWrapMode.Clamp,
+
+                // The texture has to carry the same flags as the object that renders it.
+                // Without them the editor unloads it as an unused asset — on a script reload,
+                // a scene save, the way into play mode — and leaves a chunk that still has its
+                // collider but draws nothing at all.
+                hideFlags = GeneratedHideFlags,
             };
 
             var chunk = new Chunk
@@ -531,9 +541,8 @@ namespace Phys.Terrain
             tex.SetPixels32(chunk.Pixels);
             tex.Apply(false, false);
 
-            var sprite = Sprite.Create(tex, new Rect(0, 0, cw, chh),
-                                       new Vector2(0.5f, 0.5f), _cellsPerUnit);
-            sprite.name = $"Chunk_{coord.x}_{coord.y}";
+            var sprite = MakeSprite(tex, cw, chh, $"Chunk_{coord.x}_{coord.y}");
+            sprite.hideFlags = GeneratedHideFlags;
 
             var go = new GameObject(sprite.name) { hideFlags = GeneratedHideFlags };
             chunk.Go = go;
@@ -567,6 +576,35 @@ namespace Phys.Terrain
             return chunk;
         }
 
+        /// <summary>
+        /// A chunk's sprite, built over the whole texture rect. The mesh has to be
+        /// <see cref="SpriteMeshType.FullRect"/>: a tight mesh is cut from the alpha the texture
+        /// had when the sprite was made, so a chunk that is painted into later would keep
+        /// rendering its original blob and drop everything added since.
+        /// </summary>
+        private Sprite MakeSprite(Texture2D tex, int cw, int chh, string name)
+        {
+            var sprite = Sprite.Create(tex, new Rect(0, 0, cw, chh), new Vector2(0.5f, 0.5f),
+                                       _cellsPerUnit, 0, SpriteMeshType.FullRect);
+            sprite.name = name;
+            sprite.hideFlags = GeneratedHideFlags;
+            return sprite;
+        }
+
+        /// <summary>Swap in a sprite built over the chunk's current pixels. The texture is the
+        /// same object, so anything holding on to that keeps working.</summary>
+        private void ReSprite(Chunk chunk)
+        {
+            var sr = chunk.Go ? chunk.Go.GetComponent<SpriteRenderer>() : null;
+            if (!sr) return;
+
+            var stale = sr.sprite;
+            sr.sprite = MakeSprite(chunk.Tex, chunk.Width, chunk.Height, chunk.Go.name);
+            if (!stale) return;
+            if (Application.isPlaying) Destroy(stale);
+            else DestroyImmediate(stale);
+        }
+
         /// <summary>Re-trace the collider from the current pixels and re-derive mass.</summary>
         private void RetraceCollider(GameObject go)
         {
@@ -581,28 +619,40 @@ namespace Phys.Terrain
 
         private static void DestroyChunk(Chunk chunk)
         {
-            if (chunk.Go)
-            {
-                if (Application.isPlaying) Destroy(chunk.Go);
-                else DestroyImmediate(chunk.Go);
-            }
-            if (chunk.Tex)
-            {
-                if (Application.isPlaying) Destroy(chunk.Tex);
-                else DestroyImmediate(chunk.Tex);
-            }
+            var sprite = chunk.Go ? chunk.Go.GetComponent<SpriteRenderer>()?.sprite : null;
+
+            if (chunk.Go) Kill(chunk.Go);
+            if (sprite) Kill(sprite);
+            if (chunk.Tex) Kill(chunk.Tex);
+        }
+
+        private static void Kill(Object o)
+        {
+            if (Application.isPlaying) Destroy(o);
+            else DestroyImmediate(o);
+        }
+
+        /// <summary>
+        /// Throw the generated chunks away. The editor calls this on the way into play mode:
+        /// the preview objects are <see cref="HideFlags.DontSave"/>, which in Unity also means
+        /// they survive the scene swap — but the textures they render do not, so left alone they
+        /// come back as colliders with nothing drawn on them.
+        /// </summary>
+        public void ClearPreview()
+        {
+            foreach (var chunk in _chunks.Values) DestroyChunk(chunk);
+            _chunks.Clear();
+
+            var existing = _container ? _container : transform.Find(ContainerName);
+            if (existing) Kill(existing.gameObject);
+
+            _container = null;
+            _cells = null;   // forces a full rebuild rather than a patch of a dead view
         }
 
         private void ResetContainer()
         {
-            _chunks.Clear();
-
-            var existing = _container ? _container : transform.Find(ContainerName);
-            if (existing)
-            {
-                if (Application.isPlaying) Destroy(existing.gameObject);
-                else DestroyImmediate(existing.gameObject);
-            }
+            ClearPreview();
 
             var holder = new GameObject(ContainerName) { hideFlags = GeneratedHideFlags };
             holder.layer = gameObject.layer;

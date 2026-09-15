@@ -115,6 +115,40 @@ namespace Phys.Terrain
         }
 
         /// <summary>
+        /// Push the working cell buffer into the serialized field. Cells live in a plain array
+        /// that Unity never looks at, so anything that reads this object's serialized state —
+        /// saving the asset, and above all recording an undo — sees stale bytes until this runs.
+        /// </summary>
+        public void Flush()
+        {
+            if (_cells != null) encoded = Encode(_cells);
+        }
+
+        /// <summary>Drop the working buffer so the next read re-expands it from the serialized
+        /// bytes. Call after something wrote those bytes behind our back — an undo does.</summary>
+        public void InvalidateCells() => _cells = null;
+
+        /// <summary>Everything a stroke can change, copied out so it can be put back.</summary>
+        public readonly struct State
+        {
+            public readonly byte[] Cells;
+            public readonly Entry[] Palette;
+            public State(byte[] cells, Entry[] palette) { Cells = cells; Palette = palette; }
+            public bool IsValid => Cells != null;
+        }
+
+        public State Capture() => new((byte[])Cells.Clone(), palette.ToArray());
+
+        public void Restore(State state)
+        {
+            if (!state.IsValid) return;
+            palette.Clear();
+            palette.AddRange(state.Palette);
+            _cells = (byte[])state.Cells.Clone();
+            encoded = Encode(_cells);
+        }
+
+        /// <summary>
         /// Move or resize the paintable region, keeping whatever art lands inside it. Cells are
         /// copied by local position, so this also handles a change of resolution (nearest cell).
         /// </summary>

@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Binny — концепт диалогового окна</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* =========================================================================
+   Binny dialogue — HTML-прототип.
+   Имена классов = будущие USS-классы, структура = будущий UXML.
+   Всё, что здесь на CSS-переменных и transition, в UI Toolkit ложится
+   один в один; см. блок "Перенос в UI Toolkit" внизу страницы.
+   ========================================================================= */
+
+:root {
+  --px: 4;                      /* масштаб пикселя: PanelSettings -> Constant Pixel Size, Scale 4 */
+  --ink:      #e9dfd0;          /* текст */
+  --ink-dim:  #9c8a7c;
+  --rust:     #c8674a;          /* акцент, имя, стрелка */
+  --rust-dk:  #88301c;
+  --panel:    #141010;
+  --scene:    #241d1a;
+  --page:     #17120f;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font-family: 'Pixelify Sans', 'Courier New', monospace;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+}
+
+img { image-rendering: pixelated; display: block; }
+
+.page { max-width: 1040px; margin: 0 auto; padding: 28px 20px 80px; }
+
+h1 { font-size: 34px; margin: 0 0 4px; color: var(--ink); letter-spacing: 1px; }
+.lede { color: var(--ink-dim); font-size: 19px; margin: 0 0 22px; line-height: 1.5; }
+
+/* ---------- панель управления прототипом (в игру не идёт) ---------------- */
+.toolbar {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  background: #201a17; border: 2px solid #342a24; padding: 10px;
+  margin-bottom: 18px; font-size: 17px;
+}
+.toolbar__group { display: flex; gap: 6px; align-items: center; }
+.toolbar__sep { width: 2px; align-self: stretch; background: #342a24; margin: 0 4px; }
+.toolbar__label { color: var(--ink-dim); }
+button {
+  font: inherit; font-size: 17px; color: var(--ink); cursor: pointer;
+  background: #2c231f; border: 2px solid #46372f; padding: 5px 11px;
+}
+button:hover { background: #3a2d27; }
+button.is-active { background: var(--rust-dk); border-color: var(--rust); color: #fff; }
+input[type=range] { width: 120px; accent-color: var(--rust); }
+
+/* ---------- сцена ------------------------------------------------------- */
+.stage {
+  position: relative; height: 520px; overflow: hidden;
+  --ground: 408px;              /* линия пола: по ней стоит Бинни */
+  background:
+    linear-gradient(180deg, #2b2320 0%, #241d1a var(--ground),
+                            #1b1512 var(--ground), #1b1512 100%);
+  border: 2px solid #342a24;
+}
+.stage__ground {
+  position: absolute; left: 0; right: 0; top: var(--ground); height: 2px; background: #3d302a;
+}
+.stage.is-shaking { animation: shake 0.28s steps(2) 3; }
+@keyframes shake {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(3px, -2px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ---------- Бинни, собранный из слоёв ----------------------------------- */
+/* координаты — те же якоря, что в README: gear (0,12), face (14,20),
+   thrust (13,41) и (22,41). */
+.binny {
+  position: absolute; left: 50%; top: var(--ground);
+  width: calc(42px * var(--px)); height: calc(41px * var(--px));
+  transform: translate(-50%, -100%);
+}
+.binny__layer { position: absolute; }
+.binny__body   { left: 0; top: 0; width: calc(42px * var(--px)); }
+.binny__gear   { left: 0; top: calc(12px * var(--px)); width: calc(11px * var(--px));
+                 animation: gear-spin 2.4s steps(12) infinite; }
+.binny__face   { left: calc(14px * var(--px)); top: calc(20px * var(--px));
+                 width: calc(14px * var(--px)); }
+.binny__thrust-l { left: calc(13px * var(--px)); top: calc(41px * var(--px));
+                   width: calc(5px * var(--px)); }
+.binny__thrust-r { left: calc(22px * var(--px)); top: calc(41px * var(--px));
+                   width: calc(6px * var(--px)); }
+.binny__thrust-l[hidden], .binny__thrust-r[hidden] { display: none; }
+@keyframes gear-spin { to { transform: rotate(360deg); } }
+
+/* ---------- диалоговое окно --------------------------------------------- */
+/* Рамка — 9-slice: border-image здесь == -unity-slice-* в USS. */
+.dlg {
+  position: absolute;
+  border-style: solid;
+  border-width: calc(5px * var(--px));
+  border-image-source: url("Binny_DialogFrame.png");
+  border-image-slice: 5 fill;
+  border-image-repeat: repeat;
+  padding: 0;
+  opacity: 1;
+  transform-origin: center bottom;
+}
+/* появление: три ступени, без плавного лерпа — по-пиксельному */
+.dlg--in { animation: dlg-pop 0.18s steps(3) 1; }
+@keyframes dlg-pop {
+  from { transform: scaleY(0.2) scaleX(0.7); opacity: 0; }
+  to   { transform: scaleY(1) scaleX(1); opacity: 1; }
+}
+.dlg[hidden] { display: none; }
+
+/* режим 1: пузырь над Бинни */
+.dlg--bubble {
+  left: 50%;
+  bottom: calc(100% - var(--ground) + 41px * var(--px) + 10px);
+  transform: translateX(-50%);
+  width: calc(124px * var(--px));
+}
+/* режим 2: нижняя панель на всю ширину */
+.dlg--bar {
+  left: 16px; right: 16px; bottom: 16px;
+  width: auto;
+}
+
+.dlg__name {
+  position: absolute; left: calc(4px * var(--px)); top: calc(-7px * var(--px));
+  padding: calc(1px * var(--px)) calc(3px * var(--px));
+  background: var(--rust-dk);
+  border: calc(1px * var(--px)) solid #0f100f;
+  color: #ffe9d8; font-size: calc(5px * var(--px)); line-height: 1;
+  letter-spacing: 2px;
+}
+.dlg__body { display: flex; gap: calc(6px * var(--px)); align-items: flex-start; }
+
+/* портрет = его же экран, лицо меняется вместе с репликой */
+.dlg__portrait {
+  flex: 0 0 auto;
+  width: calc(16px * var(--px)); height: calc(13px * var(--px));
+  background: #0d0a0b;
+  border: calc(1px * var(--px)) solid var(--rust-dk);
+  display: flex; align-items: center; justify-content: center;
+}
+.dlg__screen { width: calc(14px * var(--px)); }
+
+/* пиктограмма выскакивает на экран рывком, в две ступени */
+.is-pop { animation: screen-pop 0.16s steps(2) 1; }
+@keyframes screen-pop {
+  from { transform: scale(0.35); }
+  to   { transform: scale(1); }
+}
+
+.dlg__text {
+  flex: 1 1 auto; min-height: calc(13px * var(--px));
+  font-size: calc(6px * var(--px)); line-height: 1.35;
+  color: var(--ink); white-space: pre-wrap; word-break: break-word;
+}
+.dlg__text .cursor { color: var(--rust); }
+
+.dlg__next {
+  position: absolute; right: calc(5px * var(--px)); bottom: calc(3px * var(--px));
+  width: calc(7px * var(--px));
+  animation: blink 0.7s steps(1) infinite;
+}
+.dlg__next[hidden] { display: none; }
+@keyframes blink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
+
+.dlg__tail {
+  position: absolute; left: 50%; bottom: calc(-6px * var(--px));
+  width: calc(9px * var(--px));
+  transform: translateX(-50%);
+}
+.dlg--bar .dlg__tail { display: none; }
+
+/* ---------- варианты ответа --------------------------------------------- */
+.dlg__choices { margin-top: calc(4px * var(--px)); }
+.dlg__choices[hidden] { display: none; }
+.choice {
+  display: flex; align-items: center; gap: calc(3px * var(--px));
+  font-size: calc(6px * var(--px)); color: var(--ink-dim);
+  padding: calc(1px * var(--px)) 0; cursor: pointer;
+}
+.choice.is-selected { color: var(--ink); }
+.choice__cursor { width: calc(5px * var(--px)); visibility: hidden; }
+.choice.is-selected .choice__cursor { visibility: visible; }
+
+/* ---------- заметки ----------------------------------------------------- */
+.notes { margin-top: 26px; font-size: 18px; line-height: 1.6; color: var(--ink-dim); }
+.notes h2 { color: var(--ink); font-size: 24px; margin: 26px 0 8px; }
+.notes code { color: var(--rust); font-family: 'Courier New', monospace; font-size: 16px; }
+.notes table { border-collapse: collapse; width: 100%; margin-top: 8px; }
+.notes th, .notes td {
+  text-align: left; padding: 6px 10px; border: 1px solid #342a24; vertical-align: top;
+}
+.notes th { color: var(--ink); background: #201a17; }
+.notes ul { margin: 6px 0; padding-left: 22px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Binny — как он с тобой разговаривает</h1>
+  <p class="lede">
+    Пиксельное окно с его же экраном вместо портрета: лицо шевелится, пока идёт текст,
+    и застывает на нужной эмоции в конце. Два режима размещения — пузырь над ним и
+    нижняя панель. Клик по сцене или пробел — следующая реплика (во время печати — домотать).
+  </p>
+
+  <div class="toolbar">
+    <div class="toolbar__group">
+      <span class="toolbar__label">режим:</span>
+      <button id="mode-bubble" class="is-active">пузырь</button>
+      <button id="mode-bar">панель</button>
+    </div>
+    <div class="toolbar__sep"></div>
+    <div class="toolbar__group">
+      <span class="toolbar__label">реплики:</span>
+      <button data-set="hello" class="is-active">привет</button>
+      <button data-set="hint">подсказка</button>
+      <button data-set="mock">насмешка</button>
+      <button data-set="sarcasm">сарказм</button>
+      <button data-set="damage">урон</button>
+      <button data-set="choice">выбор</button>
+    </div>
+    <div class="toolbar__sep"></div>
+    <div class="toolbar__group">
+      <span class="toolbar__label">скорость</span>
+      <input type="range" id="speed" min="10" max="90" value="34">
+    </div>
+    <div class="toolbar__group">
+      <button id="sound">звук: выкл</button>
+      <button id="fly">полёт: выкл</button>
+    </div>
+    <div class="toolbar__sep"></div>
+    <div class="toolbar__group">
+      <span class="toolbar__label">на экран:</span>
+      <button data-emote="MiddleFinger">палец</button>
+      <button data-emote="Poop">кучка</button>
+      <button data-emote="Skull">череп</button>
+      <button data-emote="Unimpressed">ну-ну</button>
+      <button data-emote="ThumbDown">дизлайк</button>
+      <button data-emote="ThumbUp">лайк</button>
+      <button data-emote="Tongue">язык</button>
+      <button data-emote="BrokenHeart">сердце</button>
+      <button data-emote="Cross">нет</button>
+      <button data-emote="Alert">!</button>
+      <button data-emote="Question">?</button>
+    </div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="stage__ground"></div>
+
+    <!-- Бинни: те же слои, что в Parts/Faces/VFX -->
+    <div class="binny" id="binny">
+      <img class="binny__layer binny__body"     src="../Parts/Binny_Body.png" alt="">
+      <img class="binny__layer binny__gear"     src="../Parts/Binny_Gear.png" alt="">
+      <img class="binny__layer binny__face"     id="stage-face"
+           src="../Faces/Binny_Face_Angry.png" alt="">
+      <img class="binny__layer binny__thrust-l" id="thrust-l" hidden
+           src="../VFX/Binny_VFX_Thrust_L_01.png" alt="">
+      <img class="binny__layer binny__thrust-r" id="thrust-r" hidden
+           src="../VFX/Binny_VFX_Thrust_R_01.png" alt="">
+    </div>
+
+    <!-- диалоговое окно -->
+    <div class="dlg dlg--bubble" id="dlg">
+      <div class="dlg__name">BINNY</div>
+      <div class="dlg__body">
+        <div class="dlg__portrait">
+          <img class="dlg__screen" id="portrait" src="../Faces/Binny_Face_Angry.png" alt="">
+        </div>
+        <div class="dlg__text" id="text"></div>
+      </div>
+      <div class="dlg__choices" id="choices" hidden></div>
+      <img class="dlg__next" id="next" src="Binny_ContinueArrow.png" alt="" hidden>
+      <img class="dlg__tail" src="Binny_DialogTail.png" alt="">
+    </div>
+  </div>
+
+  <div class="notes">
+    <h2>Что здесь показано</h2>
+    <ul>
+      <li><b>Портрет — это его экран.</b> Пока печатается текст, лицо перещёлкивается
+        между <code>Talk01</code> и <code>Talk02</code> — получается «рот шевелится».
+        На последнем символе встаёт лицо-эмоция реплики.</li>
+      <li><b>Печать посимвольно</b> с паузой на <code>.,!?…</code> и коротким блипом
+        на каждый 2-й символ (тон зависит от символа — получается «речь» без озвучки).</li>
+      <li><b>Окно появляется ступенями</b> (<code>steps(3)</code>), а не плавным лерпом —
+        иначе выбивается из пиксельной подачи.</li>
+      <li><b>Два режима:</b> пузырь с хвостиком над ним (для реплик на ходу) и нижняя
+        панель (для длинных сцен). Разметка одна и та же, меняется только класс.</li>
+      <li><b>Пиктограммы вместо лица.</b> Экран показывает не только эмоции, но и
+        <code>Emotes/*.png</code> — средний палец, кучку, череп, «ну-ну», лайк/дизлайк,
+        язык, разбитое сердце, крестик, <code>!</code> и <code>?</code>. Та же сетка
+        14×11 и те же два красных, что у лица: для кода это просто другая картинка
+        в том же слоте. Выскакивают рывком в две ступени.</li>
+      <li><b>Рамка — 9-slice</b> <code>Binny_DialogFrame.png</code> 24×24, слайс 8.
+        Тянется на любой размер окна без искажения углов.</li>
+    </ul>
+
+    <h2>Перенос в UI Toolkit</h2>
+    <table>
+      <tr><th>здесь</th><th>в UXML / USS</th></tr>
+      <tr><td><code>.dlg</code> + <code>border-image</code></td>
+          <td><code>VisualElement</code>, <code>background-image</code> = рамка,
+              <code>-unity-slice-left/right/top/bottom: 8</code>,
+              <code>-unity-slice-scale: 4</code></td></tr>
+      <tr><td><code>.dlg__name</code></td>
+          <td><code>Label</code> с <code>border-width</code> и фоном (или 9-slice
+              <code>Binny_NamePlate.png</code>)</td></tr>
+      <tr><td><code>.dlg__portrait</code> / <code>.dlg__screen</code></td>
+          <td><code>VisualElement</code>, <code>background-image</code> меняется из C#
+              (<code>style.backgroundImage = new StyleBackground(faceSprite)</code>)</td></tr>
+      <tr><td><code>.dlg__text</code></td>
+          <td><code>Label</code>, текст набирается корутиной; шрифт —
+              <code>-unity-font-definition</code>, нужен пиксельный TTF/битмап-шрифт</td></tr>
+      <tr><td><code>.dlg__next</code>, мигание</td>
+          <td><code>VisualElement</code> + переключение класса
+              <code>.dlg__next--off</code> по таймеру (USS-анимаций с keyframes нет)</td></tr>
+      <tr><td><code>.dlg--bubble</code> позиционирование</td>
+          <td><code>position: absolute</code> + <code>left/top</code> из кода, как уже
+              сделано в <code>LevitationBar</code> (world → panel каждый кадр)</td></tr>
+      <tr><td><code>.dlg--in</code> (steps)</td>
+          <td>2–3 состояния через классы по таймеру, либо
+              <code>transition</code> на <code>scale</code> с коротким временем</td></tr>
+      <tr><td><code>image-rendering: pixelated</code></td>
+          <td>у спрайтов Filter Mode = Point; PanelSettings → Constant Pixel Size, Scale 4</td></tr>
+    </table>
+
+    <h2>Чего тут ещё нет (на подумать)</h2>
+    <ul>
+      <li>очередь реплик и прерывание текущей (если игрок побежал дальше);</li>
+      <li>привязка пузыря к миру: он должен упираться в края экрана и переворачивать
+        хвостик, если Бинни у верхней границы;</li>
+      <li>реакция на события физики — комментарии на падение, разрушение, смерть;</li>
+      <li>пиксельный шрифт с кириллицей: тут временно Pixelify Sans из Google Fonts.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+/* ===========================================================================
+   Логика прототипа. В Unity это C#-контроллер панели:
+   набор реплик -> корутина печати -> смена лица -> ожидание ввода.
+   =========================================================================== */
+
+const FACE  = n => `../Faces/Binny_Face_${n}.png`;
+const EMOTE = n => `../Emotes/Binny_Emote_${n}.png`;
+
+const SETS = {
+  hello: [
+    { mood: 'Angry',     text: 'Ну наконец-то. Я тут ржавею уже третий цикл.' },
+    { mood: 'Neutral',   text: 'Ведро на голове не трогай. Это антенна.' },
+    { mood: 'Happy',     text: 'Ладно. Показывай, что ты умеешь ломать.' },
+  ],
+  hint: [
+    { mood: 'Neutral',   text: 'Слева балка держится на честном слове.' },
+    { mood: 'Mad',       text: 'Столкни её и не смотри на меня так. Я подсказываю, а не помогаю.' },
+  ],
+  mock: [
+    { mood: 'Surprised', text: 'Ты правда собираешься прыгнуть отсюда?' },
+    { mood: 'Mad',       text: 'Моя оценка твоего плана:', emote: 'Poop' },
+    { mood: 'Happy',     text: '...Ладно. Записываю в журнал отказов.' },
+  ],
+  sarcasm: [
+    { mood: 'Unimpressed', text: 'О, ты вернулся. Какая честь.' },
+    { mood: 'Neutral',     text: 'Вот тебе моя подробная рецензия:',
+      emote: 'MiddleFinger' },
+    { mood: 'Happy',       text: 'Не обижайся. Экран маленький, длинно не влезает.' },
+  ],
+  damage: [
+    { mood: 'Glitch',    text: 'ЗР-Р-Р... систем... а нет, всё нормально.', shake: true },
+    { mood: 'Dead',      text: 'Ещё раз так сделаешь — и всё.', emote: 'Skull' },
+  ],
+  choice: [
+    { mood: 'Neutral',   text: 'Чинить будешь или так постоишь?',
+      choices: ['Починить', 'Постою'] },
+  ],
+};
+
+const REPLY = {
+  0: { mood: 'Happy', text: 'Хм. Не ожидал. Спасибо.', emote: 'ThumbUp' },
+  1: { mood: 'Mad',   text: 'Так и знал.', emote: 'MiddleFinger' },
+};
+
+const stage     = document.getElementById('stage');
+const dlg       = document.getElementById('dlg');
+const textEl    = document.getElementById('text');
+const portrait  = document.getElementById('portrait');
+const stageFace = document.getElementById('stage-face');
+const nextArrow = document.getElementById('next');
+const choicesEl = document.getElementById('choices');
+const speedEl   = document.getElementById('speed');
+
+let queue = [], line = null, typing = false, timer = null, mouthTimer = null;
+let charIndex = 0, soundOn = false, audio = null, selected = 0;
+
+/* ---- блип ---------------------------------------------------------------- */
+function blip(ch) {
+  if (!soundOn) return;
+  audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+  const o = audio.createOscillator(), g = audio.createGain();
+  o.type = 'square';
+  o.frequency.value = 220 + (ch.charCodeAt(0) % 12) * 18;
+  g.gain.value = 0.035;
+  o.connect(g); g.connect(audio.destination);
+  o.start();
+  g.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.05);
+  o.stop(audio.currentTime + 0.05);
+}
+
+/* ---- лицо ---------------------------------------------------------------- */
+function setScreen(url, pop) {
+  portrait.src = url;
+  stageFace.src = url;
+  if (pop) [portrait, stageFace].forEach(el => {
+    el.classList.remove('is-pop');
+    void el.offsetWidth;                  // рестарт анимации
+    el.classList.add('is-pop');
+  });
+}
+function setFace(name) { setScreen(FACE(name)); }
+function showEmote(name) { stopMouth(); setScreen(EMOTE(name), true); }
+function startMouth() {
+  let flip = false;
+  stopMouth();
+  mouthTimer = setInterval(() => {
+    flip = !flip;
+    setFace(flip ? 'Talk01' : 'Talk02');
+  }, 110);
+}
+function stopMouth() { if (mouthTimer) clearInterval(mouthTimer); mouthTimer = null; }
+
+/* ---- печать -------------------------------------------------------------- */
+function playLine(l) {
+  line = l;
+  charIndex = 0;
+  typing = true;
+  textEl.textContent = '';
+  choicesEl.hidden = true;
+  nextArrow.hidden = true;
+  dlg.hidden = false;
+  dlg.classList.remove('dlg--in');
+  void dlg.offsetWidth;                 // рестарт анимации появления
+  dlg.classList.add('dlg--in');
+  if (l.shake) {
+    stage.classList.add('is-shaking');
+    setTimeout(() => stage.classList.remove('is-shaking'), 900);
+  }
+  startMouth();
+  step();
+}
+
+function step() {
+  if (charIndex >= line.text.length) return finishLine();
+  const ch = line.text[charIndex++];
+  textEl.textContent += ch;
+  if (charIndex % 2 === 0 && ch.trim()) blip(ch);
+  const base = 105 - Number(speedEl.value);
+  const pause = '.!?…'.includes(ch) ? base * 7 : (',:—'.includes(ch) ? base * 3 : base);
+  timer = setTimeout(step, pause);
+}
+
+function finishLine() {
+  typing = false;
+  clearTimeout(timer);
+  stopMouth();
+  setFace(line.mood);
+  if (line.emote) setTimeout(() => showEmote(line.emote), 140);
+  if (line.choices) return showChoices(line.choices);
+  nextArrow.hidden = false;
+}
+
+function showChoices(list) {
+  selected = 0;
+  choicesEl.innerHTML = '';
+  list.forEach((label, i) => {
+    const row = document.createElement('div');
+    row.className = 'choice' + (i === 0 ? ' is-selected' : '');
+    row.innerHTML =
+      `<img class="choice__cursor" src="Binny_ChoiceCursor.png" alt=""><span>${label}</span>`;
+    row.addEventListener('click', e => { e.stopPropagation(); pick(i); });
+    choicesEl.appendChild(row);
+  });
+  choicesEl.hidden = false;
+}
+
+function moveChoice(d) {
+  const rows = [...choicesEl.children];
+  if (!rows.length) return;
+  selected = (selected + d + rows.length) % rows.length;
+  rows.forEach((r, i) => r.classList.toggle('is-selected', i === selected));
+}
+
+function pick(i) {
+  choicesEl.hidden = true;
+  queue = [REPLY[i]];
+  playLine(queue.shift());
+}
+
+/* ---- продвижение --------------------------------------------------------- */
+function advance() {
+  if (!choicesEl.hidden) return pick(selected);
+  if (typing) {                       // домотать текущую реплику
+    clearTimeout(timer);
+    textEl.textContent = line.text;
+    charIndex = line.text.length;
+    return finishLine();
+  }
+  if (queue.length) return playLine(queue.shift());
+  dlg.hidden = true;                  // реплики кончились — окно уходит
+  setFace('Angry');
+}
+
+function run(setName) {
+  queue = SETS[setName].map(l => ({ ...l }));
+  playLine(queue.shift());
+}
+
+/* ---- ввод ---------------------------------------------------------------- */
+stage.addEventListener('click', advance);
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); advance(); }
+  if (e.code === 'ArrowDown') moveChoice(1);
+  if (e.code === 'ArrowUp') moveChoice(-1);
+});
+
+document.querySelectorAll('[data-set]').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('[data-set]').forEach(x => x.classList.remove('is-active'));
+    b.classList.add('is-active');
+    run(b.dataset.set);
+  });
+});
+
+document.querySelectorAll('[data-emote]').forEach(b => {
+  b.addEventListener('click', () => showEmote(b.dataset.emote));
+});
+
+document.getElementById('mode-bubble').addEventListener('click', e => {
+  dlg.classList.add('dlg--bubble'); dlg.classList.remove('dlg--bar');
+  e.target.classList.add('is-active');
+  document.getElementById('mode-bar').classList.remove('is-active');
+});
+document.getElementById('mode-bar').addEventListener('click', e => {
+  dlg.classList.add('dlg--bar'); dlg.classList.remove('dlg--bubble');
+  e.target.classList.add('is-active');
+  document.getElementById('mode-bubble').classList.remove('is-active');
+});
+
+document.getElementById('sound').addEventListener('click', e => {
+  soundOn = !soundOn;
+  e.target.textContent = 'звук: ' + (soundOn ? 'вкл' : 'выкл');
+  e.target.classList.toggle('is-active', soundOn);
+});
+
+/* полёт: дюзы + перелистывание кадров пламени */
+let flying = false, flameTimer = null, flameFrame = 0;
+document.getElementById('fly').addEventListener('click', e => {
+  flying = !flying;
+  e.target.textContent = 'полёт: ' + (flying ? 'вкл' : 'выкл');
+  e.target.classList.toggle('is-active', flying);
+  const l = document.getElementById('thrust-l'), r = document.getElementById('thrust-r');
+  l.hidden = r.hidden = !flying;
+  clearInterval(flameTimer);
+  if (flying) {
+    flameTimer = setInterval(() => {
+      flameFrame = (flameFrame % 4) + 1;
+      const n = String(flameFrame).padStart(2, '0');
+      l.src = `../VFX/Binny_VFX_Thrust_L_${n}.png`;
+      r.src = `../VFX/Binny_VFX_Thrust_R_${n}.png`;
+    }, 80);
+  }
+});
+
+run('hello');
+</script>
+</body>
+</html>

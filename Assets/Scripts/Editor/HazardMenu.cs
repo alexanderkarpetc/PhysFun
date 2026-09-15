@@ -16,6 +16,7 @@ namespace Editor
         private const string GrinderPrefab = "Assets/Resources/Prefabs/Hazards/Grinder.prefab";
         private const string SoldierPrefab = "Assets/Resources/Prefabs/Enemies/Soldier.prefab";
         private const string DarkSoldierPrefab = "Assets/Resources/Prefabs/Enemies/DarkSoldier.prefab";
+        private const string BinnyPrefab = "Assets/Resources/Prefabs/Binny.prefab";
 
         [MenuItem("PhysFun/Create/Conveyor", false, 100)]
         private static void CreateConveyor() => PlacePrefab(ConveyorPrefab, "Create Conveyor");
@@ -33,6 +34,13 @@ namespace Editor
         /// <summary>The same man in darker colours. Already built, so there is nothing to run first.</summary>
         [MenuItem("PhysFun/Create/Dark Soldier", false, 104)]
         private static void CreateDarkSoldier() => PlacePrefab(DarkSoldierPrefab, "Create Dark Soldier");
+
+        /// <summary>
+        /// The bin. He hangs wherever he is dropped until he is called — assembled by
+        /// <see cref="BinnyBuilder"/>, so if the prefab is not there yet, that menu item makes it.
+        /// </summary>
+        [MenuItem("PhysFun/Create/Binny", false, 105)]
+        private static void CreateBinny() => PlacePrefab(BinnyPrefab, "Create Binny");
 
         /// <summary>
         /// The factory has no art of its own, so there is no prefab to place — it is a bare

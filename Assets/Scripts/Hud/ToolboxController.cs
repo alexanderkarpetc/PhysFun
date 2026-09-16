@@ -364,7 +364,8 @@ public class ToolboxController : MonoBehaviour
             float radius = _eraseBrushSlider != null ? _eraseBrushSlider.value : 0.2f;
             Vector3 wp = _cam.ScreenToWorldPoint(Input.mousePosition); wp.z = 0f;
 
-            var hits = Physics2D.OverlapCircleAll(wp, radius, _eraseEffectiveMask);
+            var hits = Physics2D.OverlapCircleAll(
+                wp, radius + PixelSpriteRegistry.QueryMargin, _eraseEffectiveMask);
             foreach (var h in hits) SpriteEraseService.EraseCircle(h.gameObject, wp, radius);
             // PixelSpriteDriver uploads, retraces colliders and checks for splits each frame.
         }
@@ -394,7 +395,8 @@ public class ToolboxController : MonoBehaviour
         int pieces = _crackPiecesSlider != null ? _crackPiecesSlider.value : 6;
         Vector3 wp = _cam.ScreenToWorldPoint(Input.mousePosition); wp.z = 0f;
 
-        var hits = Physics2D.OverlapCircleAll(wp, radius, _crackEffectiveMask);
+        var hits = Physics2D.OverlapCircleAll(
+            wp, radius + PixelSpriteRegistry.QueryMargin, _crackEffectiveMask);
         bool hitTerrain = false;
         foreach (var h in hits)
         {
@@ -448,7 +450,8 @@ public class ToolboxController : MonoBehaviour
         float radius = _igniteRadiusSlider != null ? _igniteRadiusSlider.value : 0.12f;
         Vector3 wp = _cam.ScreenToWorldPoint(Input.mousePosition); wp.z = 0f;
 
-        var hits = Physics2D.OverlapCircleAll(wp, radius, _igniteEffectiveMask);
+        var hits = Physics2D.OverlapCircleAll(
+            wp, radius + PixelSpriteRegistry.QueryMargin, _igniteEffectiveMask);
         foreach (var h in hits)
         {
             if (light) FireSystem.Instance.Ignite(h.gameObject, wp, radius);

@@ -99,10 +99,10 @@ public static class SpriteSplitHelper
             new Vector2(0.5f, 0.5f),
             ppu);
 
-        var existing = go.GetComponent<PolygonCollider2D>();
-        if (existing) Object.DestroyImmediate(existing);
-        var poly = go.AddComponent<PolygonCollider2D>();
-        ColliderSimplifier2D.Simplify(poly, simplifyLevel);
-        MassRecalculator.SetMass(null, go.GetComponent<Rigidbody2D>(), poly);
+        // A freshly split piece is exactly the ragged shape Unity's sprite tracing handles
+        // worst, so the outline comes from the pixels instead.
+        PixelContour.ApplyCollider(go, partTex.GetPixels32(), partTex.width, partTex.height, ppu,
+                                   new Vector2(partTex.width * 0.5f, partTex.height * 0.5f),
+                                   simplifyLevel);
     }
 }

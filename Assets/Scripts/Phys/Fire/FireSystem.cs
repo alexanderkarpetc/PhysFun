@@ -413,7 +413,9 @@ namespace Phys.Fire
                 var world = rec.PixelToWorld(x, y);
                 var filter = new ContactFilter2D { useTriggers = false, useLayerMask = true, layerMask = ContactMask };
                 _probe.Clear();
-                Physics2D.OverlapCircle(world, ContactProbeRadius, filter, _probe);
+                // Wide enough to find the chunk across a seam; Ignite still uses the real radius.
+                Physics2D.OverlapCircle(world, ContactProbeRadius + PixelSpriteRegistry.QueryMargin,
+                                        filter, _probe);
                 foreach (var col in _probe)
                 {
                     if (!col || col.gameObject == b.Go) continue;

@@ -50,6 +50,22 @@ namespace Phys.Pixels
         public static float MinPassInterval = 0.03f;
         public static float MaxPassInterval = 2f;
 
+        /// <summary>
+        /// Extra radius for the spatial query that picks which objects a brush touches.
+        ///
+        /// Those queries run against colliders, and a collider is a simplified — corners cut
+        /// inward — and slightly stale outline of the pixels it was traced from. On terrain it
+        /// also stops dead at the chunk seam, because a chunk only ever traces its own cells.
+        /// A brush whose rim just reaches the next chunk can miss its collider entirely, which
+        /// is what leaves an unerased strip along a seam and stops fire crossing one.
+        ///
+        /// Selecting wide costs nothing: every tool clips per pixel against its own exact
+        /// circle, so an object the brush does not really reach comes out untouched. Same
+        /// figure as <see cref="Phys.Terrain.TerrainSupportSystem.ContactEpsilon"/>, which
+        /// exists for the same reason.
+        /// </summary>
+        public static float QueryMargin = 0.06f;
+
         public sealed class Record
         {
             public GameObject Go;
@@ -292,7 +308,7 @@ namespace Phys.Pixels
                 if (!force && spent > maxMillis) break;
                 if (!_records.TryGetValue(go, out var rec)) continue;
 
-                RebuildCollider(go, simplifyLevel);
+                RebuildCollider(rec, simplifyLevel);
                 rec.colliderDirty = false;
 
                 double cost = sw.Elapsed.TotalMilliseconds - spent;
@@ -411,15 +427,21 @@ namespace Phys.Pixels
             Split?.Invoke(go, parts);
         }
 
-        private static void RebuildCollider(GameObject go, int simplifyLevel)
+        /// <summary>
+        /// Re-trace an object's collider from the pixels we already hold.
+        ///
+        /// Letting Unity do it — add a PolygonCollider2D and have it read the sprite — is what
+        /// used to leave carved objects with outlines that no longer resembled them: it traces
+        /// at a tolerance nobody controls, and on a sprite that has been mostly erased it
+        /// degenerates into a sliver standing in empty space. Worse, nothing ever repaired that.
+        /// A stale outline is only marked dirty by an edit that actually removes a pixel, and
+        /// there are none left to remove, so brushing over it again does nothing at all.
+        /// </summary>
+        private static void RebuildCollider(Record rec, int simplifyLevel)
         {
-            if (!go.GetComponent<SpriteRenderer>()) return;
-
-            var existing = go.GetComponent<PolygonCollider2D>();
-            if (existing) UnityEngine.Object.DestroyImmediate(existing);
-            var poly = go.AddComponent<PolygonCollider2D>();
-            ColliderSimplifier2D.Simplify(poly, simplifyLevel);
-            MassRecalculator.SetMass(null, go.GetComponent<Rigidbody2D>(), poly);
+            if (!rec.Go || !rec.Go.GetComponent<SpriteRenderer>()) return;
+            PixelContour.ApplyCollider(rec.Go, rec.Pixels, rec.Width, rec.Height,
+                                       rec.Ppu, rec.PivotPx, simplifyLevel);
         }
 
         /// <summary>Free a record's texture unless the renderer is still displaying it.</summary>

@@ -120,7 +120,6 @@ namespace Phys.Terrain
         private readonly Dictionary<Vector2Int, Chunk> _chunks = new();
         private Transform _container;
         private int[] _counts;   // per-chunk palette histogram, reused across refreshes
-        private readonly List<List<Vector2>> _paths = new();   // scratch for collider tracing
 
         public TerrainMap Map => map;
 
@@ -200,9 +199,25 @@ namespace Phys.Terrain
         // Build
         // ─────────────────────────────────────────────────────────────────────────
 
+        /// <summary>
+        /// True when this component lives in an open scene, which is the only place it can put
+        /// the objects it generates. On a prefab asset Unity refuses the reparent, the container
+        /// is left loose at the root of whatever scene happens to be open, and every build leaks
+        /// another one — complete with colliders that nothing will ever update again.
+        /// </summary>
+        public bool CanGenerate => gameObject.scene.IsValid();
+
         [ContextMenu("Rebuild")]
         public void Build()
         {
+            if (!CanGenerate)
+            {
+                Debug.LogWarning(
+                    "TerrainBuilder: this is the prefab asset, not an object in the scene — " +
+                    "nothing was built. Drag the prefab into the scene and work on that.", this);
+                return;
+            }
+
             chunkPixels = Mathf.Max(8, chunkPixels);
             ApplyBedrockMask();
             ResetContainer();
@@ -591,21 +606,12 @@ namespace Phys.Terrain
         /// <summary>Re-trace the collider from the current pixels and re-derive mass.</summary>
         private void RetraceCollider(Chunk chunk)
         {
-            var go = chunk.Go;
-
             // Outlines come from the cell mask, not from Unity's sprite tracing — that runs at
             // a tolerance nobody controls and cuts corners across whole cells of solid ground.
-            TerrainContour.Trace(chunk.Pixels, chunk.Width, chunk.Height, _cellsPerUnit, _paths);
-
-            var poly = go.GetComponent<PolygonCollider2D>();
-            if (!poly) poly = go.AddComponent<PolygonCollider2D>();
-
-            poly.pathCount = _paths.Count;
-            for (int i = 0; i < _paths.Count; i++) poly.SetPath(i, _paths[i]);
-
-            // The trace is a staircase: exact, and far denser than physics needs.
-            ColliderSimplifier2D.Simplify(poly, simplifyLevel);
-            MassRecalculator.SetMass(null, go.GetComponent<Rigidbody2D>(), poly);
+            PixelContour.ApplyCollider(chunk.Go, chunk.Pixels, chunk.Width, chunk.Height,
+                                       _cellsPerUnit,
+                                       new Vector2(chunk.Width * 0.5f, chunk.Height * 0.5f),
+                                       simplifyLevel);
         }
 
         private static void DestroyChunk(Chunk chunk)
@@ -634,8 +640,17 @@ namespace Phys.Terrain
             foreach (var chunk in _chunks.Values) DestroyChunk(chunk);
             _chunks.Clear();
 
-            var existing = _container ? _container : transform.Find(ContainerName);
-            if (existing) Kill(existing.gameObject);
+            // Sweep every container by name instead of trusting the cached reference or
+            // Find(), which only ever returns the first match. The dictionary and the field
+            // are wiped by a domain reload while the objects themselves live on, a resized map
+            // leaves chunks of the old geometry behind, and a runtime Destroy does not take
+            // effect until the end of the frame — so more than one of these can exist at once,
+            // and anything missed is a chunk with a collider that nobody will ever update again.
+            for (int i = transform.childCount - 1; i >= 0; i--)
+            {
+                var child = transform.GetChild(i);
+                if (child.name == ContainerName) Kill(child.gameObject);
+            }
 
             _container = null;
             _cells = null;   // forces a full rebuild rather than a patch of a dead view
@@ -655,11 +670,18 @@ namespace Phys.Terrain
 
         /// <summary>
         /// Chunks live on textures that aren't assets, so a preview built from the inspector must
-        /// not end up in the saved scene. In play mode they're plain objects — DontSave would
-        /// also make them survive a scene load, which is not wanted.
+        /// not end up in the saved scene. In play mode they're plain objects.
+        ///
+        /// Deliberately not <see cref="HideFlags.DontSave"/>: that is these two flags plus
+        /// <see cref="HideFlags.DontUnloadUnusedAsset"/>, and the extra one makes a GameObject
+        /// survive a scene load — including the swap into play mode, where it comes back as a
+        /// chunk whose texture did not survive with it. It also keeps the objects out of the
+        /// Hierarchy, which means a straggler is invisible and cannot be deleted by hand.
         /// </summary>
         private static HideFlags GeneratedHideFlags =>
-            Application.isPlaying ? HideFlags.None : HideFlags.DontSave;
+            Application.isPlaying
+                ? HideFlags.None
+                : HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild;
 
         // ─────────────────────────────────────────────────────────────────────────
 

@@ -74,13 +74,10 @@ namespace Editor
         }
 
         /// <summary>
-        /// The preview chunks are <see cref="HideFlags.DontSave"/>, which keeps them out of the
-        /// saved scene but also means Unity carries them across the swap into play mode — where
-        /// the textures they render have already been unloaded, so they come back as colliders
-        /// with nothing drawn on them, on top of the ones <c>Awake</c> builds properly. So tear
-        /// the preview down on the way in, and build it again on the way out: outside of play
-        /// there is no <c>Awake</c>, and without this the scene stays empty until someone
-        /// presses Rebuild.
+        /// Tear the preview down on the way into play mode and build it again on the way out.
+        /// In play mode <c>Awake</c> builds the terrain from the map, so the edit-mode chunks are
+        /// only in the way; coming back there is no <c>Awake</c> at all, and without this the
+        /// scene would stay empty until someone pressed Rebuild.
         ///
         /// Hooked statically rather than from the window, so it holds whether or not the
         /// painter happens to be open.
@@ -138,6 +135,19 @@ namespace Editor
                 EditorGUILayout.HelpBox("Painting is edit-mode only — a rebuild would throw away " +
                                         "everything the simulation has done to the terrain.",
                                         MessageType.Warning);
+                return;
+            }
+
+            if (!builder.CanGenerate)
+            {
+                EditorGUILayout.HelpBox(
+                    "That is the prefab asset, not an object in the scene. Unity will not let a " +
+                    "prefab asset parent anything, so every build drops a loose \"Chunks\" object " +
+                    "at the root of the scene and leaves the last one behind — colliders and all.",
+                    MessageType.Error);
+
+                if (GUILayout.Button("Put it in the scene", GUILayout.Height(24f)))
+                    InstantiateBuilder();
                 return;
             }
 
@@ -234,6 +244,14 @@ namespace Editor
             using (new EditorGUILayout.HorizontalScope())
             {
                 if (GUILayout.Button("Rebuild")) builder.Build();
+
+                // Deactivating the builder does nothing to these: the chunks are generated
+                // objects, not part of it.
+                if (GUILayout.Button("Clear chunks"))
+                {
+                    builder.ClearPreview();
+                    SceneView.RepaintAll();
+                }
 
                 if (GUILayout.Button("Bake features"))
                 {
@@ -347,6 +365,20 @@ namespace Editor
             _tiles.Sort((a, b) => string.CompareOrdinal(a.name, b.name));
         }
 
+        /// <summary>Drop the prefab the user picked into the open scene and paint on that.</summary>
+        private void InstantiateBuilder()
+        {
+            var go = PrefabUtility.InstantiatePrefab(builder.gameObject) as GameObject;
+            var instance = go ? go.GetComponent<TerrainBuilder>() : null;
+            if (!instance) return;
+
+            Undo.RegisterCreatedObjectUndo(go, "Add Terrain Builder");
+            builder = instance;
+            Selection.activeGameObject = go;
+            builder.Build();
+            SceneView.RepaintAll();
+        }
+
         private void CreateMap()
         {
             string path = EditorUtility.SaveFilePanelInProject(
@@ -370,7 +402,11 @@ namespace Editor
 
         private void OnSceneGui(SceneView view)
         {
-            if (!armed || Application.isPlaying || !builder || !builder.Map) return;
+            if (!armed || Application.isPlaying || !builder || !builder.Map || !builder.CanGenerate)
+            {
+                if (_stroke) EndStroke();   // disarmed or unloaded mid-drag
+                return;
+            }
 
             var e = Event.current;
 
@@ -384,9 +420,27 @@ namespace Editor
 
             if (e.alt) return;   // alt-drag is the camera
 
+            // A stroke has to close out even when the scene view keeps the mouse-up for itself,
+            // which is exactly what right-click does — it goes to the context menu. A stroke
+            // left open never retraces its colliders and never saves, so the erase looks done
+            // while the physics and the asset still hold the old terrain.
+            //
+            // rawType reports what happened regardless of who consumed the event, and MouseMove
+            // is the backstop: it is only ever sent with no button held, so seeing one means the
+            // drag is over however it ended. Nothing here can fire mid-drag.
+            if (_stroke && (e.rawType == EventType.MouseUp ||
+                            e.rawType == EventType.MouseMove ||
+                            e.rawType == EventType.MouseLeaveWindow))
+            {
+                EndStroke();
+                if (e.type == EventType.MouseUp) e.Use();
+                return;
+            }
+
             switch (e.type)
             {
                 case EventType.MouseDown when e.button == 0 || e.button == 1:
+                    if (_stroke) EndStroke();   // one that never got an up event of its own
                     BeginStroke(e.button == 1 || e.control);
                     PaintTo(world);
                     e.Use();
@@ -397,8 +451,8 @@ namespace Editor
                     e.Use();
                     break;
 
-                case EventType.MouseUp when _stroke:
-                    EndStroke();
+                // Right-click is the erase button here; its menu would be in the way.
+                case EventType.ContextClick:
                     e.Use();
                     break;
 
@@ -475,10 +529,9 @@ namespace Editor
             _stroke = false;
             _hasLastPaintPos = false;
 
-            if (_hasStrokeRect)
+            var map = builder ? builder.Map : null;
+            if (_hasStrokeRect && map)
             {
-                var map = builder.Map;
-
                 // Undo records what the object looks like *now*, so the pre-stroke state has to
                 // be back in place for the length of the call, and the stroke re-applied after.
                 // Only the serialized bytes move; the cells the brush wrote are never disturbed.

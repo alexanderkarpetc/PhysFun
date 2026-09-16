@@ -483,11 +483,9 @@ namespace Cracker
         {
             sr.sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), ppu);
 
-            var go = sr.gameObject;
-            Object.DestroyImmediate(go.GetComponent<PolygonCollider2D>());
-            var poly = go.AddComponent<PolygonCollider2D>();
-            ColliderSimplifier2D.Simplify(poly, simplifyLevel);
-            MassRecalculator.SetMass(null, go.GetComponent<Rigidbody2D>(), poly);
+            PixelContour.ApplyCollider(sr.gameObject, tex.GetPixels32(), tex.width, tex.height,
+                                       ppu, new Vector2(tex.width * 0.5f, tex.height * 0.5f),
+                                       simplifyLevel);
         }
     }
 }

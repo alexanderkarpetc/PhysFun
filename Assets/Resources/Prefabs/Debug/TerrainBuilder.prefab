@@ -48,7 +48,7 @@ MonoBehaviour:
   pixelsPerUnit: 40
   chunkPixels: 64
   minChunkPixels: 24
-  simplifyLevel: 2
+  simplifyLevel: 3
   sortingOrder: -1
   bedrockLayers:
   - Untouchable

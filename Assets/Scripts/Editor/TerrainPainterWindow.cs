@@ -465,8 +465,9 @@ namespace Editor
             // Recording here would capture the stroke's *first frame* only: Unity diffs a
             // recorded object at the end of the frame it was recorded in, and a drag keeps
             // writing cells for many frames after that. So just remember the starting point
-            // and register the whole stroke on mouse up.
-            _beforeStroke = builder.Map.Capture();
+            // and register the whole stroke on mouse up. No flush needed — every path that
+            // writes cells ends in Finish(), so the stored bytes are already current.
+            _beforeStroke = builder.Map.Capture(flush: false);
         }
 
         private void EndStroke()
@@ -480,14 +481,15 @@ namespace Editor
 
                 // Undo records what the object looks like *now*, so the pre-stroke state has to
                 // be back in place for the length of the call, and the stroke re-applied after.
-                var after = map.Capture();
-                map.Restore(_beforeStroke);
+                // Only the serialized bytes move; the cells the brush wrote are never disturbed.
+                var after = map.Capture(flush: true);
+                map.RestoreSerialized(_beforeStroke);
                 Undo.RegisterCompleteObjectUndo(map, _erasing ? "Erase Terrain" : "Paint Terrain");
-                map.Restore(after);
+                map.RestoreSerialized(after);
 
                 // Colliders are the expensive half, so the whole stroke pays for them once.
                 builder.RefreshArea(_strokeRect, rebuildColliders: true);
-                Finish(map);
+                Finish(map, flush: false);   // the capture above already encoded this state
             }
             _hasStrokeRect = false;
             _beforeStroke = default;
@@ -566,10 +568,11 @@ namespace Editor
             return new RectInt(xMin, yMin, xMax - xMin, yMax - yMin);
         }
 
-        private void Finish(TerrainMap map)
+        private void Finish(TerrainMap map, bool flush = true)
         {
             _editedMap = true;
-            map.Flush();            // cells live outside serialization; push them in before saving
+            // Cells live outside serialization; push them in before saving.
+            if (flush) map.Flush();
             EditorUtility.SetDirty(map);
             AssetDatabase.SaveAssetIfDirty(map);
             Repaint();

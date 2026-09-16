@@ -128,24 +128,47 @@ namespace Phys.Terrain
         /// bytes. Call after something wrote those bytes behind our back — an undo does.</summary>
         public void InvalidateCells() => _cells = null;
 
-        /// <summary>Everything a stroke can change, copied out so it can be put back.</summary>
+        /// <summary>
+        /// Everything a stroke can change, held in the compact form the map is stored in. A map
+        /// is mostly empty, so a snapshot costs a few KB — copying the expanded buffer instead
+        /// would cost one byte per cell, and there are millions of those.
+        /// </summary>
         public readonly struct State
         {
-            public readonly byte[] Cells;
-            public readonly Entry[] Palette;
-            public State(byte[] cells, Entry[] palette) { Cells = cells; Palette = palette; }
-            public bool IsValid => Cells != null;
+            internal readonly byte[] Encoded;
+            internal readonly Entry[] Palette;
+
+            internal State(byte[] encoded, Entry[] palette)
+            {
+                Encoded = encoded;
+                Palette = palette;
+            }
+
+            public bool IsValid => Palette != null;
         }
 
-        public State Capture() => new((byte[])Cells.Clone(), palette.ToArray());
+        /// <summary>
+        /// Snapshot the serialized state. Re-encode only when cells were written since the last
+        /// flush — encoding walks every cell, so it is not something to do speculatively.
+        /// </summary>
+        public State Capture(bool flush)
+        {
+            if (flush) Flush();
+            return new State(encoded == null ? null : (byte[])encoded.Clone(),
+                             palette.ToArray());
+        }
 
-        public void Restore(State state)
+        /// <summary>
+        /// Put a snapshot back as the serialized state, leaving the expanded buffer alone. That
+        /// is what lets a stroke be recorded for undo without re-expanding anything: swap the
+        /// old bytes in, let Unity read them, swap the new ones straight back.
+        /// </summary>
+        public void RestoreSerialized(State state)
         {
             if (!state.IsValid) return;
             palette.Clear();
             palette.AddRange(state.Palette);
-            _cells = (byte[])state.Cells.Clone();
-            encoded = Encode(_cells);
+            encoded = state.Encoded;
         }
 
         /// <summary>

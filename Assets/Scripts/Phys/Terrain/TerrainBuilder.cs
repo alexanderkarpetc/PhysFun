@@ -120,6 +120,7 @@ namespace Phys.Terrain
         private readonly Dictionary<Vector2Int, Chunk> _chunks = new();
         private Transform _container;
         private int[] _counts;   // per-chunk palette histogram, reused across refreshes
+        private readonly List<List<Vector2>> _paths = new();   // scratch for collider tracing
 
         public TerrainMap Map => map;
 
@@ -477,8 +478,8 @@ namespace Phys.Terrain
 
             if (chunk == null)
             {
-                // Creating a chunk fills and uploads its texture on the way in — the sprite's
-                // outline is generated from those pixels, so they can't be left undefined.
+                // Creating a chunk fills and uploads its texture on the way in — the collider
+                // is traced from those pixels, so they can't be left undefined.
                 chunk = CreateChunk(coord, px0, py0, cw, chh);
                 _chunks[coord] = chunk;
                 rebuildCollider = true;
@@ -488,14 +489,10 @@ namespace Phys.Terrain
                 FillChunk(chunk, px0, py0);
                 chunk.Tex.SetPixels32(chunk.Pixels);
                 chunk.Tex.Apply(false, false);
-
-                // A Sprite freezes the geometry it was built from, so a chunk whose pixels
-                // changed needs a new one before anything reads that geometry again.
-                if (rebuildCollider) ReSprite(chunk);
             }
 
             MaterialView.Apply(chunk.Go, _palette[dominant - 1].material);
-            if (rebuildCollider) RetraceCollider(chunk.Go);
+            if (rebuildCollider) RetraceCollider(chunk);
         }
 
         private void FillChunk(Chunk chunk, int px0, int py0)
@@ -591,28 +588,22 @@ namespace Phys.Terrain
             return sprite;
         }
 
-        /// <summary>Swap in a sprite built over the chunk's current pixels. The texture is the
-        /// same object, so anything holding on to that keeps working.</summary>
-        private void ReSprite(Chunk chunk)
-        {
-            var sr = chunk.Go ? chunk.Go.GetComponent<SpriteRenderer>() : null;
-            if (!sr) return;
-
-            var stale = sr.sprite;
-            sr.sprite = MakeSprite(chunk.Tex, chunk.Width, chunk.Height, chunk.Go.name);
-            if (!stale) return;
-            if (Application.isPlaying) Destroy(stale);
-            else DestroyImmediate(stale);
-        }
-
         /// <summary>Re-trace the collider from the current pixels and re-derive mass.</summary>
-        private void RetraceCollider(GameObject go)
+        private void RetraceCollider(Chunk chunk)
         {
-            var existing = go.GetComponent<PolygonCollider2D>();
-            if (existing) DestroyImmediate(existing);
+            var go = chunk.Go;
 
-            // PolygonCollider2D traces the sprite's alpha on the way in.
-            var poly = go.AddComponent<PolygonCollider2D>();
+            // Outlines come from the cell mask, not from Unity's sprite tracing — that runs at
+            // a tolerance nobody controls and cuts corners across whole cells of solid ground.
+            TerrainContour.Trace(chunk.Pixels, chunk.Width, chunk.Height, _cellsPerUnit, _paths);
+
+            var poly = go.GetComponent<PolygonCollider2D>();
+            if (!poly) poly = go.AddComponent<PolygonCollider2D>();
+
+            poly.pathCount = _paths.Count;
+            for (int i = 0; i < _paths.Count; i++) poly.SetPath(i, _paths[i]);
+
+            // The trace is a staircase: exact, and far denser than physics needs.
             ColliderSimplifier2D.Simplify(poly, simplifyLevel);
             MassRecalculator.SetMass(null, go.GetComponent<Rigidbody2D>(), poly);
         }

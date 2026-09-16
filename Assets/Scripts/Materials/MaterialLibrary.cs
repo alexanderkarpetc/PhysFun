@@ -40,6 +40,12 @@ namespace Materials
             // another connected component for the split scan.
             CharAmount = 0f,
             ContactSpreadChance = 0.06f,
+            // Wood throws off a lot of flame and a fair bit of smoke, and burns warm rather
+            // than fiercely: at 45 a flame off a plank catches another plank about half the
+            // times it is asked, which is roughly how fire travels through a woodpile.
+            GeneratesFlames = 22f,
+            GeneratesSmoke = 7f,
+            TemperatureOfFire = 45,
         };
 
         private static readonly PhysMaterial[] Ordered = { Default, Wood };

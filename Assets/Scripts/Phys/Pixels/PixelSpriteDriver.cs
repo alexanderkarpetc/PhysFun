@@ -33,6 +33,7 @@ namespace Phys.Pixels
             // Both singletons are reset by SubsystemRegistration hooks whose order is
             // undefined, so the wiring has to happen out here, after they both exist.
             FireSystem.Instance.Bind(PixelSpriteRegistry.Instance);
+            FlameFieldView.Install();
 
             var go = new GameObject("~PixelSpriteDriver") { hideFlags = HideFlags.HideAndDontSave };
             _instance = go.AddComponent<PixelSpriteDriver>();
@@ -41,6 +42,10 @@ namespace Phys.Pixels
         private void LateUpdate()
         {
             FireSystem.Instance.Tick(Time.deltaTime);
+
+            // Drives its own 60 Hz grid, and calls back into FireSystem.EmitFlames once per
+            // grid frame — so flames are born and rise at Noita's rate, not at the burn rate.
+            FlameField.Instance.Tick(Time.deltaTime);
 
             var reg = PixelSpriteRegistry.Instance;
             reg.Flush();

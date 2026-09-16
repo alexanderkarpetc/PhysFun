@@ -68,8 +68,29 @@ namespace Materials
         /// <summary>Per-tick chance a burning edge pixel lights a touching flammable object.</summary>
         public float ContactSpreadChance = 0.06f;
 
-        // Ember gradient, sampled as fuel drains 1 → 0.
-        public Color32 EmberHot  = new(255, 244, 194, 255);
+        // ── Flames (see Phys.Fire.FlameField) ─────────────────────────────────
+        // Noita's own material attributes, same names and same 0–100 scale, read out of
+        // the dev build's CellData (generates_smoke at +0x0a0, generates_flames at +0x0a4,
+        // requires_oxygen at +0x0a8, temperature_of_fire at +0x09c).
+
+        /// <summary>Percent chance per grid frame that a burning pixel throws off a flame.</summary>
+        public float GeneratesFlames = 22f;
+
+        /// <summary>Percent chance per grid frame that a burning pixel throws off smoke.</summary>
+        public float GeneratesSmoke = 7f;
+
+        /// <summary>
+        /// How hot this stuff burns, 0–100. It is the flame's own temperature — which decides
+        /// how readily that flame sets light to what it touches — and doubles as the pixel's
+        /// air supply: it refills whenever a flame gets out and drains when one cannot.
+        /// </summary>
+        public int TemperatureOfFire = 45;
+
+        /// <summary>Whether a pixel that cannot vent goes out. Off = it burns sealed in.</summary>
+        public bool RequiresOxygen = true;
+
+        // Char gradient, sampled as fuel drains 1 → 0. There is no hot end: the bright
+        // colours in a fire all come from the flame cells, never from the burning material.
         public Color32 EmberMid  = new(255, 146, 34, 255);
         public Color32 EmberCool = new(146, 34, 12, 255);
         public Color32 Charcoal  = new(30, 26, 25, 255);

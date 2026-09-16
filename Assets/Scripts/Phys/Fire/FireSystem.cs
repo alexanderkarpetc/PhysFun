@@ -6,11 +6,18 @@ using UnityEngine;
 namespace Phys.Fire
 {
     /// <summary>
-    /// Noita-style pixel fire. Fire is not a particle effect stuck on top of a sprite —
-    /// individual texture pixels are taken by the flame, glow through an ember gradient
-    /// as their fuel drains, and then disappear, so an object is genuinely eaten away.
-    /// Once enough pixels are gone the shared <see cref="PixelSpriteRegistry"/> notices
-    /// the object fell apart and splits it into separate physics bodies for free.
+    /// The burning half of the fire: which pixels of an object are alight, how fast they are
+    /// consumed, and — through <see cref="EmitFlames"/> — the flames they throw off. Pixels
+    /// are taken by the fire one at a time, so an object is genuinely eaten away, and once
+    /// enough are gone the shared <see cref="PixelSpriteRegistry"/> notices it fell apart and
+    /// splits it into separate physics bodies.
+    ///
+    /// The flames themselves live in <see cref="FlameField"/>. That split is Noita's: a
+    /// burning cell there only tracks its own fuel and spits fire cells into the empty
+    /// space above it (ICell::UpdateFire at 0x7521f0, ICell::GenerateFlame at 0x751da0),
+    /// and everything that looks like fire is those cells. The version of this file that
+    /// tried to *be* the fire by tinting the sprite's own pixels orange could not look like
+    /// anything but a tinted sprite.
     ///
     /// Ticked by <see cref="PixelSpriteDriver"/> before the pixel upload each frame.
     /// </summary>
@@ -22,14 +29,11 @@ namespace Phys.Fire
         private static void ResetForPlayMode() => Instance = new FireSystem();
 
         /// <summary>
-        /// Simulation steps per second — fuel burn and spread only. Painting is separate
-        /// and runs every frame, so this can stay low without the fire *looking* like it
-        /// is running at this rate.
+        /// Simulation steps per second — fuel burn and spread only. Nothing animated depends
+        /// on this any more: the flames run at <see cref="FlameField.TicksPerSecond"/>, so a
+        /// slow burn tick no longer makes the fire *look* like it runs at 20 fps.
         /// </summary>
         public static float TicksPerSecond = 20f;
-
-        /// <summary>How often each pixel's flicker re-rolls. Interpolated, so it stays smooth.</summary>
-        public static float FlickerHz = 11f;
 
         /// <summary>Layers fire is allowed to jump to on contact.</summary>
         public static int ContactMask = ~0;
@@ -45,6 +49,31 @@ namespace Phys.Fire
 
             public byte[] Fuel;      // 255 = untouched, 0 = spent (or never flammable, e.g. charcoal)
             public bool[] Alight;
+
+            /// <summary>
+            /// Whether this pixel already has an entry in <see cref="Active"/>.
+            ///
+            /// Not the same thing as <see cref="Alight"/>: a pixel that suffocates goes out
+            /// where it stands and is only dropped from the list on the next burn step, and in
+            /// between a flame can relight it. Without this flag that relight appends a second
+            /// entry for the same pixel — and since the step copies every lit entry into the
+            /// next list, the duplicates breed. A fire that keeps relighting its own pixels
+            /// doubles the list every few frames and takes the frame rate with it.
+            /// </summary>
+            public bool[] Listed;
+
+            /// <summary>
+            /// Noita's per-cell fire temperature (the byte at CellData+0x11, reset from
+            /// temperature_of_fire). It is both how hot this pixel's flames are and its
+            /// supply of air: it refills every time the pixel manages to throw off a flame
+            /// and ticks down when it cannot, so a pixel sealed inside an object suffocates.
+            /// </summary>
+            public byte[] Heat;
+
+            /// <summary>The sprite as it was before it caught. Char is mixed back into this,
+            /// so burnt wood still looks like wood rather than like flat orange.</summary>
+            public Color32[] Orig;
+
             public List<int> Active = new();
             public List<int> Next = new();
 
@@ -125,6 +154,8 @@ namespace Phys.Fire
             if (xmax < xmin || ymax < ymin) return false;
 
             int lit = 0;
+            bool painted = false;
+            ResetStepRect(b);
 
             for (int y = ymin; y <= ymax; y++)
             {
@@ -140,14 +171,47 @@ namespace Phys.Fire
                     if (b.Alight[idx] || b.Fuel[idx] == 0) continue;
                     if (rec.Pixels[idx].a == 0) continue;
 
-                    // Colour comes from the paint pass later this frame.
                     b.Alight[idx] = true;
-                    b.Active.Add(idx);
+                    b.Heat[idx] = (byte)Mathf.Clamp(mat.TemperatureOfFire, 1, 255);
                     lit++;
+
+                    if (!b.Listed[idx])
+                    {
+                        b.Listed[idx] = true;
+                        b.Active.Add(idx);
+                    }
+
+                    // Relighting a pixel whose fuel has not moved paints it the colour it
+                    // already is. Skipping that keeps the dirty rect — and with it the
+                    // per-frame texture upload — down to what actually changed.
+                    var c = Charred(b.Orig[idx], mat, b.Fuel[idx]);
+                    if (!Same(rec.Pixels[idx], c))
+                    {
+                        rec.Pixels[idx] = c;
+                        b.Touch(x, y);
+                        painted = true;
+                    }
                 }
             }
 
+            if (painted) rec.MarkPixels(b.sx0, b.sy0, b.sx1, b.sy1, 0, colliderChanged: false);
             return lit > 0;
+        }
+
+        /// <summary>
+        /// Set light to whatever flammable object sits at a world point. This is what a flame
+        /// cell calls when it tries to ignite a neighbour (FlameField.SpendIgniteProbes,
+        /// Noita's ICell::TryIgniteRandomNeighbour at 0x7520a0) — the flames, not the burning
+        /// object, are what carries fire from one thing to the next.
+        /// </summary>
+        public void IgniteAt(Vector2 world, float radius)
+        {
+            var filter = new ContactFilter2D { useTriggers = false, useLayerMask = true, layerMask = ContactMask };
+            _probe.Clear();
+            Physics2D.OverlapCircle(world, radius + PixelSpriteRegistry.QueryMargin, filter, _probe);
+
+            foreach (var col in _probe)
+                if (col) Ignite(col.gameObject, world, radius);
         }
 
         /// <summary>Put out the flames inside a world-space circle, leaving the pixels scorched.</summary>
@@ -171,14 +235,19 @@ namespace Phys.Fire
                 if (dx * dx + dy * dy > r2) continue;
 
                 b.Alight[idx] = false;
+                b.Listed[idx] = false;
                 b.Active.RemoveAt(i);
-                if (rec.Pixels[idx].a != 0) rec.Pixels[idx] = Scorch(b.Mat, b.Fuel[idx]);
+                if (rec.Pixels[idx].a != 0) rec.Pixels[idx] = Scorch(b.Orig[idx], b.Mat, b.Fuel[idx]);
                 b.Touch(x, y);
                 doused++;
             }
 
             if (doused > 0)
                 rec.MarkPixels(b.sx0, b.sy0, b.sx1, b.sy1, 0, colliderChanged: false);
+
+            // The flames standing over the doused pixels have to go too, or the fire looks
+            // alive for another half second with nothing feeding it.
+            FlameField.Instance.Douse(worldPos, worldRadius * 1.5f);
         }
 
         /// <summary>Put out every flame on an object.</summary>
@@ -191,7 +260,8 @@ namespace Phys.Fire
             foreach (int idx in b.Active)
             {
                 b.Alight[idx] = false;
-                if (rec.Pixels[idx].a != 0) rec.Pixels[idx] = Scorch(b.Mat, b.Fuel[idx]);
+                b.Listed[idx] = false;
+                if (rec.Pixels[idx].a != 0) rec.Pixels[idx] = Scorch(b.Orig[idx], b.Mat, b.Fuel[idx]);
                 b.Touch(idx % rec.Width, idx / rec.Width);
             }
             b.Active.Clear();
@@ -218,16 +288,28 @@ namespace Phys.Fire
                 Step();
             }
             if (_accum >= step) _accum = 0f;
-
-            // Colour is refreshed every frame regardless of the tick rate. Repainting
-            // only on a tick is what made the fire read as a 20fps animation sitting on
-            // top of a 60fps game.
-            Paint(Time.time);
         }
 
-        /// <summary>Recolour every burning pixel. Cheap: it only touches the active set.</summary>
-        private void Paint(float time)
+        /// <summary>
+        /// One grid frame of Noita's ICell::UpdateFire (0x7521f0), run for every pixel that is
+        /// alight. Called by <see cref="FlameField"/> at its own 60 Hz tick, not at the burn
+        /// tick, because this is what the fire actually looks like and it has to be smooth.
+        ///
+        /// Per pixel, per frame:
+        /// <list type="number">
+        /// <item>roll generates_flames% and try to put a flame in one of the three cells above
+        ///       (0x751dd8 picks between up-left, up and up-right) — and only if that cell is
+        ///       free, which is the whole of Noita's "can this pixel breathe" test;</item>
+        /// <item>roll generates_smoke% and do the same with smoke;</item>
+        /// <item>requires_oxygen: a pixel that got a flame out refills its heat, one that could
+        ///       not loses a point, and at zero it stops burning (0x752549). That single rule
+        ///       is why fire inside a sealed object dies instead of hollowing it out.</item>
+        /// </list>
+        /// </summary>
+        public void EmitFlames()
         {
+            if (_reg == null || _burns.Count == 0) return;
+
             _stepList.Clear();
             foreach (var kv in _burns)
             {
@@ -236,36 +318,88 @@ namespace Phys.Fire
                 if (kv.Value.Active.Count > 0) _stepList.Add(kv.Value);
             }
 
-            foreach (var b in _stepList) PaintBurn(b, time);
+            foreach (var b in _stepList) EmitBurn(b);
         }
 
-        private static void PaintBurn(Burn b, float time)
+        private static void EmitBurn(Burn b)
         {
             var rec = b.Rec;
             var pix = rec.Pixels;
             var mat = b.Mat;
             int w = rec.Width;
 
-            // Flicker slides along the object's up axis so licks travel upward even
-            // after the object has toppled over.
-            Vector2 up = b.Go.transform.InverseTransformDirection(Vector3.up);
-            if (up.sqrMagnitude > 1e-6f) up.Normalize();
+            // One matrix for the whole object instead of a transform call per pixel.
+            var l2w = b.Go.transform.localToWorldMatrix;
+            float ppu = rec.Ppu;
+            float cell = FlameField.CellSize;
+            var field = FlameField.Instance;
 
-            ResetStepRect(b);
+            // World-to-pixel by hand as well, so venting costs no transform calls at all.
+            var w2l = b.Go.transform.worldToLocalMatrix;
 
             for (int i = 0; i < b.Active.Count; i++)
             {
                 int idx = b.Active[i];
-                if (!b.Alight[idx]) continue;
-                if (pix[idx].a == 0) continue;
+                if (!b.Alight[idx] || pix[idx].a == 0) continue;
 
-                int x = idx % w, y = idx / w;
-                pix[idx] = Ember(mat, b.Fuel[idx], x, y, time, up.x, up.y);
-                b.Touch(x, y);
+                bool rollFlame = field.NextFloat() * 100f < mat.GeneratesFlames;
+                bool rollSmoke = field.NextFloat() * 100f < mat.GeneratesSmoke;
+                bool vented = false;
+
+                // Most pixels roll nothing on most frames, and those must not cost a matrix
+                // multiply each: this runs over every lit pixel of every object, 60 times a second.
+                if (rollFlame || rollSmoke)
+                {
+                    int x = idx % w, y = idx / w;
+                    var world = (Vector2)l2w.MultiplyPoint3x4(new Vector3(
+                        (x + 0.5f - rec.PivotPx.x) / ppu,
+                        (y + 0.5f - rec.PivotPx.y) / ppu,
+                        0f));
+
+                    if (rollFlame)
+                    {
+                        // 0x751dd8: one of the three cells above, chosen at random.
+                        var at = world + new Vector2((int)(field.NextFloat() * 3f) - 1, 1f) * cell;
+                        if (!Buried(rec, w2l, at))
+                        {
+                            // 0x752505: the flame carries this pixel's heat, jittered 0.75..1.29.
+                            int heat = Mathf.RoundToInt(b.Heat[idx] * (0.75f + 0.54f * field.NextFloat()));
+                            vented = field.Emit(at, heat);
+                        }
+                    }
+
+                    if (rollSmoke)
+                    {
+                        var at = world + new Vector2((int)(field.NextFloat() * 3f) - 1, 1f) * cell;
+                        if (!Buried(rec, w2l, at)) field.EmitSmoke(at);
+                    }
+                }
+
+                // 0x752549: vented pixels stay lit indefinitely, smothered ones count down.
+                //
+                // A pixel that goes out here is *not* repainted. It is mid-burn, its colour is
+                // whatever its fuel says, and it will usually be relit within a few frames —
+                // repainting it each time marked a dirty rect spanning the whole object every
+                // grid frame, which is a full texture upload 60 times a second for no visible
+                // change at all.
+                if (vented) b.Heat[idx] = (byte)Mathf.Clamp(mat.TemperatureOfFire, 1, 255);
+                else if (mat.RequiresOxygen && b.Heat[idx] > 0 && --b.Heat[idx] == 0) b.Alight[idx] = false;
             }
+        }
 
-            if (b.sx1 >= 0)
-                rec.MarkPixels(b.sx0, b.sy0, b.sx1, b.sy1, 0, colliderChanged: false);
+        /// <summary>
+        /// Whether a world point falls on a solid pixel of this object — Noita's
+        /// <c>grid[nx,ny] != null</c> test before a flame is placed (0x751f1b), asked of the
+        /// one object we already have the pixels for. Anything else the flame would have to
+        /// pass through, it passes through.
+        /// </summary>
+        private static bool Buried(PixelSpriteRegistry.Record rec, Matrix4x4 worldToLocal, Vector2 world)
+        {
+            var local = worldToLocal.MultiplyPoint3x4(world);
+            int px = Mathf.FloorToInt(local.x * rec.Ppu + rec.PivotPx.x);
+            int py = Mathf.FloorToInt(local.y * rec.Ppu + rec.PivotPx.y);
+            if (px < 0 || py < 0 || px >= rec.Width || py >= rec.Height) return false;
+            return rec.Pixels[py * rec.Width + px].a != 0;
         }
 
         private void Step()
@@ -312,14 +446,17 @@ namespace Phys.Fire
             for (int i = 0; i < b.Active.Count; i++)
             {
                 int idx = b.Active[i];
-                if (!b.Alight[idx]) continue;      // doused since the list was built
+
+                // Every `continue` here drops this pixel's entry, so each one has to give
+                // the slot back or the pixel can never be listed again.
+                if (!b.Alight[idx]) { b.Listed[idx] = false; continue; }   // doused, or suffocated
 
                 // Another tool (the eraser) may have removed this pixel out from under
                 // us. Repainting it here would resurrect it, so let the flame drop.
-                if (pix[idx].a == 0) { b.Alight[idx] = false; b.Fuel[idx] = 0; continue; }
+                if (pix[idx].a == 0) { b.Alight[idx] = false; b.Listed[idx] = false; b.Fuel[idx] = 0; continue; }
 
                 int fuel = b.Fuel[idx];
-                if (fuel == 0) { b.Alight[idx] = false; continue; }
+                if (fuel == 0) { b.Alight[idx] = false; b.Listed[idx] = false; continue; }
 
                 int x = idx % w, y = idx / w;
 
@@ -331,6 +468,7 @@ namespace Phys.Fire
                 {
                     b.Fuel[idx] = 0;
                     b.Alight[idx] = false;
+                    b.Listed[idx] = false;
                     if (LeavesChar(mat, x, y))
                     {
                         pix[idx] = mat.Charcoal;   // stays solid — a charred chunk
@@ -343,9 +481,12 @@ namespace Phys.Fire
                 }
                 else
                 {
-                    // Fuel only — the paint pass turns it into a colour every frame.
                     b.Fuel[idx] = (byte)left;
                     b.Next.Add(idx);
+
+                    // Colour is a function of fuel alone, so it only has to be written when
+                    // fuel changes. All the motion in the fire is in the flames now.
+                    pix[idx] = Charred(b.Orig[idx], mat, left);
 
                     if (255 - left >= spreadThreshold)
                     {
@@ -387,6 +528,10 @@ namespace Phys.Fire
             if (b.NextFloat() >= b.Mat.SpreadChance * weight * grain) return;
 
             b.Alight[idx] = true;
+            b.Heat[idx] = (byte)Mathf.Clamp(b.Mat.TemperatureOfFire, 1, 255);
+            if (b.Listed[idx]) return;
+
+            b.Listed[idx] = true;
             b.Next.Add(idx);
         }
 
@@ -463,9 +608,12 @@ namespace Phys.Fire
                         if (src < 0 || src >= srcLen) continue;
 
                         b.Fuel[dst] = old.Fuel[src];
+                        b.Heat[dst] = old.Heat[src];
+                        b.Orig[dst] = old.Orig[src];
                         if (old.Alight[src] && b.Fuel[dst] > 0)
                         {
                             b.Alight[dst] = true;
+                            b.Listed[dst] = true;
                             b.Active.Add(dst);
                         }
                     }
@@ -500,7 +648,12 @@ namespace Phys.Fire
                 Rec = rec,
                 Mat = mat,
                 Fuel = new byte[n],
+                Heat = new byte[n],
                 Alight = new bool[n],
+                Listed = new bool[n],
+                // Snapshot before anything is charred: the char ramp mixes back into it, and
+                // a split has to be able to hand the piece its share of the original art.
+                Orig = (Color32[])rec.Pixels.Clone(),
                 // Position-derived seed: two objects lit on the same frame still flicker apart.
                 Rng = (uint)(go.GetInstanceID() * 2654435761u) | 1u,
             };
@@ -511,6 +664,10 @@ namespace Phys.Fire
 
             return b;
         }
+
+        /// <summary>Colour equality. Color32 has no cheap operator==, and this runs per pixel.</summary>
+        private static bool Same(Color32 a, Color32 b) =>
+            a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a;
 
         private static void ResetStepRect(Burn b)
         {
@@ -523,52 +680,35 @@ namespace Phys.Fire
         // ─────────────────────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Ember colour for a pixel with <paramref name="fuel"/> left.
+        /// Colour of a burning pixel with <paramref name="fuel"/> left.
         ///
-        /// The gradient is deliberately back-loaded: a pixel flashes bright just after it
-        /// catches, then spends most of its (multi-second) life as a darkening coal. A
-        /// uniform bright ramp over three seconds only makes the object look painted
-        /// orange. On top of that a sparse set of pixels flares to full heat each cycle,
-        /// which is what reads as flames licking over the bed.
+        /// Noita never tints the burning material bright: wood that is on fire is wood going
+        /// black, and every warm colour in the picture comes from the fire cells standing over
+        /// it. So this is a char ramp, not an ember ramp — the object's own colour flashes hot
+        /// for a moment where the fire front just arrived, then darkens the rest of the way
+        /// down to charcoal and stays there. The previous version ran a bright orange gradient
+        /// over the pixel's whole multi-second life, which is exactly what made a burning plank
+        /// read as a plank someone had painted orange.
         /// </summary>
-        private static Color32 Ember(PhysMaterial mat, int fuel, int x, int y, float time, float upX, float upY)
+        private static Color32 Charred(Color32 orig, PhysMaterial mat, int fuel)
         {
-            float t = fuel / 255f;
-            Color32 c =
-                t >= 0.85f ? Color32.Lerp(mat.EmberMid,  mat.EmberHot,  (t - 0.85f) / 0.15f) :
-                t >= 0.35f ? Color32.Lerp(mat.EmberCool, mat.EmberMid,  (t - 0.35f) / 0.50f) :
-                             Color32.Lerp(mat.Charcoal,  mat.EmberCool, t / 0.35f);
+            float u = 1f - fuel / 255f;      // how far through the burn this pixel is
 
-            // Value noise in time: two hashes smoothly blended, so the flicker animates
-            // continuously at the display rate instead of snapping between discrete
-            // values. Offsetting the phase along the up axis makes licks travel upward.
-            float along = x * upX + y * upY;
-            float ft = (time - along * 0.03f) * FlickerHz;
-            int cell = Mathf.FloorToInt(ft);
-            float f = ft - cell;
-            f = f * f * (3f - 2f * f);                       // smoothstep
-            float n = Mathf.Lerp(Hash01(x, y, cell), Hash01(x, y, cell + 1), f);
+            if (u < 0.10f)                   // the front itself: a brief flash of heat
+                return Color32.Lerp(orig, mat.EmberMid, u / 0.10f);
 
-            if (n > 0.88f)
-                return Color32.Lerp(c, mat.EmberHot, (n - 0.88f) / 0.12f * 0.85f);
+            if (u < 0.30f)                   // cooling into a dark red glow
+                return Color32.Lerp(mat.EmberMid, mat.EmberCool, (u - 0.10f) / 0.20f);
 
-            float k = 0.82f + 0.18f * n;
-            return new Color32(
-                (byte)(c.r * k),
-                (byte)(c.g * k),
-                (byte)(c.b * k),
-                255);
+            return Color32.Lerp(mat.EmberCool, mat.Charcoal, (u - 0.30f) / 0.70f);
         }
 
         /// <summary>Colour left behind when a flame is put out before the pixel is spent.</summary>
-        private static Color32 Scorch(PhysMaterial mat, int fuel)
+        private static Color32 Scorch(Color32 orig, PhysMaterial mat, int fuel)
         {
-            var warm = new Color32(
-                (byte)(mat.EmberCool.r * 0.45f),
-                (byte)(mat.EmberCool.g * 0.45f),
-                (byte)(mat.EmberCool.b * 0.45f),
-                255);
-            return Color32.Lerp(warm, mat.Charcoal, 1f - fuel / 255f);
+            // Same ramp, minus the glow: nothing that was doused is still hot.
+            var cold = Color32.Lerp(orig, mat.Charcoal, 0.65f);
+            return Color32.Lerp(cold, mat.Charcoal, 1f - fuel / 255f);
         }
 
         /// <summary>

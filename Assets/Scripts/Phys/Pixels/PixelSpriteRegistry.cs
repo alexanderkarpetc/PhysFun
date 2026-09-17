@@ -139,6 +139,19 @@ namespace Phys.Pixels
         /// <summary>Raised after a sprite was split, once every piece is registered.</summary>
         public event Action<GameObject, IReadOnlyList<SplitPart>> Split;
 
+        /// <summary>
+        /// Optional per-object floor on the size of a split piece, in solid pixels. Anything
+        /// smaller is discarded by the flood fill instead of becoming its own body.
+        ///
+        /// Exists for fire. A burning object breaks up continuously, and every fragment it
+        /// sheds is another texture, another traced collider, another rigidbody and another
+        /// object that goes on shedding fragments of its own — a thin shape burning through
+        /// can cascade into hundreds of them inside one frame. Fragments that small are also
+        /// seconds away from being consumed anyway, so for something on fire the honest
+        /// answer is that the fire ate them.
+        /// </summary>
+        public Func<GameObject, int> MinPixelsOverride;
+
         /// <summary>Raised just before an object with no pixels left is destroyed.</summary>
         public event Action<GameObject> Consumed;
 
@@ -146,6 +159,29 @@ namespace Phys.Pixels
         private readonly List<GameObject> _scratch = new();
         private readonly List<GameObject> _dead = new();
         private Color32[] _uploadBuf = Array.Empty<Color32>();
+
+        /// <summary>Tracked sprites. Diagnostics only.</summary>
+        public int RecordCount => _records.Count;
+
+        /// <summary>
+        /// Paths and points across every tracked collider. Physics cost follows these two
+        /// numbers, so they are what a spike report needs; walking every collider is far too
+        /// slow to do per frame, so only call this when something already went wrong.
+        /// </summary>
+        public void CountColliders(out int paths, out int points)
+        {
+            paths = 0;
+            points = 0;
+            foreach (var kv in _records)
+            {
+                if (!kv.Key) continue;
+                var poly = kv.Key.GetComponent<PolygonCollider2D>();
+                if (!poly) continue;
+
+                paths += poly.pathCount;
+                points += poly.GetTotalPointCount();
+            }
+        }
 
         // ─────────────────────────────────────────────────────────────────────────
         // Records
@@ -257,8 +293,13 @@ namespace Phys.Pixels
         // ─────────────────────────────────────────────────────────────────────────
 
         /// <summary>Upload dirty rectangles to the GPU. Cheap — call every frame.</summary>
+        private static readonly Unity.Profiling.ProfilerMarker s_flush = new("Pixels.Flush");
+        private static readonly Unity.Profiling.ProfilerMarker s_colliders = new("Pixels.Colliders");
+        private static readonly Unity.Profiling.ProfilerMarker s_splits = new("Pixels.Splits");
+
         public void Flush()
         {
+            using var _ = s_flush.Auto();
             foreach (var kv in _records)
             {
                 var rec = kv.Value;
@@ -296,6 +337,7 @@ namespace Phys.Pixels
         public void RefreshColliders(int simplifyLevel, double maxMillis = double.MaxValue, bool force = false)
         {
             if (_records.Count == 0) return;
+            using var _ = s_colliders.Auto();
             Flush(); // collider tracing reads the texture — make sure it's current
 
             float now = Time.unscaledTime;
@@ -326,6 +368,7 @@ namespace Phys.Pixels
         public void ProcessSplits(int simplifyLevel, int minPixels = 16, bool force = false)
         {
             if (_records.Count == 0) return;
+            using var _ = s_splits.Auto();
             Flush();
 
             // Snapshot keys: splitting spawns clones and mutates the dictionary.
@@ -395,9 +438,11 @@ namespace Phys.Pixels
         {
             if (!go.GetComponent<SpriteRenderer>()) return;
 
+            int min = Mathf.Max(minPixels, MinPixelsOverride?.Invoke(go) ?? 0);
+
             // rec.Pixels is the authoritative CPU mirror — saves a full GetPixels32 copy.
             var parts = SpriteSplitHelper.TrySplitInPlace(go, simplifyLevel,
-                alphaThreshold: 0.1f, minPixels: minPixels, pixels: rec.Pixels);
+                alphaThreshold: 0.1f, minPixels: min, pixels: rec.Pixels);
             if (parts == null) return; // still one piece; RefreshColliders keeps the outline current
 
             // The pre-split texture belongs to the registry and no sprite references it now.

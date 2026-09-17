@@ -29,8 +29,70 @@ namespace Phys.Pixels
         private static readonly List<bool> Used = new();
         private static readonly Dictionary<int, int> FirstAtPoint = new();
 
+        /// <summary>
+        /// Loops smaller than this, in pixels of enclosed area, are left out of the outline.
+        ///
+        /// Every closed loop becomes its own path on the PolygonCollider2D, and that includes
+        /// the loop around each hole. A burning object is eaten stochastically and ends up
+        /// riddled with two- and three-pixel holes, so without this floor a single plank on
+        /// fire can reach hundreds of paths — and assigning that many rebuilds the physics
+        /// shape, on every retrace, for every piece it breaks into. Nothing in the game is
+        /// small enough to fall through a hole this size, and a speck this size is not worth
+        /// colliding with either.
+        /// </summary>
+        public static float MinLoopPixels = 12f;
+
+        /// <summary>
+        /// Smallest detail, in pixels, that survives into the collider.
+        ///
+        /// Simplification is otherwise scaled to the object's size, which on a two-unit object
+        /// works out under a pixel — so every single-pixel bite the fire takes stays in the
+        /// outline as two more corners. Unity then has to cut that concave path into convex
+        /// pieces for the physics engine, and the piece count follows the corner count: a
+        /// burnt object ends up with hundreds of them, and two burnt objects overlapping have
+        /// to resolve the product of the two. Physics does not need to know about a one-pixel
+        /// bite; at 40 px per unit this floor is 6 centimetres of world.
+        /// </summary>
+        public static float MinSimplifyPixels = 2.5f;
+
         // Scratch for ApplyCollider; tracing is single-threaded and clears it per call.
         private static readonly List<List<Vector2>> Scratch = new();
+
+        /// <summary>
+        /// Throw away loops enclosing less than <see cref="MinLoopPixels"/>, except the biggest
+        /// one — an object worn down to a speck still needs the outline it has left.
+        /// </summary>
+        private static void DropPinholes(List<List<Vector2>> paths, float ppu)
+        {
+            if (paths.Count < 2) return;
+
+            int biggest = 0;
+            float biggestArea = -1f;
+            for (int i = 0; i < paths.Count; i++)
+            {
+                float a = AreaPixels(paths[i], ppu);
+                if (a <= biggestArea) continue;
+                biggestArea = a;
+                biggest = i;
+            }
+
+            for (int i = paths.Count - 1; i >= 0; i--)
+            {
+                if (i == biggest) continue;
+                if (AreaPixels(paths[i], ppu) >= MinLoopPixels) continue;
+                paths.RemoveAt(i);
+            }
+        }
+
+        /// <summary>Shoelace area of a traced loop, back in pixels — the units the floor is in.</summary>
+        private static float AreaPixels(List<Vector2> loop, float ppu)
+        {
+            float twice = 0f;
+            for (int i = 0, j = loop.Count - 1; i < loop.Count; j = i++)
+                twice += loop[j].x * loop[i].y - loop[i].x * loop[j].y;
+
+            return Mathf.Abs(twice) * 0.5f * ppu * ppu;
+        }
 
         /// <summary>
         /// Trace the pixels and put the result on the object's <see cref="PolygonCollider2D"/>,
@@ -44,6 +106,7 @@ namespace Phys.Pixels
             if (!go) return;
 
             Trace(pixels, w, h, ppu, pivotPx, Scratch);
+            DropPinholes(Scratch, ppu);
             var poly = go.GetComponent<PolygonCollider2D>();
 
             if (Scratch.Count == 0)
@@ -62,7 +125,7 @@ namespace Phys.Pixels
             for (int i = 0; i < Scratch.Count; i++) poly.SetPath(i, Scratch[i]);
 
             // The trace is a staircase: exact, and far denser than physics needs.
-            ColliderSimplifier2D.Simplify(poly, simplifyLevel);
+            ColliderSimplifier2D.Simplify(poly, simplifyLevel, MinSimplifyPixels / Mathf.Max(1f, ppu));
             MassRecalculator.SetMass(null, go.GetComponent<Rigidbody2D>(), poly);
         }
 

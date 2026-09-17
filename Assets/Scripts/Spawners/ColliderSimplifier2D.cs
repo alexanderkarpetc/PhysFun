@@ -11,13 +11,21 @@ public static class ColliderSimplifier2D
     /// <summary>
     /// Simplify all paths of a PolygonCollider2D using RDP. level: 0..5.
     /// </summary>
-    public static void Simplify(PolygonCollider2D poly, int level)
+    /// <param name="minTolerance">
+    /// Floor on the tolerance, in the same local units as the paths. The level alone scales
+    /// with the object's size, which is the wrong measure for an outline traced from pixels:
+    /// on anything bigger than a hand's width level 2 works out below one pixel, so a
+    /// staircase — and a fire-eaten outline is nothing but staircase — survives simplification
+    /// intact. Callers that know the pixel size pass it here.
+    /// </param>
+    public static void Simplify(PolygonCollider2D poly, int level, float minTolerance = 0f)
     {
         if (!poly) return;
         level = Mathf.Clamp(level, 0, 5);
-        if (level == 0) return;
+        if (level == 0 && minTolerance <= 0f) return;
 
-        float tol = ComputeTolerance(poly, level);
+        float tol = Mathf.Max(ComputeTolerance(poly, level), minTolerance);
+        if (tol <= 0f) return;
 
         int pathCount = poly.pathCount;
         for (int p = 0; p < pathCount; p++)

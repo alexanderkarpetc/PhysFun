@@ -42,6 +42,18 @@ namespace Phys.Fire
         /// <summary>World-space radius of a contact-spread probe.</summary>
         public static float ContactProbeRadius = 0.12f;
 
+        /// <summary>
+        /// Smallest piece, in solid pixels, that a *burning* object is allowed to break into.
+        /// Anything smaller is taken by the fire instead of becoming its own physics body.
+        ///
+        /// A thin shape burning through does not part into a few clean halves: it crumbles,
+        /// and every crumb that becomes an object brings a texture, a traced collider, a
+        /// rigidbody and its own continuing fragmentation with it. Four times the registry's
+        /// usual floor is enough to keep that cascade from turning a burn-through into a
+        /// multi-second stall, and it matches what fire is supposed to do to small debris.
+        /// </summary>
+        public static int MinBurningPiece = 64;
+
         private sealed class Burn
         {
             public GameObject Go;
@@ -142,9 +154,28 @@ namespace Phys.Fire
         public void Bind(PixelSpriteRegistry registry)
         {
             if (_reg == registry) return;
-            if (_reg != null) _reg.Split -= OnSplit;
+            if (_reg != null)
+            {
+                _reg.Split -= OnSplit;
+                _reg.MinPixelsOverride = null;
+            }
             _reg = registry;
             _reg.Split += OnSplit;
+            _reg.MinPixelsOverride = go => IsBurning(go) ? MinBurningPiece : 0;
+        }
+
+        /// <summary>Objects the fire is tracking, live or burnt out. Diagnostics only.</summary>
+        public int BurnCount => _burns.Count;
+
+        /// <summary>Total lit pixels across every object. Diagnostics only.</summary>
+        public int LitPixelCount
+        {
+            get
+            {
+                int n = 0;
+                foreach (var kv in _burns) n += kv.Value.Active.Count;
+                return n;
+            }
         }
 
         public bool IsBurning(GameObject go) =>
@@ -550,12 +581,25 @@ namespace Phys.Fire
             var kind = field.Kind;
             var heat = field.Heat;
 
+            // Cell-space box around this object. With a dozen burning pieces sharing one fire
+            // the per-object AABB test is not enough on its own — without this every piece
+            // would transform every flame in the blaze.
+            int bx0 = int.MinValue, by0 = int.MinValue, bx1 = int.MaxValue, by1 = int.MaxValue;
+            if (b.Sr)
+            {
+                var bb = b.Sr.bounds;
+                FlameField.WorldToCell(bb.min, out bx0, out by0);
+                FlameField.WorldToCell(bb.max, out bx1, out by1);
+                bx0--; by0--; bx1++; by1++;      // the neighbour a flame reaches for
+            }
+
             ResetStepRect(b);
             bool painted = false;
 
             for (int i = 0; i < n; i++)
             {
                 if (kind[i] != FlameField.KindFire) continue;
+                if (cx[i] < bx0 || cx[i] > bx1 || cy[i] < by0 || cy[i] > by1) continue;
 
                 // The flame's own cell is air by construction, so the neighbour is what gets
                 // lit — one picked at random, as in the original.
@@ -817,6 +861,7 @@ namespace Phys.Fire
                         b.Fuel[dst] = old.Fuel[src];
                         b.Heat[dst] = old.Heat[src];
                         b.Orig[dst] = old.Orig[src];
+                        if (b.Fuel[dst] < 255) b.Burnt(x, y);
                         if (old.Alight[src] && b.Fuel[dst] > 0)
                         {
                             b.Alight[dst] = true;

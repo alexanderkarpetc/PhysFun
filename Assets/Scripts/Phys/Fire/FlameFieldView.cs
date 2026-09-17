@@ -1,3 +1,4 @@
+using Unity.Profiling;
 using UnityEngine;
 
 namespace Phys.Fire
@@ -92,8 +93,12 @@ namespace Phys.Fire
             mr.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
         }
 
+        private static readonly ProfilerMarker s_mesh = new("Fire.FlameMesh");
+
         private void LateUpdate()
         {
+            using var _ = s_mesh.Auto();
+
             var field = FlameField.Instance;
             int count = field.Count;
             if (count == 0)

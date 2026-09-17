@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Profiling;
 using UnityEngine;
 
 namespace Phys.Fire
@@ -67,14 +68,15 @@ namespace Phys.Fire
         public static int SmokeRiseChancePercent = 45;
 
         /// <summary>
-        /// Physics probes spent per tick letting flames set light to what they touch.
+        /// Physics probes spent per tick letting flames jump to an object that is *not* already
+        /// burning — the only part of Noita's ICell::TryIgniteRandomNeighbour (0x7481ca) that
+        /// needs to ask the physics world anything.
         ///
-        /// Noita gives every flame two attempts every frame (0x7481ca) because a neighbour is
-        /// an array index there. Here each attempt is an OverlapCircle, so they are spread
-        /// over a budget of randomly picked flames instead — the same thing in aggregate
-        /// once the fire is bigger than the budget.
+        /// Relighting the object a flame came off is not done here: that is far too common to
+        /// pay an OverlapCircle for, and FireSystem.IgniteFromFlames resolves it against the
+        /// burning object's own texture instead, for every flame, every burn step.
         /// </summary>
-        public static int IgniteProbesPerTick = 6;
+        public static int IgniteProbesPerTick = 4;
 
         /// <summary>World radius of one such probe. About two flame cells.</summary>
         public static float IgniteProbeRadius = 0.05f;
@@ -86,6 +88,12 @@ namespace Phys.Fire
         private byte[] _age = new byte[1024];       // ticks alive, saturating — drives the colour ramp
         private ushort[] _life = new ushort[1024];  // smoke only: ticks left
         private int _count;
+
+        // Bounding box of the live flames, in cell coordinates.
+        private int _fx0, _fy0, _fx1, _fy1;
+        private bool _hasFireBounds;
+
+        private static readonly ProfilerMarker s_step = new("Fire.FlameField.Step");
 
         private readonly HashSet<long> _occupied = new();
         private uint _rng = 0x9E3779B9u;
@@ -151,6 +159,21 @@ namespace Phys.Fire
             _occupied.Clear();
         }
 
+        /// <summary>
+        /// World-space box around every live flame, as of the last step. Burning objects test
+        /// their own bounds against it before asking each flame whether it is touching them,
+        /// so objects that once burned and are now nowhere near the fire cost one box test.
+        /// </summary>
+        public bool TryGetFireBounds(out Rect area)
+        {
+            area = default;
+            if (!_hasFireBounds) return false;
+
+            area = Rect.MinMaxRect(_fx0 * CellSize, _fy0 * CellSize,
+                                   (_fx1 + 1) * CellSize, (_fy1 + 1) * CellSize);
+            return true;
+        }
+
         // ─────────────────────────────────────────────────────────────────────────
         // Simulation
         // ─────────────────────────────────────────────────────────────────────────
@@ -173,6 +196,8 @@ namespace Phys.Fire
 
         private void Step()
         {
+            using var _ = s_step.Auto();
+
             // Backwards, because removal swaps the last cell down: walking down never
             // revisits a cell that was moved into a slot already passed.
             for (int i = _count - 1; i >= 0; i--)
@@ -181,6 +206,26 @@ namespace Phys.Fire
 
                 if (_kind[i] == KindSmoke) StepSmoke(i);
                 else StepFire(i);
+            }
+
+            // Recomputed after the moves, over the cells that survived them.
+            _hasFireBounds = false;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_kind[i] != KindFire) continue;
+
+                if (!_hasFireBounds)
+                {
+                    _fx0 = _fx1 = _cx[i];
+                    _fy0 = _fy1 = _cy[i];
+                    _hasFireBounds = true;
+                    continue;
+                }
+
+                if (_cx[i] < _fx0) _fx0 = _cx[i];
+                if (_cx[i] > _fx1) _fx1 = _cx[i];
+                if (_cy[i] < _fy0) _fy0 = _cy[i];
+                if (_cy[i] > _fy1) _fy1 = _cy[i];
             }
 
             SpendIgniteProbes();

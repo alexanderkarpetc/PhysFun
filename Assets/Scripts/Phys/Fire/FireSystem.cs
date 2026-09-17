@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Materials;
 using Phys.Pixels;
+using Unity.Profiling;
 using UnityEngine;
 
 namespace Phys.Fire
@@ -46,6 +47,7 @@ namespace Phys.Fire
             public GameObject Go;
             public PixelSpriteRegistry.Record Rec;   // reference identity doubles as a staleness check
             public PhysMaterial Mat;
+            public SpriteRenderer Sr;                // kept for its world bounds, nothing else
 
             public byte[] Fuel;      // 255 = untouched, 0 = spent (or never flammable, e.g. charcoal)
             public bool[] Alight;
@@ -83,6 +85,25 @@ namespace Phys.Fire
             // Step-scoped dirty rect over the pixels this burn repainted.
             public int sx0, sy0, sx1, sy1;
 
+            /// <summary>
+            /// Rect covering every pixel that has ever been alight on this object. A rekindle
+            /// only looks inside it: on a terrain chunk the array is the whole map, and
+            /// relighting its entire surface because a campfire went out somewhere would set
+            /// the level on fire.
+            /// </summary>
+            public int bx0 = int.MaxValue, by0 = int.MaxValue, bx1 = -1, by1 = -1;
+
+            /// <summary>Whether this burn has already had its one attempt at coming back.</summary>
+            public bool Rekindled;
+
+            public void Burnt(int x, int y)
+            {
+                if (x < bx0) bx0 = x;
+                if (y < by0) by0 = y;
+                if (x > bx1) bx1 = x;
+                if (y > by1) by1 = y;
+            }
+
             public float NextFloat()
             {
                 Rng ^= Rng << 13;
@@ -99,6 +120,11 @@ namespace Phys.Fire
                 if (y > sy1) sy1 = y;
             }
         }
+
+        // Markers, so the next time a fire costs a frame the Profiler says which half.
+        private static readonly ProfilerMarker s_burn = new("Fire.Burn");
+        private static readonly ProfilerMarker s_emit = new("Fire.EmitFlames");
+        private static readonly ProfilerMarker s_contact = new("Fire.IgniteFromFlames");
 
         private readonly Dictionary<GameObject, Burn> _burns = new();
         private readonly List<GameObject> _dead = new();
@@ -173,6 +199,7 @@ namespace Phys.Fire
 
                     b.Alight[idx] = true;
                     b.Heat[idx] = (byte)Mathf.Clamp(mat.TemperatureOfFire, 1, 255);
+                    b.Burnt(x, y);
                     lit++;
 
                     if (!b.Listed[idx])
@@ -195,6 +222,7 @@ namespace Phys.Fire
             }
 
             if (painted) rec.MarkPixels(b.sx0, b.sy0, b.sx1, b.sy1, 0, colliderChanged: false);
+            if (lit > 0) b.Rekindled = false;
             return lit > 0;
         }
 
@@ -236,6 +264,7 @@ namespace Phys.Fire
 
                 b.Alight[idx] = false;
                 b.Listed[idx] = false;
+                b.Rekindled = true;
                 b.Active.RemoveAt(i);
                 if (rec.Pixels[idx].a != 0) rec.Pixels[idx] = Scorch(b.Orig[idx], b.Mat, b.Fuel[idx]);
                 b.Touch(x, y);
@@ -257,6 +286,7 @@ namespace Phys.Fire
 
             var rec = b.Rec;
             ResetStepRect(b);
+            b.Rekindled = true;
             foreach (int idx in b.Active)
             {
                 b.Alight[idx] = false;
@@ -309,6 +339,7 @@ namespace Phys.Fire
         public void EmitFlames()
         {
             if (_reg == null || _burns.Count == 0) return;
+            using var _ = s_emit.Auto();
 
             _stepList.Clear();
             foreach (var kv in _burns)
@@ -321,21 +352,115 @@ namespace Phys.Fire
             foreach (var b in _stepList) EmitBurn(b);
         }
 
+        /// <summary>
+        /// Second wind. A fire that has run out of lit pixels with no flames left over the
+        /// object comes back once along the surface of the part that burned.
+        ///
+        /// Without it a burnt object always keeps a skeleton. The fire eats inwards from the
+        /// faces, and the last of it regularly strands a few specks — pixels the front never
+        /// reached, now surrounded by the holes it left, with no lit neighbour to catch from
+        /// and no flame left alive to relight them. In a game where fire is supposed to
+        /// destroy things, "almost all gone" is a worse answer than "gone", so the fire gets
+        /// one more go at what is left.
+        ///
+        /// Only once per burn, only inside the area that actually burned, only if some of the
+        /// material is part-burnt (an object that merely sat next to a fire stays intact), and
+        /// never after the player put it out by hand.
+        /// </summary>
+        private static void Rekindle(Burn b)
+        {
+            b.Rekindled = true;
+            if (b.bx1 < 0) return;
+
+            var rec = b.Rec;
+            var pix = rec.Pixels;
+            var mat = b.Mat;
+            int w = rec.Width, h = rec.Height;
+
+            int x0 = Mathf.Max(0, b.bx0 - 1), x1 = Mathf.Min(w - 1, b.bx1 + 1);
+            int y0 = Mathf.Max(0, b.by0 - 1), y1 = Mathf.Min(h - 1, b.by1 + 1);
+
+            bool partBurnt = false;
+            for (int y = y0; y <= y1 && !partBurnt; y++)
+                for (int x = x0; x <= x1; x++)
+                {
+                    int idx = y * w + x;
+                    if (pix[idx].a != 0 && b.Fuel[idx] > 0 && b.Fuel[idx] < 255) { partBurnt = true; break; }
+                }
+            if (!partBurnt) return;
+
+            ResetStepRect(b);
+            bool painted = false;
+
+            for (int y = y0; y <= y1; y++)
+                for (int x = x0; x <= x1; x++)
+                {
+                    int idx = y * w + x;
+                    if (pix[idx].a == 0 || b.Alight[idx] || b.Fuel[idx] == 0) continue;
+
+                    // Surface only — anything sealed inside would just suffocate again.
+                    bool exposed =
+                        x == 0 || y == 0 || x == w - 1 || y == h - 1 ||
+                        pix[idx - 1].a == 0 || pix[idx + 1].a == 0 ||
+                        pix[idx - w].a == 0 || pix[idx + w].a == 0;
+                    if (!exposed) continue;
+
+                    b.Alight[idx] = true;
+                    b.Heat[idx] = (byte)Mathf.Clamp(mat.TemperatureOfFire, 1, 255);
+                    if (!b.Listed[idx])
+                    {
+                        b.Listed[idx] = true;
+                        b.Active.Add(idx);
+                    }
+
+                    var c = Charred(b.Orig[idx], mat, b.Fuel[idx]);
+                    if (!Same(pix[idx], c))
+                    {
+                        pix[idx] = c;
+                        b.Touch(x, y);
+                        painted = true;
+                    }
+                }
+
+            if (painted) rec.MarkPixels(b.sx0, b.sy0, b.sx1, b.sy1, 0, colliderChanged: false);
+        }
+
+        /// <summary>Cheap reject so objects nowhere near the fire cost one AABB test a step.</summary>
+        private static bool NearFlames(Burn b, Rect area)
+        {
+            if (!b.Sr) return true;          // nothing to ask: pay the full test
+
+            var bb = b.Sr.bounds;
+            return bb.min.x <= area.xMax && bb.max.x >= area.xMin &&
+                   bb.min.y <= area.yMax && bb.max.y >= area.yMin;
+        }
+
         private static void EmitBurn(Burn b)
         {
             var rec = b.Rec;
             var pix = rec.Pixels;
             var mat = b.Mat;
-            int w = rec.Width;
-
-            // One matrix for the whole object instead of a transform call per pixel.
-            var l2w = b.Go.transform.localToWorldMatrix;
-            float ppu = rec.Ppu;
-            float cell = FlameField.CellSize;
+            int w = rec.Width, h = rec.Height;
             var field = FlameField.Instance;
 
-            // World-to-pixel by hand as well, so venting costs no transform calls at all.
-            var w2l = b.Go.transform.worldToLocalMatrix;
+            // "Above" has to be measured in the object's own pixels, not in world cells.
+            // Noita asks its grid what sits in the cell above a burning cell; the sprite's
+            // texture is the only grid we have here, and one texture pixel is not one flame
+            // cell — on coarse art it is several, and a world-space step of one cell then
+            // lands back inside the pixel it started from and reads as solid. That is a fire
+            // where *nothing* can vent: it suffocates everywhere within a second and leaves
+            // the object standing as a half-eaten shell.
+            //
+            // The texture's rows are not world-up either, once the object has toppled over,
+            // so the step is world-up rotated into pixel space.
+            Vector2 up = b.Go.transform.InverseTransformDirection(Vector3.up);
+            if (up.sqrMagnitude > 1e-6f) up.Normalize();
+            int ux = Mathf.RoundToInt(up.x), uy = Mathf.RoundToInt(up.y);
+            if (ux == 0 && uy == 0) uy = 1;
+            int px_ = -uy, py_ = ux;      // one step along the surface: the two upper diagonals
+
+            var l2w = b.Go.transform.localToWorldMatrix;
+            float ppu = rec.Ppu;
 
             for (int i = 0; i < b.Active.Count; i++)
             {
@@ -351,27 +476,30 @@ namespace Phys.Fire
                 if (rollFlame || rollSmoke)
                 {
                     int x = idx % w, y = idx / w;
-                    var world = (Vector2)l2w.MultiplyPoint3x4(new Vector3(
-                        (x + 0.5f - rec.PivotPx.x) / ppu,
-                        (y + 0.5f - rec.PivotPx.y) / ppu,
-                        0f));
 
-                    if (rollFlame)
+                    // 0x751dd8: one of the three cells above, chosen at random.
+                    int k = (int)(field.NextFloat() * 3f);
+                    int nx = x + ux + (k == 0 ? -px_ : k == 2 ? px_ : 0);
+                    int ny = y + uy + (k == 0 ? -py_ : k == 2 ? py_ : 0);
+
+                    // 0x751f1b: the flame only goes into an empty cell. Off the edge of the
+                    // texture counts as empty — that is open air just outside the sprite.
+                    bool air = nx < 0 || ny < 0 || nx >= w || ny >= h || pix[ny * w + nx].a == 0;
+                    if (air)
                     {
-                        // 0x751dd8: one of the three cells above, chosen at random.
-                        var at = world + new Vector2((int)(field.NextFloat() * 3f) - 1, 1f) * cell;
-                        if (!Buried(rec, w2l, at))
+                        var at = (Vector2)l2w.MultiplyPoint3x4(new Vector3(
+                            (nx + 0.5f - rec.PivotPx.x) / ppu,
+                            (ny + 0.5f - rec.PivotPx.y) / ppu,
+                            0f));
+
+                        if (rollFlame)
                         {
                             // 0x752505: the flame carries this pixel's heat, jittered 0.75..1.29.
                             int heat = Mathf.RoundToInt(b.Heat[idx] * (0.75f + 0.54f * field.NextFloat()));
                             vented = field.Emit(at, heat);
                         }
-                    }
 
-                    if (rollSmoke)
-                    {
-                        var at = world + new Vector2((int)(field.NextFloat() * 3f) - 1, 1f) * cell;
-                        if (!Buried(rec, w2l, at)) field.EmitSmoke(at);
+                        if (rollSmoke) field.EmitSmoke(at);
                     }
                 }
 
@@ -388,22 +516,87 @@ namespace Phys.Fire
         }
 
         /// <summary>
-        /// Whether a world point falls on a solid pixel of this object — Noita's
-        /// <c>grid[nx,ny] != null</c> test before a flame is placed (0x751f1b), asked of the
-        /// one object we already have the pixels for. Anything else the flame would have to
-        /// pass through, it passes through.
+        /// Every flame tries to set light to one random neighbour of its own cell — Noita's
+        /// ICell::TryIgniteRandomNeighbour (0x7520a0), including its roll of the flame's own
+        /// temperature as a percentage (0x7520d2).
+        ///
+        /// This is what actually eats an object. Only its upward-facing pixels can vent, so
+        /// everything else suffocates within a second of catching; what keeps a wall, an
+        /// underside or a sheared edge burning is the flames sliding along it and relighting
+        /// it. Noita gets that for free — a neighbour is an array index in the one world grid.
+        /// Here the flame has to be resolved against each burning object's texture, which is
+        /// one matrix multiply per flame per object, and cheap enough at the burn rate: the
+        /// physics probes in <see cref="FlameField"/> are only needed for jumping to objects
+        /// that are not already alight.
         /// </summary>
-        private static bool Buried(PixelSpriteRegistry.Record rec, Matrix4x4 worldToLocal, Vector2 world)
+        private static void IgniteFromFlames(Burn b)
         {
-            var local = worldToLocal.MultiplyPoint3x4(world);
-            int px = Mathf.FloorToInt(local.x * rec.Ppu + rec.PivotPx.x);
-            int py = Mathf.FloorToInt(local.y * rec.Ppu + rec.PivotPx.y);
-            if (px < 0 || py < 0 || px >= rec.Width || py >= rec.Height) return false;
-            return rec.Pixels[py * rec.Width + px].a != 0;
+            var field = FlameField.Instance;
+            int n = field.Count;
+            if (n == 0) return;
+            using var _ = s_contact.Auto();
+
+            var rec = b.Rec;
+            var pix = rec.Pixels;
+            var mat = b.Mat;
+            int w = rec.Width, h = rec.Height;
+
+            var w2l = b.Go.transform.worldToLocalMatrix;
+            float ppu = rec.Ppu;
+            float cell = FlameField.CellSize;
+
+            var cx = field.CellX;
+            var cy = field.CellY;
+            var kind = field.Kind;
+            var heat = field.Heat;
+
+            ResetStepRect(b);
+            bool painted = false;
+
+            for (int i = 0; i < n; i++)
+            {
+                if (kind[i] != FlameField.KindFire) continue;
+
+                // The flame's own cell is air by construction, so the neighbour is what gets
+                // lit — one picked at random, as in the original.
+                var world = FlameField.CellToWorld(cx[i], cy[i]) +
+                            new Vector2((int)(field.NextFloat() * 3f) - 1,
+                                        (int)(field.NextFloat() * 3f) - 1) * cell;
+
+                var local = w2l.MultiplyPoint3x4(world);
+                int x = Mathf.FloorToInt(local.x * ppu + rec.PivotPx.x);
+                int y = Mathf.FloorToInt(local.y * ppu + rec.PivotPx.y);
+                if (x < 0 || y < 0 || x >= w || y >= h) continue;
+
+                int idx = y * w + x;
+                if (pix[idx].a == 0 || b.Alight[idx] || b.Fuel[idx] == 0) continue;
+                if (b.NextFloat() * 101f > heat[i]) continue;      // 0x7520d2
+
+                b.Alight[idx] = true;
+                b.Heat[idx] = (byte)Mathf.Clamp(mat.TemperatureOfFire, 1, 255);
+                b.Burnt(x, y);
+                if (!b.Listed[idx])
+                {
+                    b.Listed[idx] = true;
+                    b.Active.Add(idx);
+                }
+
+                var c = Charred(b.Orig[idx], mat, b.Fuel[idx]);
+                if (!Same(pix[idx], c))
+                {
+                    pix[idx] = c;
+                    b.Touch(x, y);
+                    painted = true;
+                }
+            }
+
+            if (painted) rec.MarkPixels(b.sx0, b.sy0, b.sx1, b.sy1, 0, colliderChanged: false);
         }
 
         private void Step()
         {
+            using var _ = s_burn.Auto();
+
             // Snapshot: igniting a neighbouring object mutates the dictionary mid-step.
             _stepList.Clear();
             _dead.Clear();
@@ -413,11 +606,24 @@ namespace Phys.Fire
                 // A record swapped out from under us (the cracker replaces sprites
                 // wholesale) means our pixel mirror is stale — let the fire die.
                 if (!_reg.TryGet(kv.Key, out var rec) || rec != kv.Value.Rec) { _dead.Add(kv.Key); continue; }
-                if (kv.Value.Active.Count > 0) _stepList.Add(kv.Value);
+
+                // Burns with nothing alight are kept in the list: a piece that suffocated,
+                // or one that sheared off with no lit pixels, is exactly what the flames
+                // around it should be able to set going again.
+                _stepList.Add(kv.Value);
             }
             foreach (var go in _dead) _burns.Remove(go);
 
-            foreach (var b in _stepList) StepBurn(b);
+            bool anyFlames = FlameField.Instance.TryGetFireBounds(out var fireArea);
+
+            foreach (var b in _stepList)
+            {
+                bool near = anyFlames && NearFlames(b, fireArea);
+                if (near) IgniteFromFlames(b);
+
+                if (b.Active.Count > 0) StepBurn(b);
+                else if (!near && !b.Rekindled) Rekindle(b);
+            }
         }
 
         private void StepBurn(Burn b)
@@ -529,6 +735,7 @@ namespace Phys.Fire
 
             b.Alight[idx] = true;
             b.Heat[idx] = (byte)Mathf.Clamp(b.Mat.TemperatureOfFire, 1, 255);
+            b.Burnt(x, y);
             if (b.Listed[idx]) return;
 
             b.Listed[idx] = true;
@@ -647,6 +854,7 @@ namespace Phys.Fire
                 Go = go,
                 Rec = rec,
                 Mat = mat,
+                Sr = go.GetComponent<SpriteRenderer>(),
                 Fuel = new byte[n],
                 Heat = new byte[n],
                 Alight = new bool[n],

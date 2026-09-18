@@ -34,7 +34,9 @@ ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
 SRC = os.path.join(ROOT, 'Assets', 'Sprites', 'Enemies', 'soldier.aseprite')
 ANIM_DIR = os.path.join(ROOT, 'Assets', 'Resources', 'Animations', 'Enemies', 'SoldierArmed')
 PREFAB = os.path.join(ROOT, 'Assets', 'Resources', 'Prefabs', 'Enemies', 'SoldierArmed.prefab')
-RAG_SRC = os.path.join(ROOT, 'Assets', 'Resources', 'Ragdolls', 'soldier')
+# Snapshot of the stock soldier corpse. It lives here rather than in Assets
+# because the armed version replaced it there and the originals were cleaned up.
+RAG_SRC = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'soldier_ragdoll_src')
 RAG_DIR = os.path.join(ROOT, 'Assets', 'Resources', 'Ragdolls', 'soldier_armed')
 
 # What the stock soldier corpse is wired with; everything here gets swapped for a

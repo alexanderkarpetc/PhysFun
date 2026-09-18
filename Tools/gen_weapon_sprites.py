@@ -362,6 +362,16 @@ def laser_pixel():
 LASER={'laser_pixel':laser_pixel()}
 
 
+# One white pixel the impact burst tints per hit: red into flesh, grey into ground.
+def pixel_white():
+    c=C(1,1,(0,0))
+    c.px(0,0,(255,255,255,255))
+    return c
+
+
+UTIL={'pixel_white':pixel_white()}
+
+
 # ----------------------------------------------------------------- stats ----
 # name -> (display, energy?, damage, rate, burst, cooldown, windUp, laser,
 #          pellets, spread, speed, recoil, magazine, reload)
@@ -580,6 +590,13 @@ def export():
         open(am, 'w').write(FOLDER_META.format(guid=guid_for('asset-folder')))
 
     for name, g in PROJECTILES.items():
+        png = os.path.join(out, name + '.png')
+        g.im.save(png)
+        open(png + '.meta', 'w').write(META.format(
+            guid=guid_for(name), px=0.5, py=0.5, ppu=PPU))
+        print('%-14s %2dx%-2d' % (name, g.w, g.h))
+
+    for name, g in UTIL.items():
         png = os.path.join(out, name + '.png')
         g.im.save(png)
         open(png + '.meta', 'w').write(META.format(

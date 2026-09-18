@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c9b5183167f9c9e60ec1719c71d7aa7, type: 3}
+  m_Name: energyminigun
+  m_EditorClassIdentifier: Assembly-CSharp::Weapons.WeaponDefinition
+  displayName: Energy Minigun
+  kind: 1
+  sprite: {fileID: 21300000, guid: 825fbd18cbc8792ec43d74f9b1700905, type: 3}
+  projectile: {fileID: 21300000, guid: 3e40a20a518362126d270d01f4e215a9, type: 3}
+  muzzleOffset: {x: 0.475, y: 0.125}
+  holdOffset: {x: 0, y: 0}
+  sortingOrder: 1
+  fire:
+    damage: 6
+    rate: 18.0
+    burst: 40
+    burstCooldown: 1.6
+    windUp: 1.0
+    laserSight: 0
+    pellets: 1
+    spread: 7.0
+    projectileSpeed: 15
+    gravity: 0.35
+    recoil: 0.05
+    magazine: 200
+    reloadTime: 4.5

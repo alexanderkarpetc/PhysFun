@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c9b5183167f9c9e60ec1719c71d7aa7, type: 3}
+  m_Name: ak47
+  m_EditorClassIdentifier: Assembly-CSharp::Weapons.WeaponDefinition
+  displayName: AK-47
+  kind: 0
+  sprite: {fileID: 21300000, guid: 0b06827e011194fd66001d085d789dc4, type: 3}
+  projectile: {fileID: 21300000, guid: 60a23c40c41ea72ef6c9c045dc349b98, type: 3}
+  muzzleOffset: {x: 0.375, y: 0.1}
+  holdOffset: {x: 0, y: 0}
+  sortingOrder: 1
+  fire:
+    damage: 9
+    rate: 9.0
+    burst: 12
+    burstCooldown: 1.6
+    windUp: 0.0
+    laserSight: 0
+    pellets: 1
+    spread: 5.0
+    projectileSpeed: 14
+    gravity: 0.35
+    recoil: 0.07
+    magazine: 30
+    reloadTime: 2.1

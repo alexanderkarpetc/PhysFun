@@ -323,6 +323,87 @@ GUNS={'glock':glock(),'uzi':uzi(),'mp5':mp5(),'shotgun':shotgun(),
       'railgun':railgun(),'voidcannon':voidcannon(),
       'minigun':minigun(),'energyminigun':energyminigun()}
 
+# ------------------------------------------------------------ projectiles ----
+# Tracers, drawn pointing right and brightest at the tip so the direction of
+# travel reads even at four pixels. Pivoted on the middle: a shot then only has
+# to be rotated to its heading.
+def projectile_ballistic():
+    c=C(4,1,(1,0))
+    c.px(0,0,(190,140,50,255))
+    c.px(1,0,(232,182,66,255))
+    c.px(2,0,(255,220,110,255))
+    c.px(3,0,(255,245,190,255))
+    return c
+
+
+def projectile_energy():
+    c=C(4,2,(1,0))
+    c.px(0,0,(40,160,180,255))
+    c.px(1,0,(70,206,215,255))
+    c.px(2,0,(150,240,246,255))
+    c.px(3,0,(210,252,254,255))
+    c.px(0,1,(26,120,140,255))
+    c.px(1,1,(40,160,180,255))
+    c.px(2,1,(70,206,215,255))
+    c.px(3,1,(150,240,246,255))
+    return c
+
+
+PROJECTILES={'projectile_ballistic':projectile_ballistic(),
+             'projectile_energy':projectile_energy()}
+
+# One pixel, stretched along x by the holder. Pivoted on its left edge so the
+# scale that makes it reach is just the distance.
+def laser_pixel():
+    c=C(1,1,(0,0))
+    c.px(0,0,(255,64,54,255))
+    return c
+
+LASER={'laser_pixel':laser_pixel()}
+
+
+# ----------------------------------------------------------------- stats ----
+# name -> (display, energy?, damage, rate, burst, cooldown, windUp, laser,
+#          pellets, spread, speed, recoil, magazine, reload)
+#
+# rate is the cadence *inside* a burst; cooldown is the gap between bursts, and
+# for a single-shot gun it is the fire rate. Speeds are deliberately slow — the
+# rounds are meant to be watchable, and the arc is half the read.
+STATS = {
+    'glock':         ('Glock',          0,  6,  5.0,  1, 0.55, 0.0, 0, 1,  2.0, 13, 0.04,  17, 1.2),
+    'uzi':           ('Uzi',            0,  4, 14.0,  3, 0.60, 0.0, 0, 1,  6.0, 12, 0.03,  32, 1.6),
+    'mp5':           ('MP5',            0,  5, 13.0,  3, 0.50, 0.0, 0, 1,  4.0, 13, 0.035, 30, 1.7),
+    'shotgun':       ('Shotgun',        0,  4,  1.0,  1, 1.10, 0.0, 0, 3, 14.0, 10, 0.25,   6, 2.6),
+    'm4':            ('M4',             0,  7, 11.0, 14, 1.30, 0.0, 0, 1,  3.5, 15, 0.05,  30, 1.9),
+    'ak47':          ('AK-47',          0,  9,  9.0, 12, 1.60, 0.0, 0, 1,  5.0, 14, 0.07,  30, 2.1),
+    'sniper':        ('Sniper Rifle',   0, 28,  1.0,  1, 0.80, 1.8, 1, 1,  0.3, 24, 0.30,   5, 2.4),
+    'minigun':       ('Minigun',        0,  5, 16.0, 40, 1.80, 1.2, 0, 1,  8.0, 14, 0.06, 150, 5.0),
+    'laserpistol':   ('Laser Pistol',   1,  7,  5.0,  1, 0.40, 0.0, 0, 1,  0.0, 20, 0.02,  24, 1.1),
+    'arcgun':        ('Arc Gun',        1,  3, 16.0,  8, 0.70, 0.0, 0, 1, 10.0, 11, 0.01,  60, 1.8),
+    'plasmarifle':   ('Plasma Rifle',   1, 12,  6.0,  4, 0.90, 0.0, 0, 1,  2.0, 11, 0.08,  24, 2.0),
+    'railgun':       ('Railgun',        1, 40,  1.0,  1, 1.80, 0.0, 0, 1,  0.0, 35, 0.40,   4, 2.8),
+    'voidcannon':    ('Void Cannon',    1, 22,  1.0,  1, 1.40, 0.0, 0, 1,  6.0,  8, 0.30,   8, 2.5),
+    'energyminigun': ('Energy Minigun', 1,  6, 18.0, 40, 1.60, 1.0, 0, 1,  7.0, 15, 0.05, 200, 4.5),
+}
+
+
+def muzzle_offset(g):
+    """Tip of the barrel relative to the grip pivot, in local units.
+
+    Taken from the art rather than typed per gun: the rightmost column that has
+    any pixels is the muzzle, and the middle of that column's filled rows is the
+    bore. Redraw a gun and the offset follows it.
+    """
+    p = g.im.load()
+    for x in range(g.w - 1, -1, -1):
+        rows = [y for y in range(g.h) if p[x, y][3]]
+        if not rows:
+            continue
+        bore = (min(rows) + max(rows)) / 2.0
+        return ((x + 0.5 - g.grip[0]) / PPU, (g.grip[1] - bore) / PPU)
+    return (0.0, 0.0)
+
+
 # ---------------------------------------------------------------- export ----
 import hashlib, os
 
@@ -441,22 +522,113 @@ def guid_for(key):
     return hashlib.md5(('physfun/weapons/' + key).encode()).hexdigest()
 
 
+ASSET_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                         '..', 'Assets', 'Resources', 'Weapons')
+
+# Assets/Scripts/Weapons/WeaponDefinition.cs.meta
+DEFINITION_SCRIPT_GUID = '0c9b5183167f9c9e60ec1719c71d7aa7'
+
+ASSET = """%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {{fileID: 0}}
+  m_PrefabInstance: {{fileID: 0}}
+  m_PrefabAsset: {{fileID: 0}}
+  m_GameObject: {{fileID: 0}}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {{fileID: 11500000, guid: {script}, type: 3}}
+  m_Name: {name}
+  m_EditorClassIdentifier: Assembly-CSharp::Weapons.WeaponDefinition
+  displayName: {display}
+  kind: {kind}
+  sprite: {{fileID: 21300000, guid: {sprite}, type: 3}}
+  projectile: {{fileID: 21300000, guid: {projectile}, type: 3}}
+  muzzleOffset: {{x: {mx}, y: {my}}}
+  holdOffset: {{x: 0, y: 0}}
+  sortingOrder: 1
+  fire:
+    damage: {damage}
+    rate: {rate}
+    burst: {burst}
+    burstCooldown: {cooldown}
+    windUp: {windup}
+    laserSight: {laser}
+    pellets: {pellets}
+    spread: {spread}
+    projectileSpeed: {speed}
+    gravity: {gravity}
+    recoil: {recoil}
+    magazine: {magazine}
+    reloadTime: {reload}
+"""
+
+
 def export():
     out = os.path.normpath(OUT_DIR)
     os.makedirs(out, exist_ok=True)
     fm = out + '.meta'
     if not os.path.exists(fm):
         open(fm, 'w').write(FOLDER_META.format(guid=guid_for('folder')))
+
+    assets = os.path.normpath(ASSET_DIR)
+    os.makedirs(assets, exist_ok=True)
+    am = assets + '.meta'
+    if not os.path.exists(am):
+        open(am, 'w').write(FOLDER_META.format(guid=guid_for('asset-folder')))
+
+    for name, g in PROJECTILES.items():
+        png = os.path.join(out, name + '.png')
+        g.im.save(png)
+        open(png + '.meta', 'w').write(META.format(
+            guid=guid_for(name), px=0.5, py=0.5, ppu=PPU))
+        print('%-14s %2dx%-2d' % (name, g.w, g.h))
+
+    for name, g in LASER.items():
+        png = os.path.join(out, name + '.png')
+        g.im.save(png)
+        open(png + '.meta', 'w').write(META.format(
+            guid=guid_for(name), px=0.0, py=0.5, ppu=PPU))
+        print('%-14s %2dx%-2d' % (name, g.w, g.h))
+
     for name, g in GUNS.items():
         png = os.path.join(out, name + '.png')
         g.im.save(png)
         gx, gy = g.grip
+        sprite_guid = guid_for(name)
         open(png + '.meta', 'w').write(META.format(
-            guid=guid_for(name),
+            guid=sprite_guid,
             px=round((gx + 0.5) / g.w, 6),
             py=round((g.h - gy - 0.5) / g.h, 6),
             ppu=PPU))
-        print('%-6s %2dx%-2d grip=%s -> %s' % (name, g.w, g.h, g.grip, png))
+
+        (display, energy, dmg, rate, burst, cool, wind, laser,
+         pel, spread, spd, rec, mag, rel) = STATS[name]
+        # Same pull on every round. Well under real gravity because the rounds
+        # are slow now: at full pull a pistol shot would fall short of the range
+        # the soldier spots you at, so he would aim and never fire.
+        grav = 0.35
+        mx, my = muzzle_offset(g)
+        asset = os.path.join(assets, name + '.asset')
+        open(asset, 'w').write(ASSET.format(
+            script=DEFINITION_SCRIPT_GUID, name=name, display=display,
+            kind=1 if energy else 0, sprite=sprite_guid,
+            projectile=guid_for('projectile_energy' if energy
+                                else 'projectile_ballistic'),
+            mx=round(mx, 6), my=round(my, 6),
+            damage=dmg, rate=rate, burst=burst, pellets=pel, spread=spread,
+            speed=spd, gravity=grav, recoil=rec, magazine=mag, reload=rel,
+            cooldown=cool, windup=wind, laser=laser))
+        open(asset + '.meta', 'w').write(
+            'fileFormatVersion: 2\nguid: {g}\nNativeFormatImporter:\n'
+            '  externalObjects: {{}}\n  mainObjectFileID: 11400000\n  userData: \n'
+            '  assetBundleName: \n  assetBundleVariant: \n'
+            .format(g=guid_for('asset/' + name)))
+
+        print('%-14s %2dx%-2d grip=%s muzzle=(%+.3f,%+.3f)'
+              % (name, g.w, g.h, g.grip, mx, my))
 
 
 if __name__ == '__main__':

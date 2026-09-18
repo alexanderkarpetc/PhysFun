@@ -11,13 +11,17 @@ the baked-in rifle, and writes:
   Assets/Resources/Prefabs/Enemies/SoldierArmed.prefab
   Assets/Resources/Ragdolls/soldier_armed/                 (corpse, same treatment)
 
+The prefab carries a WeaponHolder pointing at one of the WeaponDefinition assets
+gen_weapon_sprites.py writes, so the gun is a single field on the root object and
+can be swapped on a scene instance without entering play mode.
+
 soldier.aseprite and the old SoldierAnimator are never touched.  The weapon is a
 child of View so it flips with the body; its per-frame offset is keyed in the
 clips so it rides the walk/idle bob instead of floating.  The corpse gets the
 same rifle-free parts sheet plus the weapon as a sixth, unhinged piece, so the
 gun tumbles away from the body instead of vanishing with it.
 
-    python Tools/gen_soldier_armed.py [weapon]      # glock | uzi | m4 | ak47
+    python Tools/gen_soldier_armed.py [weapon]      # any name in gen_weapon_sprites.GUNS
 """
 import hashlib
 import os
@@ -91,6 +95,29 @@ def strip_gun(img):
     if not gun:
         return out, None
     return out, (min(x for x, _ in gun), min(y for _, y in gun))
+
+
+def close_gun_gap(stripped, original):
+    """Reconnect the forearm to the torso where the rifle used to bridge them.
+
+    The soldier is drawn with the gun crossing his chest, so on most frames the
+    torso stops at one side of it and the forward arm picks up on the other.
+    Take the gun out and those two are no longer touching: a two-pixel hole
+    opens mid-body, and no held weapon reliably covers it — a pistol is nowhere
+    near it and even a rifle only fills one of the two rows.
+
+    Only pixels the strip removed are candidates, so the gap between the legs —
+    which was never gun — is left alone.
+    """
+    p, q = stripped.load(), original.load()
+    for y in range(stripped.height):
+        for x in range(stripped.width):
+            if p[x, y][3] or not q[x, y][3]:
+                continue
+            left = next((p[i, y] for i in range(x - 1, -1, -1) if p[i, y][3]), None)
+            right = next((p[i, y] for i in range(x + 1, stripped.width) if p[i, y][3]), None)
+            if left and right:
+                p[x, y] = left
 
 
 # ---------------------------------------------------------------------- ids --
@@ -522,10 +549,25 @@ def controller(name, clip_guids):
 
 
 # ------------------------------------------------------------------- prefab --
+# Weapon is an empty node whose position the clips key; Sprite hangs under it and
+# carries the renderer, so WeaponHolder's per-weapon hold offset is not fighting
+# the animator for the same transform.
 WEAPON_GO = 6100000001
 WEAPON_TR = 6100000002
-WEAPON_SR = 6100000003
+SPRITE_GO = 6100000011
+SPRITE_TR = 6100000012
+SPRITE_SR = 6100000013
+HOLDER = 6100000021
+LASER_GO = 6100000031
+LASER_TR = 6100000032
+LASER_SR = 6100000033
 VIEW_TR = 1653403570204640222
+ROOT_GO = 8666127740443770330
+
+# Assets/Scripts/Weapons/WeaponHolder.cs.meta
+HOLDER_SCRIPT_GUID = 'e39068af5be3b6f8bea416bdbda84e25'
+# Assets/Resources/Prefabs/Weapons/Bullet.prefab.meta
+BULLET_PREFAB_GUID = '288beb9111df540a0d8976502d5ef229'
 
 
 WEAPON_BLOCK = """--- !u!1 &{go}
@@ -537,7 +579,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {{fileID: {tr}}}
-  - component: {{fileID: {sr}}}
   m_Layer: 8
   m_Name: Weapon
   m_TagString: Untagged
@@ -557,8 +598,41 @@ Transform:
   m_LocalPosition: {{x: {px}, y: {py}, z: 0}}
   m_LocalScale: {{x: 1, y: 1, z: 1}}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {{fileID: {str}}}
   m_Father: {{fileID: {view}}}
+  m_LocalEulerAnglesHint: {{x: 0, y: 0, z: 0}}
+--- !u!1 &{sgo}
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {{fileID: 0}}
+  m_PrefabInstance: {{fileID: 0}}
+  m_PrefabAsset: {{fileID: 0}}
+  serializedVersion: 6
+  m_Component:
+  - component: {{fileID: {str}}}
+  - component: {{fileID: {sr}}}
+  m_Layer: 8
+  m_Name: Sprite
+  m_TagString: Untagged
+  m_Icon: {{fileID: 0}}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &{str}
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {{fileID: 0}}
+  m_PrefabInstance: {{fileID: 0}}
+  m_PrefabAsset: {{fileID: 0}}
+  m_GameObject: {{fileID: {sgo}}}
+  serializedVersion: 2
+  m_LocalRotation: {{x: 0, y: 0, z: 0, w: 1}}
+  m_LocalPosition: {{x: 0, y: 0, z: 0}}
+  m_LocalScale: {{x: 1, y: 1, z: 1}}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {{fileID: {tr}}}
   m_LocalEulerAnglesHint: {{x: 0, y: 0, z: 0}}
 --- !u!212 &{sr}
 SpriteRenderer:
@@ -567,7 +641,7 @@ SpriteRenderer:
   m_CorrespondingSourceObject: {{fileID: 0}}
   m_PrefabInstance: {{fileID: 0}}
   m_PrefabAsset: {{fileID: 0}}
-  m_GameObject: {{fileID: {go}}}
+  m_GameObject: {{fileID: {sgo}}}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -609,8 +683,122 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_MaskInteraction: 0
-  m_Sprite: {{fileID: 21300000, guid: {wguid}, type: 3}}
+  m_Sprite: {{fileID: 0}}
   m_Color: {{r: 1, g: 1, b: 1, a: 1}}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {{x: 1, y: 1}}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 0
+  m_SpriteSortPoint: 0
+"""
+
+
+HOLDER_BLOCK = """--- !u!114 &{holder}
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {{fileID: 0}}
+  m_PrefabInstance: {{fileID: 0}}
+  m_PrefabAsset: {{fileID: 0}}
+  m_GameObject: {{fileID: {root}}}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {{fileID: 11500000, guid: {script}, type: 3}}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Weapons.WeaponHolder
+  weapon: {{fileID: 11400000, guid: {asset}, type: 2}}
+  view: {{fileID: {sr}}}
+  arm: {{fileID: {tr}}}
+  laser: {{fileID: {laser}}}
+  projectilePrefab: {{fileID: 6300000000000000006, guid: {bullet}, type: 3}}
+  shooter: {{fileID: 837572233467329222}}
+"""
+
+LASER_BLOCK = """--- !u!1 &{go}
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {{fileID: 0}}
+  m_PrefabInstance: {{fileID: 0}}
+  m_PrefabAsset: {{fileID: 0}}
+  serializedVersion: 6
+  m_Component:
+  - component: {{fileID: {tr}}}
+  - component: {{fileID: {sr}}}
+  m_Layer: 8
+  m_Name: Laser
+  m_TagString: Untagged
+  m_Icon: {{fileID: 0}}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &{tr}
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {{fileID: 0}}
+  m_PrefabInstance: {{fileID: 0}}
+  m_PrefabAsset: {{fileID: 0}}
+  m_GameObject: {{fileID: {go}}}
+  serializedVersion: 2
+  m_LocalRotation: {{x: 0, y: 0, z: 0, w: 1}}
+  m_LocalPosition: {{x: 0, y: 0, z: 0}}
+  m_LocalScale: {{x: 1, y: 1, z: 1}}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {{fileID: {root}}}
+  m_LocalEulerAnglesHint: {{x: 0, y: 0, z: 0}}
+--- !u!212 &{sr}
+SpriteRenderer:
+  serializedVersion: 2
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {{fileID: 0}}
+  m_PrefabInstance: {{fileID: 0}}
+  m_PrefabAsset: {{fileID: 0}}
+  m_GameObject: {{fileID: {go}}}
+  m_Enabled: 0
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {{fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {{fileID: 0}}
+  m_ProbeAnchor: {{fileID: 0}}
+  m_LightProbeVolumeOverride: {{fileID: 0}}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {{fileID: 0}}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 3
+  m_MaskInteraction: 0
+  m_Sprite: {{fileID: 21300000, guid: {sprite}, type: 3}}
+  m_Color: {{r: 1, g: 0.3, b: 0.25, a: 0.55}}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -620,7 +808,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
 """
-
 
 def build_prefab(body_sprite_ref, controller_guid, weapon, weapon_pos, ragdoll_guid):
     # The armed prefab replaced the stock Soldier, so its untouched YAML lives
@@ -645,9 +832,31 @@ def build_prefab(body_sprite_ref, controller_guid, weapon, weapon_pos, ragdoll_g
                       '  m_Father: {{fileID: 7099991138952253097}}\n'
                       '  m_LocalEulerAnglesHint: {{x: 0, y: 0, z: 0}}\n'
                       '--- !u!212 &1052722090386138420'.format(tr=WEAPON_TR))
-    src += WEAPON_BLOCK.format(go=WEAPON_GO, tr=WEAPON_TR, sr=WEAPON_SR, view=VIEW_TR,
-                               px=round(weapon_pos[0], 6), py=round(weapon_pos[1], 6),
-                               wguid=weapon_guid(weapon))
+    # RegularEnemyController aims and fires through the holder, so it needs to know it.
+    src = src.replace(
+        '  _eye: {fileID: 7723626924655959891}\n',
+        '  _eye: {fileID: 7723626924655959891}\n  _weapon: {fileID: %d}\n' % HOLDER, 1)
+    # WeaponHolder goes on the root, next to the controller, so the gun is one
+    # field on the object you click rather than three nodes down.
+    src = src.replace(
+        '  - component: {fileID: 8077373476292324551}\n',
+        '  - component: {fileID: 8077373476292324551}\n'
+        '  - component: {fileID: %d}\n' % HOLDER, 1)
+    # The beam hangs off the root, not off View: it is positioned in world space and a
+    # mirrored parent would flip the stretch out from under it.
+    src = src.replace(
+        '  - {fileID: 2696194240902440409}\n',
+        '  - {fileID: 2696194240902440409}\n  - {fileID: %d}\n' % LASER_TR, 1)
+    src += LASER_BLOCK.format(go=LASER_GO, tr=LASER_TR, sr=LASER_SR, root=7099991138952253097,
+                              sprite=weapon_guid('laser_pixel'))
+    src += HOLDER_BLOCK.format(holder=HOLDER, root=ROOT_GO,
+                               script=HOLDER_SCRIPT_GUID,
+                               asset=weapon_guid('asset/' + weapon), sr=SPRITE_SR,
+                               tr=WEAPON_TR, bullet=BULLET_PREFAB_GUID,
+                               laser=LASER_SR)
+    src += WEAPON_BLOCK.format(go=WEAPON_GO, tr=WEAPON_TR, sgo=SPRITE_GO,
+                               str=SPRITE_TR, sr=SPRITE_SR, view=VIEW_TR,
+                               px=round(weapon_pos[0], 6), py=round(weapon_pos[1], 6))
     return src
 
 
@@ -983,6 +1192,7 @@ def main(weapon='m4'):
     bodies, anchors = [], []
     for img in frames:
         body, anchor = strip_gun(img)
+        close_gun_gap(body, img)
         bodies.append(body)
         anchors.append(anchor)
     ref = anchors[0]

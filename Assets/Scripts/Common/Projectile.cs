@@ -32,6 +32,35 @@ namespace Common
             if (!_rb) _rb = GetComponent<Rigidbody2D>();
             if (dmg >= 0) damage = dmg;
 
+            Launch(velocity, owner);
+        }
+
+        /// <summary>
+        /// Launch a round a weapon configured: its own look, its own damage, and its own pull
+        /// towards the ground. One prefab covers every gun that way, and how far a shot drops
+        /// on the way is a property of the gun rather than of the prefab it came out of.
+        /// </summary>
+        public void Fire(Vector2 velocity, GameObject owner, float dmg, float gravityScale,
+                         Sprite look, float impulse = -1f, float life = -1f)
+        {
+            if (!_rb) _rb = GetComponent<Rigidbody2D>();
+
+            damage = Mathf.RoundToInt(dmg);
+            _rb.gravityScale = gravityScale;
+            if (impulse >= 0f) impactImpulse = impulse;
+            if (life > 0f) lifetime = life;
+
+            if (look)
+            {
+                var sr = GetComponent<SpriteRenderer>();
+                if (sr) sr.sprite = look;
+            }
+
+            Launch(velocity, owner);
+        }
+
+        private void Launch(Vector2 velocity, GameObject owner)
+        {
             _rb.linearVelocity = velocity;
             Aim(velocity);
 

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using Weapons;
 
 namespace Enemy
 {
@@ -10,6 +11,10 @@ namespace Enemy
         [SerializeField] private Rigidbody2D _rb;
         [SerializeField] private Animator _animator;
         [SerializeField] private Transform _eye;
+
+        [Tooltip("Optional. When present the creature aims it at the player and pulls the " +
+                 "trigger; the weapon asset decides rate, spread and how far the shot drops.")]
+        [SerializeField] private WeaponHolder _weapon;
 
         [Header("Patrol")]
         [SerializeField] private float walkSpeed = 2f;
@@ -53,9 +58,18 @@ namespace Enemy
                     EnterState(State.Shoot);
                     SetVelX(0f);
                 }
+
+                // Aim every frame rather than once on entry: the player moves, and the
+                // elevation that hits them depends on where they are right now.
+                if (_weapon && App.Instance.PlayerTransform)
+                {
+                    if (_weapon.Aim(App.Instance.PlayerTransform.position)) _weapon.TryFire();
+                }
             }
             else
             {
+                if (_state == State.Shoot && _weapon) _weapon.ClearAim();
+
                 // patrol when player not visible
                 if (_state == State.Shoot) EnterState(State.Idle);
 
@@ -135,12 +149,14 @@ namespace Enemy
             return hit.collider == null || hit.collider.gameObject == App.Instance.PlayerGo;
         }
 
-        // called by animation event
+        /// <summary>
+        /// Animation event hook, kept because older clips still carry the event. Firing is
+        /// driven by the weapon's own rate in <see cref="Update"/> instead, so that a gun
+        /// shoots at the cadence its asset asks for rather than at whatever the shoot clip
+        /// happens to run at.
+        /// </summary>
         private void Shoot()
         {
-            // TODO: spawn projectile / play muzzle flash / apply damage
-            // Intentionally empty for now.
-            Debug.Log("Shoot!");
         }
 
         // gizmos for tuning

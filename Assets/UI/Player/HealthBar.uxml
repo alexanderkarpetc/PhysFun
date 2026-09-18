@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/Player/HealthBar.uss" />
+    <ui:VisualElement name="health-root" class="health-root" picking-mode="Ignore">
+        <ui:VisualElement name="health-track" class="health-track" picking-mode="Ignore">
+            <ui:VisualElement name="health-ghost" class="health-ghost" picking-mode="Ignore" />
+            <ui:VisualElement name="health-fill" class="health-fill" picking-mode="Ignore" />
+            <ui:Label name="health-label" class="health-label" text="100 / 100" picking-mode="Ignore" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,63 @@
+/* Noita-style health bar: one slab in the top-right corner, current / max written
+   across it. The C# only sets the two fill widths, the label text and state classes. */
+
+.health-root {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 180px;
+    height: 16px;
+    opacity: 1;
+    transition: opacity 0.2s ease-out;
+}
+
+/* Set from code when the bar has nothing to report (no target / dead and faded). */
+.health-root--hidden {
+    opacity: 0;
+}
+
+.health-track {
+    flex-grow: 1;
+    background-color: rgba(0, 0, 0, 0.72);
+    border-width: 1px;
+    border-color: rgba(0, 0, 0, 0.9);
+    overflow: hidden;
+}
+
+/* The slower bar underneath: shows the chunk just lost before it catches up. */
+.health-ghost {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: rgb(120, 32, 32);
+}
+
+.health-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: rgb(206, 51, 51);
+    transition: background-color 0.15s ease-out;
+}
+
+/* Below the low threshold the bar pulses a brighter red so it reads at a glance. */
+.health-fill--low {
+    background-color: rgb(255, 94, 74);
+}
+
+.health-label {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    -unity-text-align: middle-center;
+    font-size: 11px;
+    color: rgb(240, 236, 228);
+    -unity-font-style: bold;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
+}

@@ -457,6 +457,10 @@ public class ToolboxController : MonoBehaviour
             if (light) FireSystem.Instance.Ignite(h.gameObject, wp, radius);
             else FireSystem.Instance.Extinguish(h.gameObject, wp, radius);
         }
+
+        // A fuse is one pixel wide and carries no collider, so the overlap above never finds
+        // one. It keeps its own list for exactly this.
+        if (light) Phys.Explosions.FuseCord.LightNear(wp, Mathf.Max(radius, 0.1f));
     }
 
     // ─────────────────────────────────────────────────────────────────────────

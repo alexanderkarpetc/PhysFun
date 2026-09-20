@@ -178,6 +178,12 @@ namespace Common
                               victim ? 10 : 5,
                               victim ? 4f : 2.5f);
 
+            // A round carrying a charge goes off where it stopped rather than just poking a
+            // hole in it. Shell, rocket, firebomb — the round is the same one either way, and
+            // what it does on arrival is a component on the prefab.
+            var charge = GetComponent<Phys.Explosions.Explosive>();
+            if (charge) charge.DetonateNow(point);
+
             Destroy(gameObject, linger);
         }
 

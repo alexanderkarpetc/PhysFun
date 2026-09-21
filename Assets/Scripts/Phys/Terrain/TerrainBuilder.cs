@@ -506,8 +506,11 @@ namespace Phys.Terrain
                 chunk.Tex.Apply(false, false);
             }
 
-            MaterialView.Apply(chunk.Go, _palette[dominant - 1].material);
+            // Collider first. Tagging the material can now attach components of its own, and a
+            // chunk that never gets traced is a chunk the support pass cannot find a contact
+            // for — which it reads as unsupported and drops.
             if (rebuildCollider) RetraceCollider(chunk);
+            MaterialView.Apply(chunk.Go, _palette[dominant - 1].material);
         }
 
         private void FillChunk(Chunk chunk, int px0, int py0)
@@ -740,6 +743,26 @@ namespace Phys.Terrain
                 {
                     new TerrainStratum { tile = "soil_lush", thickness = 0.28f },
                     new TerrainStratum { tile = "rock" },
+                },
+            },
+            // A ledge of ice with air under it, held up only by the tower it grows out of.
+            // It is the fracture model's test rig: a round into it opens a split you can watch
+            // run, and whichever side of the split stops reaching the tower comes down.
+            //
+            // It reaches well inside the tower rather than just meeting its face. Support is
+            // measured between the chunks' traced colliders, and those are simplified inwards,
+            // so a join only a few cells wide is not a join by the time the support pass looks
+            // at it — the ledge then reads as unsupported and scatters chunk by chunk the
+            // moment play starts, before anything has touched it.
+            new TerrainFeature
+            {
+                label = "ice-ledge",
+                shape = TerrainShape.Box,
+                min = new Vector2(1.1f, 1.55f),
+                max = new Vector2(4.5f, 2.15f),
+                strata = new[]
+                {
+                    new TerrainStratum { tile = "ice", physMaterial = PhysMaterialId.Ice },
                 },
             },
             new TerrainFeature

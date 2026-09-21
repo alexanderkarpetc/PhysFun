@@ -61,7 +61,52 @@ namespace Materials
             TemperatureOfFire = 45,
         };
 
-        private static readonly PhysMaterial[] Ordered = { Default, Wood };
+
+        public static readonly PhysMaterial Ice = new()
+        {
+            Id = PhysMaterialId.Ice,
+            DisplayName = "Ice",
+            Swatch = new Color32(150, 205, 226, 255),
+            // Ice floats, barely. Light enough that a falling slab is survivable and heavy
+            // enough that it is not — which is the whole point of dropping one on something.
+            Density = 0.92f,
+            // Hard and unforgiving on arrival: a slab of it lands like a rock, not like a plank.
+            ImpactDamageMultiplier = 1.35f,
+            Flammable = false,
+
+            // Brittle is the opposite of the wood case above. Wood is eaten gradually by a
+            // process; ice does nothing at all until it does everything at once. A hit is
+            // either under the durability floor and leaves a scuff, or it is over it and runs
+            // a split that either frees a slab or doesn't — and the player can see which,
+            // because the split is drawn before the slab is let go.
+            Brittle = true,
+            Durability = 3.5f,
+            // Reach, in world units per point of force, and it is the knob that decides how the
+            // material reads. A crack only cuts a piece free if it reaches open air at both
+            // ends, so this is really "how thick a slab can one shot shear": at 0.55 the
+            // default 6-damage round reaches ~3.3 units, which goes through a pillar or a ledge
+            // and leaves a hairline on anything heavier than that. Turn it down and ice becomes
+            // something you have to work at with explosives; turn it up and one round drops a
+            // ceiling.
+            Crackability = 0.55f,
+            CrackMinLength = 0.5f,
+            CrackMaxLength = 6f,
+            // Mostly vertical, with enough of the shot's slant left in that a shallow hit
+            // shears a wedge off the face rather than a perfect column.
+            CrackLean = 0.3f,
+            CrackVerticalBias = 0.35f,
+            CrackBackFraction = 0.4f,
+            CrackWidthPixels = 2f,
+            CrackWidthJitter = 1f,
+            CrackWander = 0.34f,
+            CrackSpeed = 9f,
+            CrackSettle = 0.14f,
+            CrackRim = new Color32(236, 250, 255, 255),
+            MinRadiusForCracks = 0.5f,
+            CrackCount = 3,
+        };
+
+        private static readonly PhysMaterial[] Ordered = { Default, Wood, Ice };
 
         public static IReadOnlyList<PhysMaterial> All => Ordered;
 

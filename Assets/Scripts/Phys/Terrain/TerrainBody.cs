@@ -55,22 +55,37 @@ namespace Phys.Terrain
             return body;
         }
 
-        /// <summary>Break loose: become a free rigid body and drop out of support checks.</summary>
-        public void Detach()
+        /// <summary>
+        /// Stop being standing terrain, without taking a body of its own. This is the half of
+        /// breaking loose that <see cref="TerrainPiece"/> needs: a chunk that is about to be
+        /// welded into a bigger piece must not arrive carrying a rigidbody, because a collider
+        /// belongs to the nearest rigidbody above it and one of its own would keep it separate.
+        ///
+        /// Returns false when the piece was already loose, so callers can tell a real detach
+        /// from a repeat.
+        /// </summary>
+        public bool Release()
         {
-            if (!anchored) return;
+            if (!anchored) return false;
             anchored = false;
             bedrock = false;
             TerrainSupportSystem.Unregister(this);
+
+            var sr = GetComponent<SpriteRenderer>();
+            if (sr) sr.sortingOrder = detachedSortingOrder;
+            return true;
+        }
+
+        /// <summary>Break loose on its own: a free rigid body, out of the support checks.</summary>
+        public void Detach()
+        {
+            if (!Release()) return;
 
             var rb = GetComponent<Rigidbody2D>();
             if (!rb) rb = gameObject.AddComponent<Rigidbody2D>();
             rb.bodyType = RigidbodyType2D.Dynamic;
             rb.simulated = true;
             MassRecalculator.SetMass(null, rb, GetComponent<Collider2D>());
-
-            var sr = GetComponent<SpriteRenderer>();
-            if (sr) sr.sortingOrder = detachedSortingOrder;
         }
 
         public static void Detach(GameObject go)

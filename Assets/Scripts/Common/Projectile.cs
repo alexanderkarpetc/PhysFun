@@ -169,6 +169,11 @@ namespace Common
                 victim.ApplyDamage(new DamageInfo(
                     damage, DamageType.Projectile, point, dir, dir * impactImpulse, gameObject));
 
+            // Brittle material is not dented by a round, it is split: the shot opens a crack
+            // that runs on after the round has stopped and takes a slab with it if it reaches
+            // open air. Nothing else about the hit changes.
+            Phys.Fracture.FractureSystem.Hit(hit.collider.gameObject, point, dir, damage);
+
             // Even a miss should push the thing it lands on.
             if (hit.rigidbody)
                 hit.rigidbody.AddForceAtPosition(dir * impactImpulse, point, ForceMode2D.Impulse);

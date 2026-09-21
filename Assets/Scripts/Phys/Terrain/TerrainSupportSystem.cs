@@ -18,13 +18,32 @@ namespace Phys.Terrain
     ///
     /// Contact is measured with <see cref="Collider2D.Distance"/> rather than tracked as
     /// pixel adjacency, so it keeps working after pieces are split, moved or retraced.
+    ///
+    /// What comes loose is welded rather than released chunk by chunk — see
+    /// <see cref="TerrainPiece"/>. The chunk grid is how terrain is edited, not how it is
+    /// built, and a falling slab should not be able to show the player where the seams were.
     /// </summary>
     [DefaultExecutionOrder(1100)]
     public sealed class TerrainSupportSystem : MonoBehaviour
     {
-        /// <summary>Gap (world units) still counted as "touching". Collider simplification
-        /// moves outlines by a fraction of a pixel, so this can't be zero.</summary>
+        /// <summary>
+        /// How far apart two colliders may be before the pass stops considering them at all.
+        ///
+        /// It is a shortlist, not the answer. A traced collider is a <em>simplified</em> outline
+        /// — <see cref="PixelContour.MinSimplifyPixels"/> lets it cut a couple of pixels either
+        /// way — so its distance cannot settle anything at this scale: two chunks made of
+        /// neighbouring pixels can measure as apart, and two halves with a crack between them
+        /// can measure as overlapping. Inside this radius the pixels decide, in
+        /// <see cref="PixelsTouch"/>.
+        /// </summary>
         public static float ContactEpsilon = 0.06f;
+
+        /// <summary>How close two solid pixels have to be to count as the same lump.</summary>
+        public static int ContactPixels = 1;
+
+        /// <summary>Cap on the band sampled by the pixel test, per axis. Past it the pass gives
+        /// the pair the benefit of the doubt rather than spending the frame on it.</summary>
+        private const int MaxBandSamples = 256;
 
         /// <summary>Seconds between passes when nothing announced a change. Pixel edits that
         /// only break the contact <em>between</em> two chunks raise no event, so the pass
@@ -56,7 +75,12 @@ namespace Phys.Terrain
         private static readonly List<Bounds> Bnds = new();
         private static readonly List<Collider2D> Anchors = new();
         private static readonly List<int> Frontier = new();
+        private static readonly List<TerrainBody> Snapshot = new();
+        private static readonly List<int> Loose = new();
+        private static readonly List<int> Group = new();
+        private static readonly List<TerrainBody> GroupBodies = new();
         private static bool[] _supported = new bool[64];
+        private static bool[] _grouped = new bool[64];
 
         private float _nextPoll;
 
@@ -193,13 +217,66 @@ namespace Phys.Terrain
                 }
             }
 
+            // Everything the pass could not reach comes down — but as few bodies as possible.
+            // Chunks are a unit of editing, not of physics: a six-chunk overhang that arrives
+            // as six rigid bodies overlapping along their shared seams shoves itself apart in
+            // the frame it is created, and a slab reads as a dropped stack of bricks. Chunks
+            // that are still touching each other are still one lump, so they are grouped by the
+            // same test that measured support and welded into one falling body.
+            Snapshot.Clear();
+            Snapshot.AddRange(Bodies);
+
+            Loose.Clear();
+            for (int i = 0; i < n; i++)
+                if (!_supported[i]) Loose.Add(i);
+            if (Loose.Count == 0) return;
+
+            // Off the register first, and all of it: welding calls Release, which unregisters,
+            // and that would be mutating Bodies underneath the indices Cols and Bnds share.
             for (int i = n - 1; i >= 0; i--)
+                if (!_supported[i]) Bodies.RemoveAt(i);
+
+            if (_grouped.Length < n) _grouped = new bool[Mathf.NextPowerOfTwo(n)];
+            for (int i = 0; i < n; i++) _grouped[i] = false;
+
+            for (int s = 0; s < Loose.Count; s++)
             {
-                if (_supported[i]) continue;
-                var body = Bodies[i];
-                Bodies.RemoveAt(i);
-                if (body) body.Detach();
+                int seed = Loose[s];
+                if (_grouped[seed]) continue;
+
+                Group.Clear();
+                Group.Add(seed);
+                _grouped[seed] = true;
+
+                // Same breadth-first walk as the support pass, over the loose set only.
+                for (int q = 0; q < Group.Count; q++)
+                {
+                    int a = Group[q];
+                    var ca = Cols[a];
+                    if (!ca) continue;
+                    var ba = Bnds[a];
+
+                    for (int t = 0; t < Loose.Count; t++)
+                    {
+                        int b = Loose[t];
+                        if (_grouped[b]) continue;
+                        if (!Overlaps(ba, Bnds[b])) continue;
+                        if (!Touching(ca, Cols[b])) continue;
+                        _grouped[b] = true;
+                        Group.Add(b);
+                    }
+                }
+
+                GroupBodies.Clear();
+                for (int g = 0; g < Group.Count; g++)
+                {
+                    var body = Snapshot[Group[g]];
+                    if (body) GroupBodies.Add(body);
+                }
+                TerrainPiece.Weld(GroupBodies);
             }
+
+            Snapshot.Clear();
         }
 
         /// <summary>Immovable colliders anywhere near the terrain, refreshed once per pass.</summary>
@@ -238,11 +315,77 @@ namespace Phys.Terrain
                    a.min.y - e <= b.max.y && a.max.y + e >= b.min.y;
         }
 
-        private static bool Touching(Collider2D a, Collider2D b)
+        /// <summary>
+        /// Are these two part of the same lump? Public because it is not only the support pass
+        /// that needs the answer: a piece that has already fallen has to be able to work out
+        /// when a crack has divided it, and it must reach that conclusion the same way.
+        /// </summary>
+        public static bool Touching(Collider2D a, Collider2D b)
         {
             if (!a || !b || a == b) return false;
+
+            // Cheap reject first: anything this far apart cannot be one lump however the
+            // outlines were traced, and that is most pairs the O(n²) walk ever looks at.
             var d = a.Distance(b);
-            return d.isValid && d.distance <= ContactEpsilon;
+            if (!d.isValid || d.distance > ContactEpsilon) return false;
+
+            return PixelsTouch(a, b);
         }
+
+        /// <summary>
+        /// Are these two actually made of neighbouring pixels?
+        ///
+        /// This is what makes a thin crack work. The alternative — trusting collider distance —
+        /// forces every cut to be wider than the simplification error on both sides, five or six
+        /// pixels at terrain resolution, which looks like a slot milled through the rock rather
+        /// than like something broken. It fails in the other direction too: two chunks that are
+        /// genuinely pixel-adjacent along a ragged seam can measure as apart, and the pass drops
+        /// a wall that was standing perfectly well.
+        ///
+        /// Only the strip where the two could possibly meet is scanned, and the first adjacency
+        /// found ends it — which is the common case, since most pairs asked about are touching.
+        /// Anything without a pixel record (bedrock, a prop) is left to the collider test.
+        /// </summary>
+        private static bool PixelsTouch(Collider2D a, Collider2D b)
+        {
+            var reg = PixelSpriteRegistry.Instance;
+            if (!reg.TryGet(a.gameObject, out var ra)) return true;
+            if (!reg.TryGet(b.gameObject, out var rb)) return true;
+
+            var band = a.bounds;
+            var other = b.bounds;
+            band.Expand(ContactEpsilon * 2f);
+            other.Expand(ContactEpsilon * 2f);
+            if (!band.Intersects(other)) return false;
+            band.SetMinMax(Vector3.Max(band.min, other.min), Vector3.Min(band.max, other.max));
+
+            float pxPerUnit = ra.PixelsPerWorldUnit;
+            if (pxPerUnit < 1e-3f) return true;
+            float step = 1f / pxPerUnit;
+            float reach = Mathf.Max(1, ContactPixels) * step;
+
+            int nx = Mathf.CeilToInt(band.size.x * pxPerUnit) + 1;
+            int ny = Mathf.CeilToInt(band.size.y * pxPerUnit) + 1;
+            if (nx > MaxBandSamples || ny > MaxBandSamples) return true;
+
+            for (int iy = 0; iy < ny; iy++)
+            {
+                float wy = band.min.y + iy * step;
+                for (int ix = 0; ix < nx; ix++)
+                {
+                    var p = new Vector2(band.min.x + ix * step, wy);
+                    if (!SolidAt(ra, p)) continue;
+
+                    for (int oy = -1; oy <= 1; oy++)
+                    for (int ox = -1; ox <= 1; ox++)
+                        if (SolidAt(rb, p + new Vector2(ox * reach, oy * reach))) return true;
+                }
+            }
+            return false;
+        }
+
+        private static bool SolidAt(PixelSpriteRegistry.Record rec, Vector2 world) =>
+            rec.Go && rec.WorldToPixel(world, out int x, out int y) &&
+            rec.Pixels[y * rec.Width + x].a != 0;
     }
 }

@@ -250,6 +250,12 @@ namespace Phys.Explosions
                 bool anchored = TerrainBody.IsAnchored(go);
                 if (anchored) terrainCut = true;
 
+                // Brittle material splits instead of losing a bite, so it never reaches the
+                // carve below. Same two gates Noita puts on it: a blast under the material's
+                // min radius only rattles it, and a big enough one throws several cracks.
+                if (Phys.Fracture.FractureSystem.Burst(go, center, p.carveRadius, p.damage))
+                    continue;
+
                 if (p.shards <= 0)
                 {
                     SpriteEraseService.EraseCircle(go, center, p.carveRadius);

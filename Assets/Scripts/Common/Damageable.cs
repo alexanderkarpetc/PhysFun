@@ -43,6 +43,14 @@ namespace Common
         [Tooltip("Pop a floating number for every hit that lands.")]
         [SerializeField] private bool showDamageNumbers = true;
 
+        [Header("Gore")]
+        [Tooltip("Whether this thing bleeds when it is hurt. Flesh does; a crate does not, and " +
+                 "it is also what tells a round whether it went into meat or into wood.")]
+        [SerializeField] private bool bleeds;
+
+        [Tooltip("Blood colour. Leave at alpha 0 for the shared Gore config's own.")]
+        [SerializeField] private Color32 bloodColor;
+
         /// <summary>Raised for every hit that lands. Fires before death.</summary>
         public event System.Action<DamageInfo> Damaged;
 
@@ -72,6 +80,12 @@ namespace Common
         private float _crushTick;      // seconds since the last banked tick
 
         public bool IsDead => _dead;
+
+        /// <summary>Whether hurting this leaves a mess. Read by anything that has to pick an effect.</summary>
+        public bool Bleeds => bleeds;
+
+        public Color32 BloodColor => bloodColor.a == 0 ? Gore.GoreConfig.Shared.dropColor : bloodColor;
+
         public float Health => _health;
         public int MaxHealth => maxHealth;
         public float HealthNormalized => maxHealth > 0 ? Mathf.Clamp01(_health / maxHealth) : 0f;
@@ -208,6 +222,8 @@ namespace Common
             _health -= info.Amount;
             Damaged?.Invoke(info);
 
+            Bleed(info);
+
             if (showDamageNumbers)
             {
                 var hud = App.Instance.Hud.DamageHud;
@@ -221,6 +237,21 @@ namespace Common
             _dead = true;
             Die(info);
             Died?.Invoke(info);
+        }
+
+        /// <summary>
+        /// Throw blood for a hit. The spray goes back out along the way the hit came in, which
+        /// is the direction <see cref="DamageInfo.Direction"/> points into us — so a round
+        /// through a body sprays back at whoever fired it, and a crush with no direction to it
+        /// simply wells upwards.
+        /// </summary>
+        private void Bleed(in DamageInfo info)
+        {
+            if (!bleeds) return;
+
+            Vector2 away = info.Direction.sqrMagnitude > 1e-6f ? -info.Direction : Vector2.up;
+            Vector2 at = info.Point == Vector2.zero && _rb ? _rb.worldCenterOfMass : info.Point;
+            Gore.BloodSystem.SprayDamage(at, away, info.Amount, BloodColor);
         }
 
         public void Heal(float amount)
@@ -242,6 +273,15 @@ namespace Common
         /// <summary>Hand over to the corpse when this thing has one; otherwise it just stops here.</summary>
         private void Die(DamageInfo info)
         {
+            // The blow that kills opens more than the blow that only hurt: the burst here is on
+            // top of what Bleed already threw for the damage itself.
+            if (bleeds)
+            {
+                var cfg = Gore.GoreConfig.Shared;
+                Vector2 away = info.Direction.sqrMagnitude > 1e-6f ? -info.Direction : Vector2.up;
+                Gore.BloodSystem.Spray(info.Point, away, cfg.deathBurst, color: BloodColor);
+            }
+
             var spawner = GetComponentInChildren<Ragdolls.RagdollSpawner>();
             if (spawner) spawner.Spawn(info.Impulse, info.Point);
         }

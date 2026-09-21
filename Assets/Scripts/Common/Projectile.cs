@@ -36,10 +36,11 @@ namespace Common
         [SerializeField] private bool faceVelocity = true;
 
         [Header("Impact")]
-        [Tooltip("One white pixel, tinted per hit. Leave empty for no burst.")]
+        [Tooltip("One white pixel, thrown out of a hit on something that does not bleed. What " +
+                 "comes out of something that does is real blood, and that is the Damageable's " +
+                 "business — see Gore.BloodSystem. Leave empty for no burst.")]
         [SerializeField] private Sprite burstPixel;
 
-        [SerializeField] private Color bloodColor = new(0.62f, 0.05f, 0.08f, 1f);
         [SerializeField] private Color debrisColor = new(0.45f, 0.44f, 0.42f, 1f);
 
         [Tooltip("How long the spent round sits on the contact point before it goes. Without " +
@@ -178,10 +179,10 @@ namespace Common
             if (hit.rigidbody)
                 hit.rigidbody.AddForceAtPosition(dir * impactImpulse, point, ForceMode2D.Impulse);
 
-            ImpactBurst.Spawn(burstPixel, point, dir,
-                              victim ? bloodColor : debrisColor,
-                              victim ? 10 : 5,
-                              victim ? 4f : 2.5f);
+            // Chips off whatever was hit. Flesh gets none: the wound has already thrown blood,
+            // and stone-coloured grit coming out of a body on top of it reads as a second hit.
+            if (!victim || !victim.Bleeds)
+                ImpactBurst.Spawn(burstPixel, point, dir, debrisColor, 5, 2.5f);
 
             // A round carrying a charge goes off where it stopped rather than just poking a
             // hole in it. Shell, rocket, firebomb — the round is the same one either way, and

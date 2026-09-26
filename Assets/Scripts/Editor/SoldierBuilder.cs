@@ -10,7 +10,7 @@ using UnityEngine;
 namespace Editor
 {
     /// <summary>
-    /// Turns soldier.aseprite into something that can stand in a scene.
+    /// Turns a soldier-shaped .aseprite into something that can stand in a scene.
     ///
     /// The .aseprite is the whole source: its tags are the states and the importer bakes them into
     /// clips, so the only things missing are the wiring — a controller whose triggers match what
@@ -19,9 +19,8 @@ namespace Editor
     /// the tags and the hull is the sprite's own bounds. Re-run it whenever the art changes and it
     /// overwrites what it made last time, keeping every reference to the prefab intact.
     ///
-    /// The dark soldier was made by pointing this file and <see cref="SoldierRagdollBuilder"/> at
-    /// his own .aseprite for one run. His assets are checked in, so both builders are kept on the
-    /// one soldier: they are the worked example for the next palette, not a pipeline.
+    /// What differs from one enemy to the next is a <see cref="Spec"/>. The menu item builds the
+    /// wizard; <see cref="CastBuilder"/> holds the specs for the rest of the hand-drawn cast.
     ///
     /// One thing the art does not carry yet is a shot: the importer only turns Aseprite user data
     /// into animation events, and there is none on the Shoot frames, so nothing calls
@@ -29,11 +28,7 @@ namespace Editor
     /// </summary>
     public static class SoldierBuilder
     {
-        private const string Source = "Assets/Sprites/Enemies/wizard.aseprite";
-        private const string ControllerDir = "Assets/Resources/Animations/Enemies/Wizard";
-        private const string ControllerPath = ControllerDir + "/WizardAnimator.controller";
         private const string PrefabDir = "Assets/Resources/Prefabs/Enemies";
-        private const string PrefabPath = PrefabDir + "/Wizard.prefab";
 
         /// <summary>The pixel scale the rest of the cast is drawn at. 18px tall becomes 0.9 units.</summary>
         private const float PixelsPerUnit = 20f;
@@ -43,48 +38,80 @@ namespace Editor
         /// <summary>What the eye is allowed to be stopped by: the world, and the player himself.</summary>
         private const int SightMask = (1 << 0) | (1 << 7);
 
-        /// <summary>
-        /// The trigger <see cref="RegularEnemyController"/> fires, and the .aseprite tag whose clip
-        /// plays for it. Usually the same word; the wizard calls his third one Attack, because that
-        /// is what it looks like, while the trigger is still Shoot.
-        /// </summary>
-        private static readonly (string Trigger, string Tag)[] States =
+        /// <summary>Everything that tells one enemy apart from another at build time.</summary>
+        public sealed class Spec
         {
-            ("Idle", "Idle"),
-            ("Walk", "Walk"),
-            ("Shoot", "Attack"),
+            /// <summary>Prefab name, root object name, and the folder its controller lives in.</summary>
+            public string Name;
+
+            /// <summary>The .aseprite the frames, tags and clips come from.</summary>
+            public string Source;
+
+            /// <summary>
+            /// The trigger <see cref="RegularEnemyController"/> fires, and the .aseprite tag whose clip
+            /// plays for it. Usually the same word; the wizard calls his third one Attack, because that
+            /// is what it looks like, while the trigger is still Shoot.
+            /// </summary>
+            public (string Trigger, string Tag)[] States;
+
+            public int MaxHealth = 20;
+            public float WalkSpeed = 1.5f;
+
+            /// <summary>The corpse to hand him, if it has been built yet. Null for none.</summary>
+            public string RagdollPrefabPath;
+
+            public string ControllerDir => $"Assets/Resources/Animations/Enemies/{Name}";
+            public string ControllerPath => $"{ControllerDir}/{Name}Animator.controller";
+            public string PrefabPath => $"{PrefabDir}/{Name}.prefab";
+        }
+
+        public static readonly Spec Wizard = new()
+        {
+            Name = "Wizard",
+            Source = "Assets/Sprites/Enemies/wizard.aseprite",
+            States = new[] { ("Idle", "Idle"), ("Walk", "Walk"), ("Shoot", "Attack") },
+            RagdollPrefabPath = SoldierRagdollBuilder.RagdollPrefabPath,
         };
 
         [MenuItem("PhysFun/Enemies/Build Soldier", false, 200)]
-        private static void Build()
+        private static void BuildMenu()
         {
-            var importer = AssetImporter.GetAtPath(Source) as AsepriteImporter;
+            var prefab = Build(Wizard);
+            if (!prefab) return;
+
+            Selection.activeObject = prefab;
+            EditorGUIUtility.PingObject(prefab);
+        }
+
+        /// <summary>Controller and prefab for one enemy. Returns null, having said why, when the art is not there.</summary>
+        public static GameObject Build(Spec spec)
+        {
+            var importer = AssetImporter.GetAtPath(spec.Source) as AsepriteImporter;
             if (!importer)
             {
-                Debug.LogError($"[PhysFun] No Aseprite asset at {Source}.");
-                return;
+                Debug.LogError($"[PhysFun] No Aseprite asset at {spec.Source}.");
+                return null;
             }
 
             FixImportSettings(importer);
 
-            var clips = AssetDatabase.LoadAllAssetRepresentationsAtPath(Source)
+            var clips = AssetDatabase.LoadAllAssetRepresentationsAtPath(spec.Source)
                 .OfType<AnimationClip>()
                 .ToDictionary(c => c.name);
 
-            var missing = States.Where(s => !clips.ContainsKey(s.Tag)).Select(s => s.Tag).ToArray();
+            var missing = spec.States.Where(s => !clips.ContainsKey(s.Tag)).Select(s => s.Tag).ToArray();
             if (missing.Length > 0)
             {
-                Debug.LogError($"[PhysFun] {Source} has no tag(s) named {string.Join(", ", missing)}. " +
+                Debug.LogError($"[PhysFun] {spec.Source} has no tag(s) named {string.Join(", ", missing)}. " +
                                "The controller needs one tag per state.");
-                return;
+                return null;
             }
 
-            var controller = BuildController(clips);
-            var prefab = BuildPrefab(controller);
+            var controller = BuildController(spec, clips);
+            var prefab = BuildPrefab(spec, controller);
 
-            Selection.activeObject = prefab;
-            EditorGUIUtility.PingObject(prefab);
-            Debug.Log($"[PhysFun] Soldier built: {PrefabPath}", prefab);
+            Debug.Log($"[PhysFun] {spec.Name} built: {spec.PrefabPath}", prefab);
+            return prefab;
         }
 
         /// <summary>
@@ -129,13 +156,13 @@ namespace Editor
         /// enemy standing in an open scene, most of all — is left holding nothing, which shows up
         /// in play mode as "Animator is not playing an AnimatorController".
         /// </summary>
-        private static AnimatorController BuildController(Dictionary<string, AnimationClip> clips)
+        private static AnimatorController BuildController(Spec spec, Dictionary<string, AnimationClip> clips)
         {
-            EnsureFolder(ControllerDir);
+            EnsureFolder(spec.ControllerDir);
 
-            var controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
+            var controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(spec.ControllerPath);
             if (controller) Empty(controller);
-            else controller = AnimatorController.CreateAnimatorControllerAtPath(ControllerPath);
+            else controller = AnimatorController.CreateAnimatorControllerAtPath(spec.ControllerPath);
 
             var machine = controller.layers[0].stateMachine;
 
@@ -143,7 +170,7 @@ namespace Editor
             var empty = machine.AddState("Empty");
             machine.defaultState = empty;
 
-            foreach (var (trigger, tag) in States)
+            foreach (var (trigger, tag) in spec.States)
             {
                 controller.AddParameter(trigger, AnimatorControllerParameterType.Trigger);
 
@@ -181,17 +208,17 @@ namespace Editor
         /// flipped and what the generated clips drive — they bind the sprite to whatever object
         /// the Animator sits on, so the Animator has to live with the renderer, not with the body.
         /// </summary>
-        private static GameObject BuildPrefab(AnimatorController controller)
+        private static GameObject BuildPrefab(Spec spec, AnimatorController controller)
         {
             EnsureFolder(PrefabDir);
 
-            var root = new GameObject("Wizard") { layer = EnemyLayer };
+            var root = new GameObject(spec.Name) { layer = EnemyLayer };
 
             var view = new GameObject("View") { layer = EnemyLayer };
             view.transform.SetParent(root.transform, false);
 
             var renderer = view.AddComponent<SpriteRenderer>();
-            renderer.sprite = FirstSprite();
+            renderer.sprite = FirstSprite(spec.Source);
 
             var animator = view.AddComponent<Animator>();
             animator.runtimeAnimatorController = controller;
@@ -220,14 +247,15 @@ namespace Editor
             hull.size = new Vector2(bounds.size.x * 0.9f, bounds.size.y);
             hull.offset = bounds.center;
 
-            WireController(root.AddComponent<RegularEnemyController>(), view.transform, body, animator, eye.transform);
-            WireHealth(root.AddComponent<Damageable>());
+            WireController(root.AddComponent<RegularEnemyController>(), view.transform, body, animator, eye.transform,
+                spec.WalkSpeed);
+            WireHealth(root.AddComponent<Damageable>(), spec.MaxHealth);
 
             // The corpse is a separate build and he stands up fine without one, so this only
-            // takes if PhysFun/Enemies/Build Soldier Ragdoll has already been run.
-            SoldierRagdollBuilder.WireSpawner(root);
+            // takes if his ragdoll has already been built.
+            SoldierRagdollBuilder.WireSpawner(root, spec.RagdollPrefabPath);
 
-            var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
+            var prefab = PrefabUtility.SaveAsPrefabAsset(root, spec.PrefabPath);
             Object.DestroyImmediate(root);
             return prefab;
         }
@@ -236,21 +264,22 @@ namespace Editor
         /// The first frame of Idle — what he looks like standing still, and what the hull is
         /// measured against. Sub-assets come back in no particular order, hence the name.
         /// </summary>
-        private static Sprite FirstSprite()
+        private static Sprite FirstSprite(string source)
         {
-            var sprites = AssetDatabase.LoadAllAssetRepresentationsAtPath(Source).OfType<Sprite>().ToArray();
+            var sprites = AssetDatabase.LoadAllAssetRepresentationsAtPath(source).OfType<Sprite>().ToArray();
             return sprites.FirstOrDefault(s => s.name == "Frame_0") ?? sprites.FirstOrDefault();
         }
 
         private static void WireController(
-            RegularEnemyController enemy, Transform view, Rigidbody2D body, Animator animator, Transform eye)
+            RegularEnemyController enemy, Transform view, Rigidbody2D body, Animator animator, Transform eye,
+            float walkSpeed)
         {
             var so = new SerializedObject(enemy);
             so.FindProperty("_body").objectReferenceValue = view;
             so.FindProperty("_rb").objectReferenceValue = body;
             so.FindProperty("_animator").objectReferenceValue = animator;
             so.FindProperty("_eye").objectReferenceValue = eye;
-            so.FindProperty("walkSpeed").floatValue = 1.5f;
+            so.FindProperty("walkSpeed").floatValue = walkSpeed;
             so.FindProperty("idleDuration").floatValue = 1.5f;
             so.FindProperty("walkDuration").floatValue = 2.5f;
             so.FindProperty("detectRange").floatValue = 15f;
@@ -259,11 +288,11 @@ namespace Editor
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        /// <summary>As tough as the shotgunner, and hurt by the same things: whatever the world throws.</summary>
-        private static void WireHealth(Damageable damageable)
+        /// <summary>Hurt by the same things as the shotgunner: whatever the world throws.</summary>
+        private static void WireHealth(Damageable damageable, int maxHealth)
         {
             var so = new SerializedObject(damageable);
-            so.FindProperty("maxHealth").intValue = 20;
+            so.FindProperty("maxHealth").intValue = maxHealth;
             so.FindProperty("targetLayers").intValue = 1 << 0;
             so.FindProperty("deathKick").floatValue = 0.05f;
             so.ApplyModifiedPropertiesWithoutUndo();

@@ -14,14 +14,15 @@ namespace Editor
     /// Every other creature gets its ragdoll from Noita's data, where the animator already worked
     /// in separate limbs and the importer only has to read them back. The soldier is drawn as one
     /// 11x18 figure on a single layer, so where he comes apart is a decision rather than a fact,
-    /// and that decision is the one thing this file holds: <see cref="Cuts"/> is his idle frame
-    /// divided along the joints, in canvas pixels. Everything after that — part sheet, definition,
-    /// prefab, hinges, masses — is <see cref="NoitaRagdollImporter"/>'s, so the soldier's body
-    /// behaves like everyone else's.
+    /// and that decision is the one thing a <see cref="Spec"/> holds: <see cref="Spec.Cuts"/> is his
+    /// idle frame divided along the joints, in canvas pixels. Everything after that — part sheet,
+    /// definition, prefab, hinges, masses — is <see cref="NoitaRagdollImporter"/>'s, so the
+    /// soldier's body behaves like everyone else's.
     ///
-    /// The cuts belong to this drawing and nothing else: the dark soldier stands on a 20px canvas
+    /// The cuts belong to one drawing and nothing else: the dark soldier stands on a 20px canvas
     /// with a shorter head, and his corpse was built by running this once with his rows and his
-    /// paths. Another palette means reading its idle frame and doing the same.
+    /// paths. Another figure means reading its idle frame and writing its own cuts — the menu item
+    /// here does the wizard, <see cref="CastBuilder"/> the rest of the hand-drawn cast.
     ///
     /// Run it after <see cref="SoldierBuilder"/>: it reads the frame through the import settings
     /// that one applies, and it is what puts the <see cref="RagdollSpawner"/> on the live soldier.
@@ -29,9 +30,7 @@ namespace Editor
     /// </summary>
     public static class SoldierRagdollBuilder
     {
-        private const string Source = "Assets/Sprites/Enemies/wizard.aseprite";
-        private const string Creature = "wizard";
-        private const string EnemyPrefabPath = "Assets/Resources/Prefabs/Enemies/Wizard.prefab";
+        /// <summary>The wizard's corpse — where <see cref="NoitaRagdollImporter.Write"/> puts creature "wizard".</summary>
         public const string RagdollPrefabPath = "Assets/Resources/Ragdolls/wizard/WizardRagdoll.prefab";
 
         /// <summary>Matches <see cref="SoldierBuilder"/>; the corpse has to be drawn at his scale.</summary>
@@ -51,7 +50,7 @@ namespace Editor
         private static readonly Vector2 PivotAnchor = new(0.5f, 0f);
 
         /// <summary>One piece of the soldier: the block of the canvas it owns, and how it hangs on.</summary>
-        private readonly struct Cut
+        public readonly struct Cut
         {
             public readonly string Name;
 
@@ -59,7 +58,7 @@ namespace Editor
             /// whatever no block claims is left out of the corpse altogether.</summary>
             public readonly RectInt[] Regions;
 
-            /// <summary>Index into <see cref="Cuts"/>, -1 for the piece everything else hangs off.</summary>
+            /// <summary>Index into <see cref="Spec.Cuts"/>, -1 for the piece everything else hangs off.</summary>
             public readonly int Parent;
 
             /// <summary>Hinge with the parent, in canvas pixels — the joint you would point at.</summary>
@@ -101,7 +100,7 @@ namespace Editor
         ///
         /// The torso comes first because a hinge needs its parent to exist already.
         /// </summary>
-        private static readonly Cut[] Cuts =
+        private static readonly Cut[] WizardCuts =
         {
             new("torso", -1, Vector2.zero, 2,
                 new RectInt(0, 10, 20, 1),   // shoulders
@@ -114,32 +113,71 @@ namespace Editor
             new("arm_r", 0, new Vector2(12.5f, 11.5f), 3, new RectInt(13, 11, 7, 3)),
         };
 
-        [MenuItem("PhysFun/Enemies/Build Soldier Ragdoll", false, 201)]
-        private static void Build()
+        /// <summary>One hand-drawn corpse: the art it is cut from, what to call it, and where the cuts go.</summary>
+        public sealed class Spec
         {
-            if (AssetImporter.GetAtPath(Source) is not AsepriteImporter importer)
+            public string Source;
+
+            /// <summary>Folder and file stem under Assets/Resources/Ragdolls.</summary>
+            public string Creature;
+
+            /// <summary>The live enemy that gets a <see cref="RagdollSpawner"/> pointed at this corpse.</summary>
+            public string EnemyPrefabPath;
+
+            /// <summary>The idle frame divided along the joints, torso first.</summary>
+            public Cut[] Cuts;
+
+            /// <summary>Where <see cref="NoitaRagdollImporter.Write"/> puts the prefab for this creature.</summary>
+            public string RagdollPrefabPath =>
+                $"Assets/Resources/Ragdolls/{Creature}/{char.ToUpperInvariant(Creature[0])}{Creature.Substring(1)}Ragdoll.prefab";
+        }
+
+        public static readonly Spec Wizard = new()
+        {
+            Source = "Assets/Sprites/Enemies/wizard.aseprite",
+            Creature = "wizard",
+            EnemyPrefabPath = "Assets/Resources/Prefabs/Enemies/Wizard.prefab",
+            Cuts = WizardCuts,
+        };
+
+        [MenuItem("PhysFun/Enemies/Build Soldier Ragdoll", false, 201)]
+        private static void BuildMenu()
+        {
+            if (Build(Wizard) == null) return;
+
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(Wizard.RagdollPrefabPath);
+            if (!prefab) return;
+
+            Selection.activeObject = prefab;
+            EditorGUIUtility.PingObject(prefab);
+        }
+
+        /// <summary>Part sheet, definition and prefab for one corpse. Returns null, having said why, on failure.</summary>
+        public static RagdollDefinition Build(Spec spec)
+        {
+            if (AssetImporter.GetAtPath(spec.Source) is not AsepriteImporter importer)
             {
-                Debug.LogError($"[PhysFun] No Aseprite asset at {Source}.");
-                return;
+                Debug.LogError($"[PhysFun] No Aseprite asset at {spec.Source}.");
+                return null;
             }
 
             if (importer.pivotSpace != PivotSpaces.Canvas || importer.pivotAlignment != SpriteAlignment.BottomCenter)
             {
-                Debug.LogError("[PhysFun] soldier.aseprite is not pivoted on the canvas bottom centre, so his " +
-                               "frames cannot be put back where they were drawn. Run PhysFun/Enemies/Build Soldier first.");
-                return;
+                Debug.LogError($"[PhysFun] {spec.Source} is not pivoted on the canvas bottom centre, so its " +
+                               "frames cannot be put back where they were drawn. Build the enemy first.");
+                return null;
             }
 
-            var sprite = IdleSprite();
+            var sprite = IdleSprite(spec.Source);
             if (!sprite)
             {
-                Debug.LogError($"[PhysFun] {Source} has no sprites to cut up.");
-                return;
+                Debug.LogError($"[PhysFun] {spec.Source} has no sprites to cut up.");
+                return null;
             }
 
             var canvas = new Vector2Int(Mathf.RoundToInt(importer.canvasSize.x), Mathf.RoundToInt(importer.canvasSize.y));
-            var build = CutUp(ReadFrame(sprite, canvas), canvas);
-            if (build == null) return;
+            var build = CutUp(ReadFrame(sprite, canvas), canvas, spec);
+            if (build == null) return null;
 
             var def = NoitaRagdollImporter.Write(build, new NoitaRagdollImporter.Settings
             {
@@ -149,25 +187,20 @@ namespace Editor
                 BuildPrefab = true
             });
 
-            TightenColliders(build, def);
-            AttachToEnemy();
+            TightenColliders(build, def, spec.RagdollPrefabPath);
+            AttachToEnemy(spec);
 
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(RagdollPrefabPath);
-            if (prefab)
-            {
-                Selection.activeObject = prefab;
-                EditorGUIUtility.PingObject(prefab);
-            }
-
-            Debug.Log($"[PhysFun] Soldier ragdoll built: {def.parts.Count} parts, {RagdollPrefabPath}", prefab);
+            Debug.Log($"[PhysFun] {spec.Creature} ragdoll built: {def.parts.Count} parts, {spec.RagdollPrefabPath}",
+                AssetDatabase.LoadAssetAtPath<GameObject>(spec.RagdollPrefabPath));
+            return def;
         }
 
         // ------------------------------------------------------------------ the frame
 
         /// <summary>The first idle frame — the pose he stands in, and the one the pieces are cut from.</summary>
-        private static Sprite IdleSprite()
+        private static Sprite IdleSprite(string source)
         {
-            var sprites = AssetDatabase.LoadAllAssetRepresentationsAtPath(Source).OfType<Sprite>().ToArray();
+            var sprites = AssetDatabase.LoadAllAssetRepresentationsAtPath(source).OfType<Sprite>().ToArray();
             return sprites.FirstOrDefault(s => s.name == "Frame_0") ?? sprites.FirstOrDefault();
         }
 
@@ -244,11 +277,11 @@ namespace Editor
         /// Hand every opaque pixel to the block it falls in. What comes out is the same shape the
         /// Noita importer builds for a creature that arrived with its limbs already separate.
         /// </summary>
-        private static RagdollBuild CutUp(Color32[] frame, Vector2Int canvas)
+        private static RagdollBuild CutUp(Color32[] frame, Vector2Int canvas, Spec spec)
         {
             var build = new RagdollBuild
             {
-                Creature = Creature,
+                Creature = spec.Creature,
                 FrameW = canvas.x,
                 FrameH = canvas.y,
                 // The spawn point is the soldier's own origin: the pivot the art is drawn around.
@@ -256,7 +289,7 @@ namespace Editor
                 DefaultAnim = Anim
             };
 
-            foreach (var cut in Cuts)
+            foreach (var cut in spec.Cuts)
             {
                 var part = new PartBuild
                 {
@@ -287,9 +320,8 @@ namespace Editor
 
                 if (part.Solid.Count == 0)
                 {
-                    Debug.LogError($"[PhysFun] Nothing is drawn where the soldier's {cut.Name} should be. " +
-                                   $"The art moved on the canvas, so the cuts in " +
-                                   $"{nameof(SoldierRagdollBuilder)} have to move with it.");
+                    Debug.LogError($"[PhysFun] Nothing is drawn where the {spec.Creature}'s {cut.Name} should be. " +
+                                   "The art moved on the canvas, so its cuts have to move with it.");
                     return null;
                 }
 
@@ -331,9 +363,9 @@ namespace Editor
         /// inside a hull wider than the body. Replace every one with the box its own opaque pixels
         /// fill, which for a limb is the limb.
         /// </summary>
-        private static void TightenColliders(RagdollBuild build, RagdollDefinition def)
+        private static void TightenColliders(RagdollBuild build, RagdollDefinition def, string ragdollPrefabPath)
         {
-            var root = PrefabUtility.LoadPrefabContents(RagdollPrefabPath);
+            var root = PrefabUtility.LoadPrefabContents(ragdollPrefabPath);
             try
             {
                 for (int i = 0; i < def.parts.Count; i++)
@@ -363,7 +395,7 @@ namespace Editor
                     MassRecalculator.SetMass(def.parts[i].sprite, piece.GetComponent<Rigidbody2D>(), poly);
                 }
 
-                PrefabUtility.SaveAsPrefabAsset(root, RagdollPrefabPath);
+                PrefabUtility.SaveAsPrefabAsset(root, ragdollPrefabPath);
             }
             finally
             {
@@ -373,19 +405,19 @@ namespace Editor
 
         // ------------------------------------------------------------------ the live soldier
 
-        private static void AttachToEnemy()
+        private static void AttachToEnemy(Spec spec)
         {
-            if (!AssetDatabase.LoadAssetAtPath<GameObject>(EnemyPrefabPath))
+            if (!AssetDatabase.LoadAssetAtPath<GameObject>(spec.EnemyPrefabPath))
             {
-                Debug.LogWarning($"[PhysFun] No soldier at {EnemyPrefabPath} to hand the corpse to. " +
-                                 "Run PhysFun/Enemies/Build Soldier.");
+                Debug.LogWarning($"[PhysFun] No enemy at {spec.EnemyPrefabPath} to hand the corpse to. " +
+                                 "Build the enemy, then this again.");
                 return;
             }
 
-            var root = PrefabUtility.LoadPrefabContents(EnemyPrefabPath);
+            var root = PrefabUtility.LoadPrefabContents(spec.EnemyPrefabPath);
             try
             {
-                if (WireSpawner(root)) PrefabUtility.SaveAsPrefabAsset(root, EnemyPrefabPath);
+                if (WireSpawner(root, spec.RagdollPrefabPath)) PrefabUtility.SaveAsPrefabAsset(root, spec.EnemyPrefabPath);
             }
             finally
             {
@@ -394,13 +426,15 @@ namespace Editor
         }
 
         /// <summary>
-        /// Point a soldier at his corpse. Called on the built prefab from here and on the fresh one
+        /// Point an enemy at his corpse. Called on the built prefab from here and on the fresh one
         /// from <see cref="SoldierBuilder"/>, so rebuilding either half keeps the two tied
         /// together. Does nothing while the corpse has not been built yet.
         /// </summary>
-        public static bool WireSpawner(GameObject root)
+        public static bool WireSpawner(GameObject root, string ragdollPrefabPath)
         {
-            var ragdoll = AssetDatabase.LoadAssetAtPath<GameObject>(RagdollPrefabPath);
+            if (string.IsNullOrEmpty(ragdollPrefabPath)) return false;
+
+            var ragdoll = AssetDatabase.LoadAssetAtPath<GameObject>(ragdollPrefabPath);
             if (!ragdoll) return false;
 
             var spawner = root.GetComponent<RagdollSpawner>();

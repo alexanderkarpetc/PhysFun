@@ -393,3 +393,113 @@ def rock_blob(cx, cy, rx, ry, rough=0.18, base=ROCK, lit=ROCK_L, clip=None):
                 px(x, y + 1, ROCK_M)
         elif (x, y + 1) not in cells:
             px(x, y, ROCK_D)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Organic caves, and things drawn at an angle
+# ─────────────────────────────────────────────────────────────────────────────
+def _noisy(n, rough):
+    return [1 + (rnd() - 0.5) * 2 * rough for _ in range(n)]
+
+
+def cave_mask(shapes, rough=0.16, top=46):
+    """The air of an organic cave, as a set of pixels, from blobs and tubes:
+
+        ("blob", cx, cy, rx, ry)        a chamber
+        ("tube", [(x, y), ...], r)      a winding passage along a polyline
+
+    Rectangular carves give a room of floors; this gives a room of shapes - bowls,
+    bubbles, throats and slanted crawls - which is what stops a big room from reading
+    as storeys stacked on each other."""
+    cw, ch = canvas_size()
+    m = set()
+    for sh in shapes:
+        if sh[0] == "blob":
+            _, cx, cy, rx, ry = sh
+            n = 28
+            radii = _noisy(n, rough)
+            for y in range(int(cy - ry * 1.3), int(cy + ry * 1.3) + 1):
+                for x in range(int(cx - rx * 1.3), int(cx + rx * 1.3) + 1):
+                    dx, dy = (x - cx) / rx, (y - cy) / ry
+                    a = (math.atan2(dy, dx) % (2 * math.pi)) / (2 * math.pi) * n
+                    i, t = int(a) % n, a - int(a)
+                    r = radii[i] * (1 - t) + radii[(i + 1) % n] * t
+                    if dx * dx + dy * dy <= r * r:
+                        m.add((x, y))
+        else:
+            _, pts, r0 = sh
+            for (ax, ay), (bx, by) in zip(pts, pts[1:]):
+                n = max(int(math.hypot(bx - ax, by - ay) / 2), 1)
+                wob = _noisy(max(n // 8, 2) + 1, rough * 1.6)
+                for i in range(n + 1):
+                    t = i / n
+                    f = t * (len(wob) - 1)
+                    k, u = int(f), f - int(f)
+                    r = r0 * (wob[k] * (1 - u) + wob[min(k + 1, len(wob) - 1)] * u)
+                    x, y = ax + (bx - ax) * t, ay + (by - ay) * t
+                    for yy in range(int(y - r), int(y + r) + 1):
+                        for xx in range(int(x - r), int(x + r) + 1):
+                            if (xx - x) ** 2 + (yy - y) ** 2 <= r * r:
+                                m.add((xx, yy))
+    return {(x, y) for (x, y) in m if 0 <= x < cw and top <= y < ch}
+
+
+def carve_mask(m, air=CAVE, lip=CAVE_L, floor_lit=ROCK_L, floor_c=ROCK_M, ceil=ROCK_D):
+    """Paint a cave mask: air inside, a lit edge on every floor pixel (the rock under
+    the air) and a dark lip on every ceiling - a void only reads with both."""
+    for p in m:
+        px(p[0], p[1], air)
+    for (x, y) in m:
+        if (x, y - 1) not in m:
+            px(x, y, lip, 0.5)
+            px(x, y - 1, ceil)
+        if (x, y + 1) not in m:
+            px(x, y + 1, floor_lit)
+            if (x, y + 2) not in m:
+                px(x, y + 2, floor_c)
+
+
+def floor_at(m, x, y_from, y_to=None):
+    """First non-air pixel scanning down from y_from - where a thing stands at x."""
+    cw, ch = canvas_size()
+    y = int(y_from)
+    while y < (y_to or ch) and (int(x), y) in m:
+        y += 1
+    return y
+
+
+def ceil_at(m, x, y_from):
+    """First non-air pixel scanning up from y_from - where a thing hangs from at x."""
+    y = int(y_from)
+    while y > 0 and (int(x), y) in m:
+        y -= 1
+    return y
+
+
+def draw_rotated(w, h, draw_fn, ox, oy, angle):
+    """Draw `draw_fn` on its own w x h keyed canvas (local coords, 0..w, 0..h), then
+    paste it rotated by `angle` radians about its centre, which lands on (ox, oy).
+    Returns local -> world, for putting characters on floors that are now tilted.
+    Keyed pixels stay see-through, so a tower's rooms show the cave behind them."""
+    saved = (_ck.W, _ck.H, _ck.buf)
+    _ck.W, _ck.H = w, h
+    _ck.buf = [[KEY for _ in range(w)] for _ in range(h)]
+    draw_fn()
+    local = _ck.buf
+    _ck.W, _ck.H, _ck.buf = saved
+    ca, sa = math.cos(angle), math.sin(angle)
+    R = int(math.hypot(w, h) / 2) + 2
+    for y in range(int(oy) - R, int(oy) + R + 1):
+        for x in range(int(ox) - R, int(ox) + R + 1):
+            dx, dy = x + 0.5 - ox, y + 0.5 - oy
+            lx = ca * dx + sa * dy + w / 2
+            ly = -sa * dx + ca * dy + h / 2
+            if 0 <= lx < w and 0 <= ly < h:
+                c = local[int(ly)][int(lx)]
+                if c != KEY:
+                    px(x, y, c)
+
+    def to_world(lx, ly):
+        dx, dy = lx - w / 2, ly - h / 2
+        return ox + ca * dx - sa * dy, oy + sa * dx + ca * dy
+    return to_world

@@ -285,6 +285,28 @@ at 2x) so they come out the same size on the png as on the level sheets.
 | R02 `room_dryingloft.py` | fire in a room made of fuel: three timber lofts, a roof slab on four stulls, ice plugging one exit |
 | R03 `room_sortingplant.py` | big room: six belts in separate chambers, all draining into one grinder; the grinder pays scrap |
 | R04 `room_chasm.py` | big room: a cult temple hung over a drop - bridges, cradles, a cage lift, a boulder, all on ropes |
+| R05 `room_icefall.py` | big room: a glacier over the mine; PhysMaterial.Ice shears in slabs - columns, a hanging slab, a serac pile, an ice-plugged exit |
+| R06 `room_blastgallery.py` | big room: a charged face wired to a plunger, a magazine, a test bay, and a FuseCord main lit by the pyros |
+| R07 `room_bucketwheel.py` | big room, round: a bucket-wheel excavator left running - buckets are lifts, the boom is the bridge |
+| R08 `room_frozenthroat.py` | big room, organic: one ice throat top to bottom, bubbles off it at every height; the ice room to use instead of R05 |
+| R09 `room_fallentower.py` | big room, at angles: a tower fallen through the roof in three pieces - floor, ramp, wall |
+
+### Topology, not storeys
+
+R03-R06 are chambers, but they still stack: a gallery over a gallery over a floor, and
+the art director called it - two levels, an upper and a lower, reads as the same room
+every time. R07-R09 each pick a different *shape* for the whole room instead:
+
+- **round** (R07) - one huge kinematic thing in the middle, and the room's geography is
+  whatever angle it is at;
+- **organic** (R08) - `cave_mask()` with blobs and tubes, so every connection is its own
+  shape: a slanted tube, a crawl, a slot, a drop, a bubble off the side;
+- **at angles** (R09) - `draw_rotated()` pastes a structure drawn upright at any angle and
+  hands back local -> world, so characters stand on floors that are now ramps or walls.
+
+`cave_mask()` returns the air as a set; `carve_mask()` paints it with a lit floor edge and
+a dark ceiling lip; `floor_at()` / `ceil_at()` find where something stands or hangs in it,
+which is how props and characters are placed in a cave with no flat floors.
 
 Sheets land in `Assets/GameConcepts/Rooms/` (`out_path` routes `RoomConcept_*` there).
 

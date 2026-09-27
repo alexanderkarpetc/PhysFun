@@ -284,7 +284,9 @@ namespace Editor
 
             var mat = MaterialLibrary.Get(physMaterial);
             EditorGUILayout.LabelField(
-                mat.Flammable ? $"density {mat.Density:0.##} • burns" : $"density {mat.Density:0.##}",
+                $"density {mat.Density:0.##}"
+                    + (mat.Flammable ? " • burns" : "")
+                    + (mat.Conducts ? " • conducts" : ""),
                 EditorStyles.miniLabel);
 
             EditorGUILayout.Space(2f);

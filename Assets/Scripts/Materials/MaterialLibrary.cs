@@ -106,7 +106,28 @@ namespace Materials
             CrackCount = 3,
         };
 
-        private static readonly PhysMaterial[] Ordered = { Default, Wood, Ice };
+        public static readonly PhysMaterial Metal = new()
+        {
+            Id = PhysMaterialId.Metal,
+            DisplayName = "Metal",
+            Swatch = new Color32(163, 172, 184, 255),
+            // Two and a half times stone. A metal beam is the heaviest thing the player can
+            // pick up and the only one whose weight alone is a weapon — it is meant to be
+            // awkward, and telekinesis is meant to strain under it.
+            Density = 2.6f,
+            // Nothing gives: all of the arriving energy goes into whatever it landed on.
+            ImpactDamageMultiplier = 1.6f,
+            Flammable = false,
+            // The whole point of the material. Everything electricity does in this game it
+            // does by finding one of these and running through it.
+            Conducts = true,
+            // Generous, because two metal props resting against each other rarely touch to
+            // the pixel — and a charge that stops at a visible join reads as a bug rather
+            // than as insulation.
+            ArcJumpGap = 0.16f,
+        };
+
+        private static readonly PhysMaterial[] Ordered = { Default, Wood, Ice, Metal };
 
         public static IReadOnlyList<PhysMaterial> All => Ordered;
 

@@ -1649,9 +1649,35 @@ MonoBehaviour:
     m_Bits: 4294967295
   igniteIgnoreLayers:
   - Untouchable
+  zapTargets:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  zapIgnoreLayers:
+  - Untouchable
+  zapProfile:
+    strikeRadius: 0.35
+    affects:
+      serializedVersion: 2
+      m_Bits: 4294967295
+    maxConductors: 12
+    contactGap: 0.06
+    directDamage: 22
+    conductedDamage: 16
+    conductorDamage: 0
+    minDamage: 1
+    igniteChancePercent: 30
+    igniteRadius: 0.06
+    chargeSeconds: 0.45
+    hopDelay: 0.035
+    strikeFlashSeconds: 0.1
+    flickerTicks: 2
+    boltRoughness: 0.22
+    cameraShake: 0.5
+  zapInterval: 0.12
   eraseRingColor: {r: 1, g: 0.4, b: 0.4, a: 0.85}
   crackRingColor: {r: 0.4, g: 0.7, b: 1, a: 0.85}
   igniteRingColor: {r: 1, g: 0.6, b: 0.15, a: 0.9}
+  zapRingColor: {r: 0.6, g: 0.9, b: 1, a: 0.95}
   sketchSize: 500
   synthPixelsPerUnit: 100
   startingTool: 1
@@ -2179,11 +2205,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7023651406520220666, guid: f5816bb199475434381802c0909ade3a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 17.5
+      value: -1.38
       objectReference: {fileID: 0}
     - target: {fileID: 7023651406520220666, guid: f5816bb199475434381802c0909ade3a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.06
+      value: -0.17
       objectReference: {fileID: 0}
     - target: {fileID: 7023651406520220666, guid: f5816bb199475434381802c0909ade3a, type: 3}
       propertyPath: m_LocalPosition.z

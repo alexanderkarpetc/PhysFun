@@ -13,6 +13,7 @@ namespace Common
         Grind,
         Projectile,
         Melee,
-        Explosion
+        Explosion,
+        Electric
     }
 }

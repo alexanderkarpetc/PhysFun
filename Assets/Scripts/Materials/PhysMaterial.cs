@@ -7,6 +7,7 @@ namespace Materials
         Default = 0,
         Wood    = 1,
         Ice     = 2,
+        Metal   = 3,
     }
 
     /// <summary>
@@ -120,6 +121,22 @@ namespace Materials
 
         /// <summary>Cracks one blast throws off.</summary>
         public int CrackCount = 3;
+
+        // ── Electricity (see Phys.Electricity.ElectricitySystem) ──────────────
+        // Noita keeps conduction on the material and nowhere else: its electricity system asks
+        // one question of every cell an arc considers stepping into — CellConductsElectricity,
+        // which is nothing but CellData::electrical_conductivity (+0x10C), read at
+        // electricity_system.cpp:189. Same question here, asked of the material under the cell.
+
+        /// <summary>Whether a charge will run through this stuff at all.</summary>
+        public bool Conducts;
+
+        /// <summary>
+        /// How far a charge will jump from this material's surface to the next conductor, in
+        /// world units. Metal touching metal is the normal case; the gap is what lets a charge
+        /// cross a join that physics has left a hair open.
+        /// </summary>
+        public float ArcJumpGap = 0.16f;
 
         // ── Burn tuning (see Phys.Fire.FireSystem) ────────────────────────────
         // Fuel runs 1 → 0 per pixel. One "tick" is one fire simulation step.

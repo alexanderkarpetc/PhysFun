@@ -7,6 +7,7 @@
             <ui:Button name="tool-crack" text="Crack" class="tool-btn" />
             <ui:Button name="tool-synth" text="Draw"  class="tool-btn" />
             <ui:Button name="tool-ignite" text="Ignite" class="tool-btn" />
+            <ui:Button name="tool-zap" text="Zap" class="tool-btn" />
             <ui:Button name="tool-none"  text="None"  class="tool-btn tool-btn-secondary" />
         </ui:VisualElement>
 
@@ -55,6 +56,13 @@
         <ui:VisualElement name="panel-ignite" class="panel">
             <ui:Slider name="ignite-radius" label="Radius" low-value="0.03" high-value="1" value="0.12" show-input-field="true" />
             <ui:Label class="hint" text="LMB sets flammable objects alight • RMB puts them out. Fire eats the sprite pixel by pixel and jumps to anything it touches." />
+        </ui:VisualElement>
+
+        <!-- Zap -->
+        <ui:VisualElement name="panel-zap" class="panel">
+            <ui:Slider name="zap-radius" label="Strike radius" low-value="0.1" high-value="2" value="0.35" show-input-field="true" />
+            <ui:Slider name="zap-damage" label="Damage" low-value="0" high-value="60" value="16" show-input-field="true" />
+            <ui:Label class="hint" text="LMB discharges. A bolt into open air only scorches; a bolt into metal runs through every piece of metal that one is touching and hurts anything leaning on any of them. It sets light to what it crawls past." />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

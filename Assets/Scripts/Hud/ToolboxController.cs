@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Materials;
+using Phys.Electricity;
 using Phys.Fire;
 using Phys.Pixels;
 using Phys.Terrain;
@@ -11,7 +12,7 @@ using UnityEngine.UIElements;
 [RequireComponent(typeof(UIDocument))]
 public class ToolboxController : MonoBehaviour
 {
-    public enum Tool { None, Spawn, Erase, Crack, Synth, Ignite }
+    public enum Tool { None, Spawn, Erase, Crack, Synth, Ignite, Zap }
 
     [Header("Spawn")]
     [SerializeField] private string spawnResourceFolder = "SpawnImages";
@@ -37,10 +38,23 @@ public class ToolboxController : MonoBehaviour
     [SerializeField] private LayerMask igniteTargets = ~0;
     [SerializeField] private string[] igniteIgnoreLayers = { "Untouchable" };
 
+    [Header("Zap")]
+    [SerializeField] private LayerMask zapTargets = ~0;
+    [SerializeField] private string[] zapIgnoreLayers = { "Untouchable" };
+
+    // Everything a discharge is. The two panel sliders write into this; the rest is tuning
+    // that only wants changing in the inspector.
+    [SerializeField] private ElectricityProfile zapProfile = new();
+
+    [Tooltip("Seconds between discharges while the button is held. A zap is a one-shot event " +
+             "and holding the button should read as a stuttering arc, not as a beam.")]
+    [SerializeField] private float zapInterval = 0.12f;
+
     [Header("Debug overlay")]
     [SerializeField] private Color eraseRingColor = new Color(1f, 0.4f, 0.4f, 0.85f);
     [SerializeField] private Color crackRingColor = new Color(0.4f, 0.7f, 1f, 0.85f);
     [SerializeField] private Color igniteRingColor = new Color(1f, 0.6f, 0.15f, 0.9f);
+    [SerializeField] private Color zapRingColor = new Color(0.6f, 0.9f, 1f, 0.95f);
 
     [Header("Synth")]
     [SerializeField] private int sketchSize = 500;
@@ -74,6 +88,7 @@ public class ToolboxController : MonoBehaviour
     private int _eraseEffectiveMask;
     private int _crackEffectiveMask;
     private int _igniteEffectiveMask;
+    private int _zapEffectiveMask;
 
     // Crack state
     private Slider _crackRadiusSlider;
@@ -81,6 +96,11 @@ public class ToolboxController : MonoBehaviour
 
     // Ignite state
     private Slider _igniteRadiusSlider;
+
+    // Zap state
+    private Slider _zapRadiusSlider;
+    private Slider _zapDamageSlider;
+    private float _lastZap;
 
     // Synth state
     private SketchCanvas _sketch;
@@ -118,6 +138,8 @@ public class ToolboxController : MonoBehaviour
         _eraseEffectiveMask  = MaskMinusLayers(eraseTargets.value, eraseIgnoreLayers);
         _crackEffectiveMask  = MaskMinusLayers(crackTargets.value, crackIgnoreLayers);
         _igniteEffectiveMask = MaskMinusLayers(igniteTargets.value, igniteIgnoreLayers);
+        _zapEffectiveMask    = MaskMinusLayers(zapTargets.value, zapIgnoreLayers);
+        zapProfile.affects   = _zapEffectiveMask;
 
         // The shared pixel pipeline runs itself; hand it this scene's tuning.
         PixelSpriteDriver.SimplifyLevel = eraseSimplifyLevel;
@@ -136,6 +158,7 @@ public class ToolboxController : MonoBehaviour
         _toolButtons[Tool.Crack] = root.Q<Button>("tool-crack");
         _toolButtons[Tool.Synth] = root.Q<Button>("tool-synth");
         _toolButtons[Tool.Ignite] = root.Q<Button>("tool-ignite");
+        _toolButtons[Tool.Zap]   = root.Q<Button>("tool-zap");
         _toolButtons[Tool.None]  = root.Q<Button>("tool-none");
 
         _toolPanels[Tool.Spawn] = root.Q<VisualElement>("panel-spawn");
@@ -143,6 +166,7 @@ public class ToolboxController : MonoBehaviour
         _toolPanels[Tool.Crack] = root.Q<VisualElement>("panel-crack");
         _toolPanels[Tool.Synth] = root.Q<VisualElement>("panel-synth");
         _toolPanels[Tool.Ignite] = root.Q<VisualElement>("panel-ignite");
+        _toolPanels[Tool.Zap]    = root.Q<VisualElement>("panel-zap");
 
         foreach (var kv in _toolButtons)
         {
@@ -155,6 +179,7 @@ public class ToolboxController : MonoBehaviour
         BuildCrackPanel(root);
         BuildSynthPanel(root);
         BuildIgnitePanel(root);
+        BuildZapPanel(root);
 
         _debugToggle = root.Q<Toggle>("show-debug");
 
@@ -174,7 +199,8 @@ public class ToolboxController : MonoBehaviour
         else if (Input.GetKeyDown(KeyCode.Alpha3)) Select(Tool.Crack);
         else if (Input.GetKeyDown(KeyCode.Alpha4)) Select(Tool.Synth);
         else if (Input.GetKeyDown(KeyCode.Alpha5)) Select(Tool.Ignite);
-        else if (Input.GetKeyDown(KeyCode.Alpha6)) Select(Tool.None);
+        else if (Input.GetKeyDown(KeyCode.Alpha6)) Select(Tool.Zap);
+        else if (Input.GetKeyDown(KeyCode.Alpha7)) Select(Tool.None);
 
         switch (_current)
         {
@@ -182,6 +208,7 @@ public class ToolboxController : MonoBehaviour
             case Tool.Erase: if (!_pointerOverUI) TickErase(); break;
             case Tool.Crack: if (!_pointerOverUI) TickCrack(); break;
             case Tool.Ignite: if (!_pointerOverUI) TickIgnite(); break;
+            case Tool.Zap: if (!_pointerOverUI) TickZap(); break;
         }
     }
 
@@ -267,9 +294,9 @@ public class ToolboxController : MonoBehaviour
         {
             var btn = new VisualElement();
             btn.AddToClassList("mat-btn");
-            btn.tooltip = mat.Flammable
-                ? $"density {mat.Density:0.##} • burns"
-                : $"density {mat.Density:0.##}";
+            btn.tooltip = $"density {mat.Density:0.##}"
+                          + (mat.Flammable ? " • burns" : "")
+                          + (mat.Conducts ? " • conducts" : "");
 
             var dot = new VisualElement();
             dot.AddToClassList("mat-dot");
@@ -461,6 +488,36 @@ public class ToolboxController : MonoBehaviour
         // A fuse is one pixel wide and carries no collider, so the overlap above never finds
         // one. It keeps its own list for exactly this.
         if (light) Phys.Explosions.FuseCord.LightNear(wp, Mathf.Max(radius, 0.1f));
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // ZAP
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private void BuildZapPanel(VisualElement root)
+    {
+        _zapRadiusSlider = root.Q<Slider>("zap-radius");
+        _zapDamageSlider = root.Q<Slider>("zap-damage");
+    }
+
+    private void TickZap()
+    {
+        if (!Input.GetMouseButton(0)) return;
+        if (Time.unscaledTime - _lastZap < zapInterval) return;
+        _lastZap = Time.unscaledTime;
+
+        if (_zapRadiusSlider != null) zapProfile.strikeRadius = _zapRadiusSlider.value;
+        if (_zapDamageSlider != null)
+        {
+            // One slider for both figures. Standing in the bolt hurts more than holding the
+            // girder it went into, and the ratio between the two is the tuning — not something
+            // worth a second slider on a debug panel.
+            zapProfile.conductedDamage = _zapDamageSlider.value;
+            zapProfile.directDamage = _zapDamageSlider.value * 1.35f;
+        }
+
+        Vector3 wp = _cam.ScreenToWorldPoint(Input.mousePosition); wp.z = 0f;
+        ElectricitySystem.Strike(wp, zapProfile);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -664,12 +721,14 @@ public class ToolboxController : MonoBehaviour
         bool isErase  = _current == Tool.Erase;
         bool isCrack  = _current == Tool.Crack;
         bool isIgnite = _current == Tool.Ignite;
-        if (!isErase && !isCrack && !isIgnite) return;
+        bool isZap    = _current == Tool.Zap;
+        if (!isErase && !isCrack && !isIgnite && !isZap) return;
 
         float worldRadius =
             isErase  ? (_eraseBrushSlider   != null ? _eraseBrushSlider.value   : 0.2f) :
             isCrack  ? (_crackRadiusSlider  != null ? _crackRadiusSlider.value  : 2f)   :
-                       (_igniteRadiusSlider != null ? _igniteRadiusSlider.value : 0.12f);
+            isIgnite ? (_igniteRadiusSlider != null ? _igniteRadiusSlider.value : 0.12f) :
+                       (_zapRadiusSlider    != null ? _zapRadiusSlider.value    : 0.35f);
 
         // Convert world radius -> screen pixels via the camera.
         Vector3 mouseW = _cam.ScreenToWorldPoint(Input.mousePosition);
@@ -684,7 +743,7 @@ public class ToolboxController : MonoBehaviour
         float gy = (Screen.height - Input.mousePosition.y) - screenR;
 
         var prev = GUI.color;
-        GUI.color = isErase ? eraseRingColor : isCrack ? crackRingColor : igniteRingColor;
+        GUI.color = isErase ? eraseRingColor : isCrack ? crackRingColor : isIgnite ? igniteRingColor : zapRingColor;
         GUI.DrawTexture(new Rect(gx, gy, screenR * 2f, screenR * 2f), _ringTex);
         GUI.color = prev;
     }

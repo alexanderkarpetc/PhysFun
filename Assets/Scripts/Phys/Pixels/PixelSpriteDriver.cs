@@ -1,3 +1,4 @@
+using Phys.Electricity;
 using Phys.Fire;
 using UnityEngine;
 
@@ -10,6 +11,9 @@ namespace Phys.Pixels
     /// Order matters: fire writes pixels, then the registry uploads them, drops
     /// objects that were fully consumed, retraces colliders under a time budget,
     /// and finally (on a throttle) runs the expensive split flood fill.
+    ///
+    /// The arc field rides along in front of the fire, because a bolt crawling over
+    /// something lights it on the same frame it passes.
     /// </summary>
     [DefaultExecutionOrder(1000)]
     public sealed class PixelSpriteDriver : MonoBehaviour
@@ -34,6 +38,7 @@ namespace Phys.Pixels
             // undefined, so the wiring has to happen out here, after they both exist.
             FireSystem.Instance.Bind(PixelSpriteRegistry.Instance);
             FlameFieldView.Install();
+            ArcFieldView.Install();
 
             var go = new GameObject("~PixelSpriteDriver") { hideFlags = HideFlags.HideAndDontSave };
             _instance = go.AddComponent<PixelSpriteDriver>();
@@ -54,30 +59,34 @@ namespace Phys.Pixels
         {
             bool timing = SpikeLogMs > 0f;
             var sw = timing ? System.Diagnostics.Stopwatch.StartNew() : null;
-            double tFire = 0, tFlames = 0, tFlush = 0, tColliders = 0, tSplits = 0;
+            double tArcs = 0, tFire = 0, tFlames = 0, tFlush = 0, tColliders = 0, tSplits = 0;
+
+            // Bolts walk first: what they set alight this tick should burn this tick.
+            ArcField.Instance.Tick(Time.deltaTime);
+            if (timing) tArcs = sw.Elapsed.TotalMilliseconds;
 
             FireSystem.Instance.Tick(Time.deltaTime);
-            if (timing) tFire = sw.Elapsed.TotalMilliseconds;
+            if (timing) tFire = sw.Elapsed.TotalMilliseconds - tArcs;
 
             // Drives its own 60 Hz grid, and calls back into FireSystem.EmitFlames once per
             // grid frame — so flames are born and rise at Noita's rate, not at the burn rate.
             FlameField.Instance.Tick(Time.deltaTime);
-            if (timing) tFlames = sw.Elapsed.TotalMilliseconds - tFire;
+            if (timing) tFlames = sw.Elapsed.TotalMilliseconds - tArcs - tFire;
 
             var reg = PixelSpriteRegistry.Instance;
             reg.Flush();
             reg.CollectConsumed();
-            if (timing) tFlush = sw.Elapsed.TotalMilliseconds - tFire - tFlames;
+            if (timing) tFlush = sw.Elapsed.TotalMilliseconds - tArcs - tFire - tFlames;
 
             reg.RefreshColliders(SimplifyLevel, ColliderBudgetMs);
-            if (timing) tColliders = sw.Elapsed.TotalMilliseconds - tFire - tFlames - tFlush;
+            if (timing) tColliders = sw.Elapsed.TotalMilliseconds - tArcs - tFire - tFlames - tFlush;
 
             if (Time.unscaledTime - _lastSplit > SplitInterval)
             {
                 reg.ProcessSplits(SimplifyLevel);
                 _lastSplit = Time.unscaledTime;
             }
-            if (timing) tSplits = sw.Elapsed.TotalMilliseconds - tFire - tFlames - tFlush - tColliders;
+            if (timing) tSplits = sw.Elapsed.TotalMilliseconds - tArcs - tFire - tFlames - tFlush - tColliders;
 
             if (!timing) return;
 
@@ -88,9 +97,10 @@ namespace Phys.Pixels
             reg.CountColliders(out int paths, out int points);
             Debug.Log(
                 $"[pixels] frame {frameMs:F0}ms, pipeline {pipelineMs:F1}ms " +
-                $"(fire {tFire:F1} flames {tFlames:F1} upload {tFlush:F1} colliders {tColliders:F1} splits {tSplits:F1}) | " +
+                $"(arcs {tArcs:F1} fire {tFire:F1} flames {tFlames:F1} upload {tFlush:F1} colliders {tColliders:F1} splits {tSplits:F1}) | " +
                 $"objects {reg.RecordCount}, burns {FireSystem.Instance.BurnCount}, " +
                 $"lit px {FireSystem.Instance.LitPixelCount}, flame cells {FlameField.Instance.Count}, " +
+                $"arc cells {ArcField.Instance.Count}, " +
                 $"collider paths {paths}, points {points}");
         }
 

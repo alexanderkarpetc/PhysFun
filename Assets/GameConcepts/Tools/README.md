@@ -283,6 +283,22 @@ at 2x) so they come out the same size on the png as on the level sheets.
 |---|---|
 | R01 `room_substation.py` | ArcField: a transformer arcs to the nearest metal; steel gantry and grate carry it, timber scaffold does not |
 | R02 `room_dryingloft.py` | fire in a room made of fuel: three timber lofts, a roof slab on four stulls, ice plugging one exit |
+| R03 `room_sortingplant.py` | big room: six belts in separate chambers, all draining into one grinder; the grinder pays scrap |
+| R04 `room_chasm.py` | big room: a cult temple hung over a drop - bridges, cradles, a cage lift, a boulder, all on ropes |
+
+Sheets land in `Assets/GameConcepts/Rooms/` (`out_path` routes `RoomConcept_*` there).
+
+### Big rooms
+
+R03-R04 are twice the linear size: a 1600x900 canvas at game scale saved x2 (3200x1800),
+~3.6 x 3 screens, with `label_scale(3)` so the labels keep up. The lesson from the first
+pass of R03: **a big room carved as one hall is 90% air** and reads as an empty box with
+thin lines in it, because at game scale a 22px character is small against three screens.
+Carve it as *chambers* instead - one machine per chamber, rock left standing between
+them, ladder shafts and belt slots joining them - so that roughly half the room is still
+rock, the way a Noita screen is. `rock_blob()` in `roomkit` puts rock back into a carve
+(shelves, mounds, bulges); keep blobs attached to a wall or a floor, because a blob in
+open air reads as a cloud, not terrain.
 
 ## Pulley wheel sprites
 

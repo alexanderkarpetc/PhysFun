@@ -34,13 +34,22 @@ LEADER = (120, 130, 145)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  Label furniture at 2x
+#  Label furniture, at K x the 3x5 font
 # ─────────────────────────────────────────────────────────────────────────────
-def btext_w(s, k=2):
-    return _ck.text_w(s) * k
+K = 2       # label scale. 2 on an 800x450 sheet; a big sheet calls label_scale(3)
 
 
-def btext(x, y, s, c=LABEL, shadow=True, k=2):
+def label_scale(k):
+    global K
+    K = k
+
+
+def btext_w(s, k=None):
+    return _ck.text_w(s) * (k or K)
+
+
+def btext(x, y, s, c=LABEL, shadow=True, k=None):
+    k = k or K
     cx = x
     for ch in s.upper():
         g = FONT.get(ch, FONT[' '])
@@ -57,8 +66,9 @@ def btext(x, y, s, c=LABEL, shadow=True, k=2):
 
 def btag(x, y, s, c=LABEL):
     w = btext_w(s)
-    rect(x - 4, y - 4, x + w + 3, y + 13, INK, 0.8)
-    rect(x - 4, y - 4, x + w + 3, y - 4, c, 0.35)
+    p = 2 * K
+    rect(x - p, y - p, x + w + p - 1, y + 5 * K + p, INK, 0.8)
+    rect(x - p, y - p, x + w + p - 1, y - p, c, 0.35)
     btext(x, y, s, c, shadow=False)
     return w
 
@@ -67,24 +77,25 @@ def bcallout(tx, ty, s, ax, ay, c=LABEL):
     """Numbered label with a leader line to the thing it names. The line leaves from
     whichever end of the plate is nearer the anchor."""
     w = btag(tx, ty, s, c)
-    x0 = tx - 4 if ax < tx + w / 2 else tx + w + 3
-    line(x0, ty + 4, ax, ay, LEADER, 0.9)
-    disc(ax, ay, 2.2, LEADER)
+    x0 = tx - 2 * K if ax < tx + w / 2 else tx + w + 2 * K - 1
+    line(x0, ty + 2 * K, ax, ay, LEADER, 0.9)
+    disc(ax, ay, 1.1 * K, LEADER)
 
 
 def btitle_bar(name, subtitle):
     cw, _ = canvas_size()
-    rect(0, 0, cw - 1, 30, INK, 0.6)
-    btext(12, 9, name, PALE_G)
-    btag(cw - 10 - btext_w(subtitle), 10, subtitle, (150, 165, 185))
+    rect(0, 0, cw - 1, 15 * K, INK, 0.6)
+    btext(6 * K, 5 * K, name, PALE_G)
+    btag(cw - 5 * K - btext_w(subtitle), 5 * K, subtitle, (150, 165, 185))
 
 
 def blegend(x, y, lines, width):
-    h = 16 * len(lines)
-    rect(x - 6, y - 7, x + width, y + h - 2, INK, 0.78)
-    frame(x - 6, y - 7, x + width, y + h - 2, (70, 80, 92))
+    step = 8 * K
+    h = step * len(lines)
+    rect(x - 3 * K, y - 3 * K - 1, x + width, y + h - K, INK, 0.78)
+    frame(x - 3 * K, y - 3 * K - 1, x + width, y + h - K, (70, 80, 92))
     for i, (s, c) in enumerate(lines):
-        btext(x, y + i * 16, s, c, shadow=False)
+        btext(x, y + i * step, s, c, shadow=False)
 
 
 def screen_frame(x, y, label="1 SCREEN"):
@@ -96,14 +107,16 @@ def screen_frame(x, y, label="1 SCREEN"):
     for j in range(0, SCREEN_H, 10):
         rect(x, y + j, x, y + min(j + 5, SCREEN_H), c, 0.55)
         rect(x + SCREEN_W, y + j, x + SCREEN_W, y + min(j + 5, SCREEN_H), c, 0.55)
-    btext(x + 6, y + SCREEN_H - 10, label, c, shadow=True, k=1)
+    k = max(1, K - 1)
+    btext(x + 6, y + SCREEN_H - 6 * k - 4, label, c, shadow=True, k=k)
 
 
 def wave_tag(x, y, s, c=F_MID):
     """Small W1/W2/W3 marker over an enemy: which wave it belongs to."""
-    w = text_w(s)
-    rect(x - 2, y - 2, x + w + 1, y + 6, INK, 0.75)
-    text(x, y, s, c, shadow=False)
+    k = max(1, K - 1)
+    w = btext_w(s, k)
+    rect(x - 2, y - 2, x + w + 1, y + 5 * k + 1, INK, 0.75)
+    btext(x, y, s, c, shadow=False, k=k)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -327,16 +340,56 @@ def reward_pedestal(cx, floor, reward, ghost=False):
         px(cx - 6 + rnd() * 12, floor - 16 - rnd() * 18, c, 0.6)
 
 
-def glyph_key(x, y, w=250):
+def glyph_key(x, y, w=None):
     """Bottom-corner plate: what each door plaque promises."""
     items = [("gun", "WEAPON MOD"), ("gear", "BINNY MODULE"), ("heart", "HEAL"),
              ("scrap", "SCRAP"), ("skull", "ELITE: X2")]
-    h = 16 * ((len(items) + 1) // 2) + 20
-    rect(x - 6, y - 7, x + w, y + h - 2, INK, 0.78)
-    frame(x - 6, y - 7, x + w, y + h - 2, (70, 80, 92))
+    w = w or 125 * K
+    k = max(1, K - 1)
+    step = 8 * K
+    h = step * ((len(items) + 1) // 2) + 10 * K
+    rect(x - 3 * K, y - 3 * K - 1, x + w, y + h - K, INK, 0.78)
+    frame(x - 3 * K, y - 3 * K - 1, x + w, y + h - K, (70, 80, 92))
     btext(x, y, "DOOR PLAQUES", CYAN, shadow=False)
-    for k, (g, s) in enumerate(items):
-        cx = x + 8 + (k % 2) * (w // 2)
-        cy = y + 24 + (k // 2) * 16
+    for n, (g, s) in enumerate(items):
+        cx = x + 8 + (n % 2) * (w // 2)
+        cy = y + 12 * K + (n // 2) * step
         glyph(g, cx, cy + 3, glow_=False)
-        btext(cx + 12, cy - 2, s, (170, 180, 195), shadow=False, k=1)
+        btext(cx + 12, cy + 3 - (5 * k) // 2, s, (170, 180, 195), shadow=False, k=k)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Terrain inside the room
+# ─────────────────────────────────────────────────────────────────────────────
+def rock_blob(cx, cy, rx, ry, rough=0.18, base=ROCK, lit=ROCK_L, clip=None):
+    """Put rock back into a carved room: an irregular ellipse of country rock with a
+    lit top edge. A big room carved as one rectangle reads as a box; teeth off the
+    roof, shelves off the walls and mounds on the floor are what make it a cave.
+    `clip` = (x0, y0, x1, y1) keeps the blob inside a box (a mound cut flat by the floor)."""
+    n = 24
+    radii = [1 + (rnd() - 0.5) * 2 * rough for _ in range(n)]
+
+    def r_at(a):
+        f = (a / (2 * math.pi)) * n
+        i = int(f) % n
+        t = f - int(f)
+        return radii[i] * (1 - t) + radii[(i + 1) % n] * t
+
+    cells = set()
+    for y in range(int(cy - ry * 1.3), int(cy + ry * 1.3) + 1):
+        for x in range(int(cx - rx * 1.3), int(cx + rx * 1.3) + 1):
+            if clip and not (clip[0] <= x <= clip[2] and clip[1] <= y <= clip[3]):
+                continue
+            dx, dy = (x - cx) / rx, (y - cy) / ry
+            if dx * dx + dy * dy <= r_at(math.atan2(dy, dx) % (2 * math.pi)) ** 2:
+                cells.add((x, y))
+    for (x, y) in cells:
+        r = rnd()
+        px(x, y, ROCK_D if r < 0.13 else ROCK_M if r < 0.2 else base)
+    for (x, y) in cells:
+        if (x, y - 1) not in cells:
+            px(x, y, lit)
+            if (x, y + 1) in cells:
+                px(x, y + 1, ROCK_M)
+        elif (x, y + 1) not in cells:
+            px(x, y, ROCK_D)

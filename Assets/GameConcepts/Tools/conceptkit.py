@@ -632,9 +632,11 @@ def outline(x0, y0, x1, y1, c=INK, key=KEY):
 
 
 def out_path(name):
-    """Sheets land next to the scene scripts' parent — Assets/GameConcepts/."""
+    """Sheets land next to the scene scripts' parent — Assets/GameConcepts/. The level
+    sheets (LevelConcept_*) are the old room concepts and live in OldRooms/."""
     here = os.path.dirname(os.path.abspath(__file__))
-    return os.path.abspath(os.path.join(here, "..", name))
+    sub = "OldRooms" if name.startswith("LevelConcept_") else ""
+    return os.path.abspath(os.path.join(here, "..", sub, name))
 
 
 # ─────────────────────────────────────────────────────────────────────────────

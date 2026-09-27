@@ -8,7 +8,7 @@ python Assets/GameConcepts/Tools/build.py            # render everything
 python Assets/GameConcepts/Tools/build.py coldvault  # render one sheet
 ```
 
-Output lands in `Assets/GameConcepts/LevelConcept_*.png` (1600x900 = 400x225 native,
+Output lands in `Assets/GameConcepts/OldRooms/LevelConcept_*.png` (1600x900 = 400x225 native,
 upscaled x4 nearest). Pure stdlib, no pip install, no Unity involvement.
 
 ## Layout of the tools
@@ -257,6 +257,32 @@ from that:
 | 29 `thespan.py` | a chasm crossed by a ropeway on two rock pinnacles — buckets, a footbridge, or the long way round |
 | 30 `theinterchange.py` | tube station: a dead car on a rail that leaves the sheet at both ends, and a live conductor rail |
 
+
+## Room sheets
+
+```bash
+python Assets/GameConcepts/Tools/build.py room_substation room_dryingloft
+```
+
+A room sheet is one room of a Hades-style run: you enter, the door seals, three waves,
+a pedestal pays out, and you leave by one of two doors whose plaques say what is behind
+them. The bar for a room is that it holds as much as a level sheet does, so every one
+has a *toy* (one system the room is sorted around), setpieces that change the room
+mid-fight, a secret, and waves chosen to play off the toy - the third wave is fought in
+whatever the first two left standing.
+
+Unlike the level sheets these are drawn **at game scale**: `roomkit.py` works on an
+800x450 canvas saved x2, where one pixel is one 20-PPU sprite pixel. The camera
+(ortho 6.05) sees 430x242 of them - `screen_frame()` draws that box on every sheet - and
+the enemies are the real `Characters/Char_*.png`, pasted with `stand()`. Kit props sized
+for the 12px stand-in humanoids look like toys at this scale, so most room props are
+local to their scene. Labels go through `btext`/`btag`/`bcallout`/`blegend` (the 3x5 font
+at 2x) so they come out the same size on the png as on the level sheets.
+
+| sheet | toy |
+|---|---|
+| R01 `room_substation.py` | ArcField: a transformer arcs to the nearest metal; steel gantry and grate carry it, timber scaffold does not |
+| R02 `room_dryingloft.py` | fire in a room made of fuel: three timber lofts, a roof slab on four stulls, ice plugging one exit |
 
 ## Pulley wheel sprites
 

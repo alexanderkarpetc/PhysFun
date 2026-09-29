@@ -1,9 +1,14 @@
 """Object icons - one 32x32 pixel icon per interactive object, drawn from code.
 
+LEGACY. This is the first pass at object art, superseded by the game-scale sets in
+`mineprops.py` and `labprops.py`. It still runs, and writes into `Icons/Legacy/` so it
+cannot overwrite the new sets.
+
     python Assets/GameConcepts/Tools/icons.py
 
-Writes `Assets/GameConcepts/Icons/Icon_<Name>.png` (32x32 native, x4 = 128, transparent
-background) plus one labelled contact sheet, `IconSheet_Objects.png`, for picking from.
+Writes `Assets/GameConcepts/Icons/Legacy/Icon_<Name>.png` (32x32 native, x4 = 128,
+transparent background) plus two labelled contact sheets next to them,
+`IconSheet_Objects.png` and `IconSheet_Lab.png`, for picking from.
 
 The first six are things the project already has - Hazards/Conveyor, Hazards/Grinder,
 BridgeBuilder2D, spinning_plank, Player/Telekinesis and Phys/Fire. The rest are proposals:
@@ -22,7 +27,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from conceptkit import *  # noqa: F403,E402
 
 S = 32                     # icon side, native pixels
-OUT_DIR = "Icons"
+OUT_DIR = os.path.join("Icons", "Legacy")
 
 # offset the drawing helpers below add to everything, so one draw function can render
 # into its own icon canvas or into a cell of the contact sheet
@@ -1622,8 +1627,8 @@ def build_sheet(catalogue, sheet_name, title, seed0=6100, path=None):
 
 
 def build():
-    build_sheet(ICONS, "IconSheet_Objects.png", "PHYSFUN - INTERACTIVE OBJECTS", 6100)
-    build_sheet(LAB_ICONS, "IconSheet_Lab.png", "PHYSFUN - LABORATORY OBJECTS", 7300)
+    build_sheet(ICONS, os.path.join(OUT_DIR, "IconSheet_Objects.png"), "PHYSFUN - INTERACTIVE OBJECTS", 6100)
+    build_sheet(LAB_ICONS, os.path.join(OUT_DIR, "IconSheet_Lab.png"), "PHYSFUN - LABORATORY OBJECTS", 7300)
 
 
 if __name__ == "__main__":

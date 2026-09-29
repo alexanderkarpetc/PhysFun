@@ -18,7 +18,9 @@ upscaled x4 nearest). Pure stdlib, no pip install, no Unity involvement.
 | `conceptkit.py` | everything shared: palette, primitives, the label font, the props library |
 | `levels/*.py` | one scene per level — only what that level contains |
 | `build.py` | renders every scene |
-| `icons.py` | the 32x32 object icons — see **Object icons** below |
+| `icons.py` | legacy: the first 32x32 object icons, now in `Icons/Legacy/` — see **Object icons (legacy)** below |
+| `mineprops.py` | the mine objects at game scale — see **Mine props** below |
+| `labprops.py` | the lab objects at game scale, on the same kit — see **Lab props** below |
 
 
 `conceptkit` is the part that should grow. If a new sheet needs a prop that another
@@ -27,19 +29,30 @@ if it only makes sense for that one level (a headframe, a frozen mech), keep it 
 to the scene file. That split is what keeps a new sheet down to an afternoon's worth
 of describing rooms rather than rewriting a renderer.
 
-## Object icons
+## Object icons (legacy)
+
+The first pass at object art, kept for reference and superseded by **Mine props** and
+**Lab props** below. Everything it made lives in `Assets/GameConcepts/Icons/Legacy/` -
+the icons, `props.png`, and both of its contact sheets - and the script now writes there,
+so re-running it cannot touch the new sets. The folder layout:
+
+| path | what |
+|---|---|
+| `Icons/Mine/`, `Icons/IconSheet_Mine.png` | mine props, game scale (`mineprops.py`) |
+| `Icons/Lab/`, `Icons/IconSheet_Lab.png` | lab props, game scale (`labprops.py`) |
+| `Icons/Legacy/` | the old 32x32 set and its sheets (`icons.py`) |
 
 ```bash
 python Assets/GameConcepts/Tools/icons.py
 ```
 
-Writes 55 icons to `Assets/GameConcepts/Icons/Icon_<Name>.png` (**transparent background**,
+Writes 55 icons to `Assets/GameConcepts/Icons/Legacy/Icon_<Name>.png` (**transparent background**,
 upscaled x4). Most are 32x32 native, but an icon may declare its own size as a fourth
 element of its catalogue entry - `("BlastDoors", "BLAST DOORS", blast_doors, (28, 48))` -
 because a door is twice as tall as it is wide and a length of roadway is wider than it is
 tall, and squeezing either into the square is what makes it look compressed. The contact
 sheet lays mixed sizes out left to right and wraps. and two labelled contact sheets,
-`Assets/GameConcepts/IconSheet_Objects.png` and `IconSheet_Lab.png`. Same palette as the level sheets, so an icon
+`Icons/Legacy/IconSheet_Objects.png` and `Icons/Legacy/IconSheet_Lab.png`. Same palette as the level sheets, so an icon
 and the thing it stands for on a concept sheet look like the same game.
 
 Six of them are objects the project already has — `Hazards/Conveyor`, `Hazards/Grinder`,
@@ -96,6 +109,78 @@ its own sheet through `build_sheet`). Two things the format needs:
 
 In Unity these want **Point (no filter)** sampling, **no compression**, and for UI use
 Sprite (2D and UI); at 4x they can also be dropped in a scene at 20 PPU and stay crisp.
+
+## Mine props (the second pass at object art)
+
+```bash
+python Assets/GameConcepts/Tools/mineprops.py
+```
+
+Writes 45 objects to `Assets/GameConcepts/Icons/Mine/Icon_<Name>.png` (transparent, x4)
+and the contact sheet `Assets/GameConcepts/Icons/IconSheet_Mine.png`. The 32x32 set above is the
+older pass; this one replaces it for the mine. Three differences:
+
+- **Game scale, not icon scale.** One pixel is one 20-PPU sprite pixel, the scale of
+  `Characters/Char_*.png`, so a tub is a little wider than a man and a lantern is a few
+  pixels tall. Each entry in `MINE_PROPS` carries its own size, and the sheet stands every
+  row on a floor line with the hero at its head, so the scale is never in doubt.
+- **The characters' palette.** Muted Noita tones, light from the top left, ordered dither
+  (`dshade`) between tones rather than flat bands, `grime` scattered only over pixels that
+  are already drawn - so the silhouette stays exactly the collider. No motion arrows.
+- **Every object is one body.** Containers (tub, kibble, skip, hopper, barrow) are the U
+  they are, top open, so something can be put in them. Real openings are keyed out with
+  `hole()` - the girder's bolt holes, the reel's axle eye, the crusher's throat. But a hole
+  that runs from one edge to another cuts the sprite into two bodies, so the crusher's
+  throat is a pocket, not a slot (it eats what falls in, the way the Grinder does). Every
+  png in `Icons/Mine` is a single 4-connected island; keep it that way.
+
+| group | props |
+|---|---|
+| supports | stull (post, headboard, wedges), timber crib, screw jack, staging |
+| track and rolling stock | track, ore tub, flatcar, battery loco, buffer stop, rotary tippler, wheelset |
+| haulage | windlass over a collar, kibble, skip, hook block, ore hopper with a gate, jib crane |
+| heavy and loose | ore chunk, ore sack, timber bundle, girder, cable reel, anvil, tool chest, carbide drum, chain |
+| carried | barrow, powder box, dynamite, lantern, blasting box |
+| machines | jaw crusher, rock drill on its air leg, stamp battery, ball mill, coal cutter, belt |
+| power and air | air receiver, main fan in its duct, hoist drum with brake, scraper winch |
+| shaft and landing | cage, landing boom, chute, signal bell |
+
+New entries go at the **end** of a group (or in a new group at the end of `MINE_PROPS`):
+each icon's grime seed comes from its group and position, so inserting in the middle
+reshuffles the dirt on every icon after it and turns a one-icon change into a 30-file diff.
+
+## Lab props
+
+```bash
+python Assets/GameConcepts/Tools/labprops.py
+```
+
+Writes 28 objects to `Assets/GameConcepts/Icons/Lab/Icon_<Name>.png` and the sheet
+`Assets/GameConcepts/Icons/IconSheet_Lab.png` - the game-scale replacement for the 32x32 lab
+set in `icons.py`. It imports `mineprops` for everything (helpers, palette, and
+`build_sheet`, which both scripts call) and adds only the lab's materials: copper,
+porcelain, slate, firebrick, safe paint. Same rules, and the same check: every png is one
+4-connected body.
+
+Still dry - no beakers, vats or tanks of anything. The lab's hazards are the ones the
+engine has: arcs (the transformer, the Tesla coil and the Van de Graaff are ArcField
+sources, and the Faraday cage is where an arc stops), gas and vacuum, hot solids, magnets,
+blast. Two places where the one-body rule shaped the drawing:
+
+- **The blast shield has a glass block, not a slot.** A slot through a plate side-on cuts
+  it into a top half and a bottom half.
+- **The Faraday cage's mesh is a grid, not a checker.** A checker pattern is only
+  diagonally connected, so every pixel of it would be its own body; bars with rungs
+  between them are one piece with holes in it.
+
+| group | props |
+|---|---|
+| power and fields | dynamo, battery bank, transformer, switchboard, Tesla coil, Van de Graaff |
+| heat, gas and vacuum | muffle furnace, fume hood, gas rack, gas bottle, vacuum bell, gas manifold |
+| bench and instruments | workbench, assay balance, instrument cabinet, centrifuge, core rack, trolley |
+| magnets | lifting magnet, test magnet (C-yoke), hand magnet |
+| containment | blast shield, blast door, Faraday cage, specimen safe |
+| carried | battery cell, crucible, sample canister |
 
 ## Mazes
 

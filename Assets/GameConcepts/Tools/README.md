@@ -349,12 +349,13 @@ from that:
 python Assets/GameConcepts/Tools/build.py room_substation room_dryingloft
 ```
 
-A room sheet is one room of a Hades-style run: you enter, the door seals, three waves,
-a pedestal pays out, and you leave by one of two doors whose plaques say what is behind
-them. The bar for a room is that it holds as much as a level sheet does, so every one
-has a *toy* (one system the room is sorted around), setpieces that change the room
-mid-fight, a secret, and waves chosen to play off the toy - the third wave is fought in
-whatever the first two left standing.
+A room sheet is one room: you walk in, the enemies are already there, and you do
+whatever you like with the room and them - nothing seals, there are no waves, no
+pedestal and no reward doors, and there is no room logic to write. The ways in and out
+are open `doorway`s. (Something to do in a room - a task, a quest - may come later; it is
+not on these sheets.) The bar for a room is that it holds as much as a level sheet does,
+so every one has a *toy* (one system the room is sorted around), setpieces that change
+the room mid-fight, and enemies placed to play off the toy.
 
 Unlike the level sheets these are drawn **at game scale**: `roomkit.py` works on an
 800x450 canvas saved x2, where one pixel is one 20-PPU sprite pixel. The camera
@@ -406,6 +407,18 @@ them, ladder shafts and belt slots joining them - so that roughly half the room 
 rock, the way a Noita screen is. `rock_blob()` in `roomkit` puts rock back into a carve
 (shelves, mounds, bulges); keep blobs attached to a wall or a floor, because a blob in
 open air reads as a cloud, not terrain.
+
+## Room scenes in Unity
+
+Concept sheets are not converted into scenes automatically; a room scene is built by hand.
+How they run: `Scenes/Game.unity` (made once with **PhysFun > Rooms > Create Game Scene**, a
+stripped copy of SampleScene) holds the player, Binny, camera and HUD, plus a `RoomLoader`
+that keeps exactly one `Room_*` scene from `Scenes/Rooms/` loaded next to it. A room scene
+needs a `Room` root, a TerrainBuilder with the room's own TerrainMap, at least one
+`RoomEntry`, and colliders on the `Untouchable` layer touching the map's outer rock (the
+support pass drops terrain connected to none). A `RoomDoorway` trigger swaps rooms; F2 in
+play opens a room picker. Pressing Play with a room scene open loads Game by itself.
+**PhysFun > Rooms > Sync Build Settings** lists the rooms. No room logic - no waves, no locks.
 
 ## Pulley wheel sprites
 

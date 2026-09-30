@@ -7,9 +7,9 @@ FuseCord, litByFire - threaded through every chamber to roof charges over the fa
 
 The toy is the blast, and the room is built so that the player is never the only one
 who can set it off. Grenadiers throw near the magazine. Pyros light cord without
-meaning to (FuseCord catches from fire), so by wave 2 the main is usually burning and
-the room has a clock. Exit B is behind the face: the way out is to blow the face,
-ideally with the third wave standing at it.
+meaning to (FuseCord catches from fire), so the main is usually burning before long
+and the room has a clock. Exit B is behind the face: the way out is to blow the face,
+ideally with the brutes standing at it.
 """
 import math
 import os
@@ -255,10 +255,7 @@ def build():
         warning_lamp(wx, wy)
 
     # ── A  the hut ──────────────────────────────────────────────────────────
-    hazard_slab(14, FLOOR - 30, 6, 29)
-    rect(12, FLOOR - 33, 22, FLOOR - 31, MET_D)
-    disc(17, FLOOR - 37, 1.5, RED_L)
-    glow(17, FLOOR - 37, 7, RED_L, 0.4)
+    doorway(14, FLOOR)
     hero(60, FLOOR)
     binny_half(86, FLOOR - 60)
     plunger(190, FLOOR)
@@ -302,7 +299,7 @@ def build():
     for _ in range(40):
         px(760 + rnd() * 110, 300 + rnd() * 160, (80, 76, 72), 0.3)
     stand("Pyro", 610, 470)
-    reward_pedestal(810, 504, "scrap")
+    scrap_pile(810, 496, 40, 8)
     blast_shield(580, 470, 36)
 
     # ── the fuse main, burning ──────────────────────────────────────────────
@@ -332,7 +329,6 @@ def build():
     stand("RiotBrute", 1300, FLOOR, flip=True)
     stand("RiotBrute", 1460, FLOOR, flip=True)
     sandbags(1250, FLOOR, 4, 2)
-    reward_pedestal(1200, FLOOR, "heart", ghost=True)
     ladder(1392, 300, 403, w=8, step=7)
     rubble(1400, FLOOR - 3, 1478, FLOOR, 50, (ROCK_M, ROCK_L, DIRT))
 
@@ -341,13 +337,9 @@ def build():
     gas_rack(1250, 300, 4)
     stand("Grenadier", 1460, 300, flip=True)
     crate(1500, 287, 12)
-    exit_door(1584, 300, "gear")
-    exit_door(1584, FLOOR, "gun")
+    doorway(1584, 300)
+    doorway(1584, FLOOR)
 
-    for x, y, t in ((614, FLOOR - 36, "W1"), (894, FLOOR - 36, "W1"), (1454, 264, "W1"),
-                    (274, 424, "W2"), (604, 434, "W2"), (1294, FLOOR - 38, "W3"),
-                    (1454, FLOOR - 38, "W3"), (1414, 524, "W1")):
-        wave_tag(x, y, t, {"W1": PALE_G, "W2": F_MID, "W3": RED_L}[t])
 
     # ── sheet furniture ─────────────────────────────────────────────────────
     screen_frame(14, 462)
@@ -363,14 +355,12 @@ def build():
     bcallout(1160, 70, "9 GAS STORE", 1180, 272)
     bcallout(40, 530, "7 BARREL CART: KICK THE CHOCK", 418, 674)
     bcallout(1100, 340, "8 ROOF CHARGES", 1300, 406)
-    bcallout(880, 510, "10 CRATER: CACHE", 812, 490)
-    bcallout(1330, 740, "11 PEDESTAL ON CLEAR", 1200, 670)
+    bcallout(880, 510, "10 CRATER: WHAT IT BURIED", 812, 490)
     blegend(20, 822, [
         ("BEATS", CYAN),
         ("NEVER THE ONLY ONE HOLDING THE MATCH", (170, 180, 195)),
-        ("W1 GRENADES  W2 PYROS LIGHT THE MAIN  W3 AT THE FACE", F_MID),
+        ("GRENADES, PYROS LIGHT THE MAIN, BRUTES AT THE FACE", F_MID),
     ], 660)
-    glyph_key(1180, 796)
     return save(out_path("RoomConcept_BlastGallery.png"), scale=2)
 
 

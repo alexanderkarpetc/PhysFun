@@ -225,25 +225,16 @@ def build():
     stand("Minespider", 250, floor_at(m, 250, 250))
     stand("Minespider", 1400, floor_at(m, 1400, 740), flip=True)
     corpse(620, floor_at(m, 620, 700))
-    top_c = to_c(0, C_h / 2)
-    reward_pedestal(int(top_c[0]), int(top_c[1]) - 2, "heart", ghost=True)
     crypt = to_c(60, 145)
-    glyph("scrap", int(crypt[0]), int(crypt[1]))
 
-    # ── the run furniture ───────────────────────────────────────────────────
+    # ── ways in and out ─────────────────────────────────────────────────────
     ey = floor_at(m, 60, 440)
-    hazard_slab(4, ey - 30, 6, 29)
+    doorway(4, ey)
     hero(60, ey)
     binny_half(86, ey - 60)
-    exit_door(1014, floor_at(m, 1000, 100), "gear")
-    exit_door(1584, floor_at(m, 1580, 500), "skull")
+    doorway(1014, floor_at(m, 1000, 100))
+    doorway(1584, floor_at(m, 1580, 500))
 
-    for x, y, t in ((474, floor_at(m, 480, 700) - 36, "W1"), (814, floor_y - 36, "W1"),
-                    (244, floor_at(m, 250, 250) - 30, "W1"), (1394, floor_at(m, 1400, 740) - 30, "W1"),
-                    (int(ax) - 6, int(ay) - 36, "W2"), (int(bx) - 6, int(by) - 36, "W2"),
-                    (int(cx) - 6, int(cy) - 38, "W2"), (int(tx) - 6, int(ty) - 40, "W3"),
-                    (1174, floor_y - 36, "W3"), (1394, 420, "W2")):
-        wave_tag(x, y, t, {"W1": PALE_G, "W2": F_MID, "W3": RED_L}[t])
 
     # ── sheet furniture ─────────────────────────────────────────────────────
     screen_frame(4, 330)
@@ -257,15 +248,13 @@ def build():
     bcallout(1180, 150, "5 THE BELFRY, ON ITS SIDE", int(to_c(60, 40)[0]), int(to_c(60, 40)[1]))
     bcallout(1180, 560, "6 THE BELL ROLLS", 1236, floor_y - 30)
     bcallout(1450, 620, "7 SPIRE", 1350, sp[1])
-    bcallout(560, 790, "8 A CRYPT ON ITS SIDE: CACHE", int(crypt[0]), int(crypt[1]))
+    bcallout(560, 790, "8 A CRYPT ON ITS SIDE", int(crypt[0]), int(crypt[1]))
     bcallout(1200, 60, "9 EXIT A: UP THE TOWER", 1010, 96)
-    bcallout(1180, 200, "10 PEDESTAL ON TOP OF IT", int(top_c[0]), int(top_c[1]) - 20)
     blegend(20, 822, [
         ("BEATS", CYAN),
         ("ONE BUILDING AT THREE ANGLES, STILL SETTLING", (170, 180, 195)),
-        ("W1 RUBBLE  W2 A WIZARD PER PIECE  W3 AT THE TOP", F_MID),
+        ("IN THE RUBBLE, A WIZARD PER PIECE, ONE AT THE TOP", F_MID),
     ], 660)
-    glyph_key(1180, 796)
     return save(out_path("RoomConcept_FallenTower.png"), scale=2)
 
 

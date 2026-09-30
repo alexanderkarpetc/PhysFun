@@ -1,17 +1,16 @@
 """Room concept 02 - THE DRYING LOFT.
 
-One room of a run, drawn at game scale. The toy is fire, and the room is its fuel:
+One room, drawn at game scale. The toy is fire, and the room is its fuel:
 three timber lofts stacked up the west half, stock drying on every one of them, and
 a slab of roof in the east half that has already parted from the rock and is standing
 on four stulls. Fire climbs, so whatever burns low takes the floors above it with it.
 
-The waves are built to start the clock rather than wait for the player to. Gapers
-first, which you can fight on the floor at leisure; then pyros, who light the lofts
-whether you want them lit or not; then a reaper, in the propped chamber, under the
-slab. The two exits pull against each other: exit A is off the top loft, so it goes
-when the lofts go, and exit B is plugged with ice, so it only opens once something
-hot has been near it. Drop the slab and the pedestal is under it - it survives, you
-dig it out.
+The enemies are placed to start the clock rather than wait for the player to: gapers
+on the floor and the top loft, which you can deal with at leisure; pyros, who light
+the lofts whether you want them lit or not; a reaper in the propped chamber, under the
+slab. The two ways out pull against each other: exit A is off the top loft, so it goes
+when the lofts go, and exit B is plugged with ice, so it only opens once something hot
+has been near it.
 """
 import os
 import sys
@@ -286,16 +285,15 @@ def build():
     glow(390, L1 - 20, 60, F_MID, 0.22)
     stand("Pyro", 510, FLOOR, flip=True)
 
-    # ── W1: gapers ──────────────────────────────────────────────────────────
+    # ── gapers ──────────────────────────────────────────────────────────────
     saw_bench(176, FLOOR)
     stand("Gaper", 260, FLOOR, flip=False)
     stand("Gaper", 196, L3)
     corpse(330, FLOOR, (123, 126, 100))
 
-    # ── 6  the slab on its stulls, the reward under it ──────────────────────
+    # ── 6  the slab on its stulls, the reaper under it ──────────────────────
     for sx, burning in ((556, False), (606, True), (660, False), (704, False)):
         stull(sx, SLAB, FLOOR, burning)
-    reward_pedestal(634, FLOOR, "gear", ghost=True)
     stand("Reaper", 684, FLOOR, flip=True)
 
     # ── 7  ice plugging exit B ──────────────────────────────────────────────
@@ -303,25 +301,23 @@ def build():
         for i in range(2):
             ice_block(716 + i * 10 - (j % 2) * 3, FLOOR - 12 - j * 11, 10, 10)
     icicles(712, 740, SLAB + 1, 6)
-    exit_door(760, FLOOR, "heart")
+    doorway(760, FLOOR)
 
-    # ── 8  the cache behind the plank wall ──────────────────────────────────
+    # ── 8  a store behind the plank wall ────────────────────────────────────
     plank_wall(56, 290, FLOOR - 1)
     crate(22, FLOOR - 13, 12)
-    reward_pedestal(44, FLOOR, "scrap")
+    crate(36, FLOOR - 13, 12)
+    crate(28, FLOOR - 24, 10)
 
     # ── 9  exit A, off the top loft ─────────────────────────────────────────
-    exit_door(26, L3, "skull")
+    doorway(26, L3)
 
-    for x, y, t in ((244, FLOOR - 34, "W1"), (190, L3 - 34, "W1"), (374, L2 - 36, "W2"),
-                    (504, FLOOR - 34, "W2"), (678, FLOOR - 36, "W3")):
-        wave_tag(x, y, t, {"W1": PALE_G, "W2": F_MID, "W3": RED_L}[t])
 
     # ── sheet furniture ─────────────────────────────────────────────────────
     screen_frame(300, 102)
     vignette(0.35)
     btitle_bar("PHYSFUN - ROOM CONCEPT 02:  THE DRYING LOFT",
-               "ONE ROOM OF A RUN / GAME SCALE")
+               "ONE ROOM / GAME SCALE")
     bcallout(430, 396, "1 FROM BELOW", 404, 366)
     bcallout(250, 44, "2 THREE LOFTS, ALL FUEL", 236, 126)
     bcallout(84, 234, "3 FUSE TO THE KEGS", 70, 280)
@@ -334,10 +330,9 @@ def build():
     blegend(22, 378, [
         ("BEATS", CYAN),
         ("EVERY FLOOR IS FUEL AND FIRE CLIMBS", (170, 180, 195)),
-        ("W1 GAPERS  W2 PYROS  W3 UNDER THE SLAB", F_MID),
+        ("GAPERS, PYROS, A REAPER UNDER THE SLAB", F_MID),
         ("FIRE OPENS B AND BURNS THE WAY TO A", GREEN_L),
     ], 342)
-    glyph_key(570, 378, w=224)
     return save(out_path("RoomConcept_DryingLoft.png"), scale=2)
 
 

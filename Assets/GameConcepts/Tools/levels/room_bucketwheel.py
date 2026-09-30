@@ -250,7 +250,6 @@ def build():
     counterweight(1430, 196, 1552, 172)
     chute(1432, 318, 1496, 470)
     spoil_heap(m, 1500, 486, 764, 300)
-    reward_pedestal(720, 456, "heart", ghost=True)
 
     # ── the pit: what the wheel digs, and what it has already dug ───────────
     fy = floor_at(m, 620, 600)
@@ -265,11 +264,11 @@ def build():
     stand("Minespider", 200, floor_at(m, 200, 250))
     stand("Minespider", 300, floor_at(m, 300, 250), flip=True)
     scrap_pile(120, floor_at(m, 150, 250), 70, 10)
-    hazard_slab(4, floor_at(m, 10, 440) - 30, 6, 29)
+    doorway(4, floor_at(m, 10, 440))
     ey = floor_at(m, 70, 440)
     hero(70, ey)
     binny_half(96, ey - 60)
-    reward_pedestal(560, floor_at(m, 560, 225), "scrap")
+    scrap_pile(560, floor_at(m, 560, 225) - 8, 40, 8)
 
     # ── the boom and the house ──────────────────────────────────────────────
     gx, gy = top[0][0] + (top[1][0] - top[0][0]) * 0.55, top[0][1] + (top[1][1] - top[0][1]) * 0.55
@@ -279,15 +278,9 @@ def build():
     stand("Sentinel", 1196, 230, flip=True)
     stand("RiotBrute", 1300, 328, flip=True)
     stand("Pyro", 1440, floor_at(m, 1440, 560), flip=True)
-    exit_door(1584, floor_at(m, 1580, 130), "gear")
-    exit_door(10, floor_at(m, 16, 740), "skull")
+    doorway(1584, floor_at(m, 1580, 130))
+    doorway(10, floor_at(m, 16, 740))
 
-    for x, y, t in ((614, floor_at(m, 620, 620) - 36, "W1"), (784, floor_at(m, 790, 640) - 36, "W1"),
-                    (486, 470, "W1"), (194, floor_at(m, 200, 250) - 30, "W1"),
-                    (int(top[0][0] + (top[1][0] - top[0][0]) * 0.55) - 6, 340, "W2"),
-                    (int(top[0][0] + (top[1][0] - top[0][0]) * 0.8) - 6, 318, "W2"),
-                    (1434, floor_at(m, 1440, 560) - 36, "W2"), (1190, 196, "W3"), (1294, 290, "W3")):
-        wave_tag(x, y, t, {"W1": PALE_G, "W2": F_MID, "W3": RED_L}[t])
 
     # ── sheet furniture ─────────────────────────────────────────────────────
     screen_frame(4, 300)
@@ -302,14 +295,12 @@ def build():
     bcallout(1100, 440, "6 SPOIL CHUTE", 1470, 410)
     bcallout(1290, 468, "7 CUT THE COUNTERWEIGHT", 1540, 236)
     bcallout(390, 160, "8 RIDE A BUCKET UP", 560, 250)
-    bcallout(60, 640, "9 PEDESTAL ON THE HUB", 720, 440)
-    bcallout(60, 690, "10 OUT THROUGH THE PIT", 20, 740)
+    bcallout(60, 690, "9 OUT THROUGH THE PIT", 20, 740)
     blegend(20, 822, [
         ("BEATS", CYAN),
         ("THE ROOM IS ONE MACHINE, AND IT TURNS", (170, 180, 195)),
-        ("W1 IN THE PIT  W2 ON THE BOOM  W3 IN THE CAB", F_MID),
+        ("IN THE PIT, ON THE BOOM, IN THE CAB", F_MID),
     ], 660)
-    glyph_key(1180, 796)
     return save(out_path("RoomConcept_BucketWheel.png"), scale=2)
 
 

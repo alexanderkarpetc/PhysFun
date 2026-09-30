@@ -7,11 +7,11 @@ on a chain, a wrecking ball that nobody stopped. Everything that holds anyone up
 this room is a rope, and every rope can be cut - so the room is fought by cutting
 under people rather than shooting at them.
 
-Wave 1 is ghasts, which fly and do not care about any of it - the one wave that makes
-you look up. Wave 2 is three wizards, each on a cradle or a pinnacle top, i.e. each
-standing on one rope. Wave 3 is the blood mage on the far pinnacle, whose bridge is
-the one with a boulder over it. The bottom is where everything cut ends up; it is
-also the long way round to exit B, and the only way to the cache in the pinnacle foot.
+Ghasts fly and do not care about any of it - they are what makes you look up. Three
+wizards stand each on a cradle or a pinnacle top, i.e. each on one rope, and the blood
+mage is on the far pinnacle, whose bridge is the one with a boulder over it. The bottom
+is where everything cut ends up; it is also the long way round to the lower way out,
+and the only way to the store in the pinnacle foot.
 """
 import math
 import os
@@ -318,34 +318,26 @@ def build():
     scrap_pile(160, 700, 80, 10)
 
     # ── characters ──────────────────────────────────────────────────────────
-    hazard_slab(14, 262 - 30, 6, 29)
-    rect(12, 262 - 33, 22, 262 - 31, MET_D)
-    disc(17, 262 - 37, 1.5, RED_L)
-    glow(17, 262 - 37, 7, RED_L, 0.4)
+    doorway(14, 262)
     hero(70, 262)
     binny_half(96, 262 - 60)
 
-    sprite("Ghast", 470, 280)                               # W1: they fly
+    sprite("Ghast", 470, 280)                               # they fly
     sprite("Ghast", 820, 180, flip=True)
     sprite("Ghast", 1180, 330, flip=True)
-    stand("WizHollowhood", 710, 600, flip=True)             # W2: one per rope
+    stand("WizHollowhood", 710, 600, flip=True)             # one per rope
     stand("WizRamskull", 1150, 470, flip=True)
     stand("WizBonecrown", 580, 330)
     shrine(990, 290)
-    stand("BloodMage", 1000, 290, flip=True)                # W3
+    stand("BloodMage", 1000, 290, flip=True)
     stand("Gaper", 520, BOTTOM)
     stand("Gaper", 1220, BOTTOM, flip=True)
     stand("Minespider", 180, 700)
-    reward_pedestal(640, 330, "gun", ghost=True)
-    reward_pedestal(986, BOTTOM, "scrap")
+    scrap_pile(986, BOTTOM - 8, 40, 8)
 
-    exit_door(1584, 252, "gear")
-    exit_door(1584, 700, "heart")
+    doorway(1584, 252)
+    doorway(1584, 700)
 
-    for x, y, t in ((474, 262, "W1"), (824, 162, "W1"), (1184, 312, "W1"),
-                    (704, 562, "W2"), (1144, 432, "W2"), (572, 292, "W2"),
-                    (994, 250, "W3"), (514, BOTTOM - 36, "W1"), (1214, BOTTOM - 36, "W1")):
-        wave_tag(x, y, t, {"W1": PALE_G, "W2": F_MID, "W3": RED_L}[t])
 
     # ── sheet furniture ─────────────────────────────────────────────────────
     screen_frame(14, 120)
@@ -358,16 +350,14 @@ def build():
     bcallout(1330, 90, "4 BOULDER ON A CHAIN", 1160, 190)
     bcallout(640, 240, "5 NOBODY STOPPED THE BALL", 770, 390)
     bcallout(20, 400, "6 CRADLES: ONE ROPE EACH", 374, 420)
-    bcallout(1330, 330, "7 PEDESTAL, ON CLEAR", 640, 300)
-    bcallout(1330, 470, "8 WHAT YOU CUT", 1200, BOTTOM - 10)
-    bcallout(20, 740, "9 THE LONG WAY ROUND", 250, 600)
-    bcallout(1330, 540, "10 RUBBLE: CACHE", 1022, 740)
+    bcallout(1330, 470, "7 WHAT YOU CUT", 1200, BOTTOM - 10)
+    bcallout(20, 740, "8 THE LONG WAY ROUND", 250, 600)
+    bcallout(1330, 540, "9 UNDER THE RUBBLE", 1022, 740)
     blegend(20, 822, [
         ("BEATS", CYAN),
         ("EVERYTHING HANGS, EVERYTHING CUTS: CUT UNDER THEM", (170, 180, 195)),
-        ("W1 GHASTS  W2 A WIZARD PER ROPE  W3 BLOOD MAGE", F_MID),
+        ("GHASTS, A WIZARD PER ROPE, THE BLOOD MAGE", F_MID),
     ], 640)
-    glyph_key(1180, 796)
     return save(out_path("RoomConcept_Chasm.png"), scale=2)
 
 

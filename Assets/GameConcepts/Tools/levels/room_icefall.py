@@ -8,9 +8,9 @@ round either scuffs it or runs a split, the split is drawn before the slab lets 
 and the default round shears ~3.3 units: a pillar, a ledge, a bridge, a hanging slab.
 
 So everything held up in this room is held by ice. Three columns carry the shelf the
-second wave stands on; a pre-cracked slab hangs over the main gallery with a frozen
-tub of loot above it; a serac pile leans on one timber. The grenadiers in wave 2 are
-the room's joke on the player - every grenade they throw runs splits in your roof.
+grenadiers stand on; a pre-cracked slab hangs over the main gallery with a frozen tub
+above it; a serac pile leans on one timber. The grenadiers are the room's joke on the
+player - every grenade they throw runs splits in your roof.
 """
 import math
 import os
@@ -182,7 +182,7 @@ def build():
         (14, 330, 44, 380),              #    exit A alcove
         (540, 376, 580, 444),            #    F -> B shaft
         (600, 252, 900, 292),            #    ice tunnel F -> C
-        (900, 140, 1560, 290),           # C  the shelf - wave 2 stands here
+        (900, 140, 1560, 290),           # C  the shelf - the grenadiers stand here
         (1100, 330, 1560, 560),          # D  pillar hall under the shelf
         (1100, 600, 1590, FLOOR),        # E  east floor, exit B
         (1480, 556, 1512, 604),          #    D -> E ladder
@@ -229,24 +229,20 @@ def build():
     for k in range(3):
         crate(500 + k * 14, FLOOR - 13, 12)
     scrap_pile(620, FLOOR - 10, 60, 10)
-    reward_pedestal(470, FLOOR, "heart", ghost=True)
     stand("Gaper", 640, FLOOR)
     stand("Gaper", 860, FLOOR, flip=True)
     stand("Minespider", 720, FLOOR)
     corpse(560, FLOOR)
 
     # ── A  entry ────────────────────────────────────────────────────────────
-    hazard_slab(14, FLOOR - 30, 6, 29)
-    rect(12, FLOOR - 33, 22, FLOOR - 31, MET_D)
-    disc(17, FLOOR - 37, 1.5, RED_L)
-    glow(17, FLOOR - 37, 7, RED_L, 0.4)
+    doorway(14, FLOOR)
     hero(60, FLOOR)
     binny_half(86, FLOOR - 60)
     rubble(60, FLOOR - 2, 350, FLOOR, 60, (ROCK_M, ROCK_D, ICE))
 
     # ── F  upper west chamber ───────────────────────────────────────────────
     ladder(552, 384, FLOOR - 1, w=8, step=7)
-    exit_door(18, 380, "gun")
+    doorway(18, 380)
     stand("Minespider", 300, 380, flip=True)
     for k in range(2):
         barrel(420 + k * 12, 366, MET, MET_L, HAZARD, w=9, h=13)
@@ -274,15 +270,11 @@ def build():
     # ── E  east floor, exit B behind ice ────────────────────────────────────
     stand("RiotBrute", 1350, FLOOR, flip=True)
     ice_plug(1540, 640, 1578, FLOOR - 1)
-    exit_door(1584, FLOOR, "skull")
+    doorway(1584, FLOOR)
     for k in range(3):
         ice_block(1200 + k * 26, FLOOR - 12, 12, 11)
     corpse(1430, FLOOR)
 
-    for x, y, t in ((634, FLOOR - 36, "W1"), (854, FLOOR - 36, "W1"), (714, FLOOR - 30, "W1"),
-                    (294, 350, "W1"), (994, 254, "W2"), (1244, 254, "W2"), (1414, 252, "W2"),
-                    (1256, 524, "W3"), (1344, FLOOR - 38, "W3")):
-        wave_tag(x, y, t, {"W1": PALE_G, "W2": F_MID, "W3": RED_L}[t])
 
     # ── sheet furniture ─────────────────────────────────────────────────────
     screen_frame(14, 462)
@@ -298,13 +290,11 @@ def build():
     bcallout(620, 600, "7 SERACS ON ONE TIMBER", 1000, 680)
     bcallout(1100, 80, "8 FROZEN: CUT IT OUT", 1270, 96)
     bcallout(1330, 740, "9 EXIT B IS ICE", 1556, 660)
-    bcallout(40, 540, "10 PEDESTAL ON CLEAR", 470, 670)
     blegend(20, 822, [
         ("BEATS", CYAN),
         ("ICE DOES NOTHING, THEN EVERYTHING AT ONCE", (170, 180, 195)),
-        ("W1 IN THE GALLERY  W2 ON THE SHELF  W3 UNDER IT", F_MID),
+        ("IN THE GALLERY, ON THE SHELF, UNDER IT", F_MID),
     ], 640)
-    glyph_key(1180, 796)
     return save(out_path("RoomConcept_Icefall.png"), scale=2)
 
 

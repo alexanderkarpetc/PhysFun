@@ -6,11 +6,10 @@ side of the pit, and every one of them ends in the same place - the grinder at t
 bottom of the room. Whatever lands on a belt is on its way there; the only question
 the room asks is whether it is them or you.
 
-The room delivers its own waves: the first comes down the intake chute onto the top
-belt and rides in; the second climbs out of the ducts onto the catwalks; the third is
-riot brutes, too heavy to throw, so the answer to them is the lever in the cabin that
-turns a belt round under their feet. The grinder pays out in scrap - the bin under it
-is where Binny eats.
+The enemies are placed where the belts will move them: some riding the top belt in
+off the intake chute, some on the catwalks by the ducts, and riot brutes on the floor,
+too heavy to throw - the answer to them is the lever in the cabin that turns a belt
+round under their feet. What the grinder chews drops into the bin under it.
 """
 import math
 import os
@@ -96,7 +95,6 @@ def grinder_pit(x0, x1, top, bottom):
     rect(cx - 34, bottom - 14, cx + 34, bottom - 10, (58, 46, 34))
     for _ in range(50):
         px(cx - 33 + rnd() * 66, bottom - 16 + rnd() * 5, pick([MET_L, MET, WOOD, RED, HAZARD]))
-    glyph("scrap", cx, bottom - 26)
 
 
 def cabin(x0, x1, y0, floor):
@@ -260,7 +258,7 @@ def build():
         (14, 560, 700, FLOOR),           # E  west floor - F1 and the press
         (1000, 110, 1584, 330),          # F  cabin chamber - R1, the magnet
         (940, 400, 1560, 520),           # G  east chamber - R2
-        (940, 580, 1590, FLOOR),         # H  east floor - F2, bunker, pedestal
+        (940, 580, 1590, FLOOR),         # H  east floor - F2, bunker, mound
         (700, FLOOR, 900, 800),          #    the grinder pit
         (4, 376, 42, 444),               #    cache behind the grille
     ], rough=3)
@@ -273,7 +271,7 @@ def build():
     for x0, x1, y in ((40, 640, 132), (540, 700, 216), (690, 910, 86), (40, 520, 302),
                       (14, 700, 562), (1000, 1584, 112), (940, 1560, 402), (940, 1590, 582)):
         rock_teeth(x0, x1, y, int((x1 - x0) / 12))
-    rock_blob(1400, FLOOR, 84, 56, clip=(0, 0, 1600, FLOOR))  # mound the pedestal stands on
+    rock_blob(1400, FLOOR, 84, 56, clip=(0, 0, 1600, FLOOR))  # a mound of spoil
     rock_blob(200, FLOOR, 60, 14, clip=(0, 0, 1600, FLOOR))
     rock_blob(300, 470, 50, 12, clip=(0, 0, 1600, 470))
     rock_blob(1250, 520, 70, 16, clip=(0, 0, 1600, 520))
@@ -337,12 +335,12 @@ def build():
     stand("Gaper", 300, 460)
     corpse(200, 470)
     grille(38, 386, 440)
-    reward_pedestal(22, 444, "heart")
+    crate(18, 431, 12)
+    crate(30, 431, 12)
     ladder(454, 470, 559, w=8, step=7)
 
     # ── E  west floor: F1 and the press ─────────────────────────────────────
-    hazard_slab(14, FLOOR - 30, 6, 29)
-    rect(12, FLOOR - 33, 22, FLOOR - 31, MET_D)
+    doorway(14, FLOOR)
     disc(17, FLOOR - 37, 1.5, RED_L)
     glow(17, FLOOR - 37, 7, RED_L, 0.4)
     hero(60, FLOOR)
@@ -381,39 +379,31 @@ def build():
     belt(902, 1300, FLOOR - 8, -1)                           # F2 -> pit
     bunker(1010, 1110, 612, 652, 1060)
     stand("RiotBrute", 1200, FLOOR - 8, flip=True)
-    reward_pedestal(1400, 648, "gun", ghost=True)
     scrap_pile(1500, FLOOR - 10, 60, 10)
-    exit_door(1574, 230, "skull")
-    exit_door(1580, FLOOR, "gear")
+    doorway(1574, 230)
+    doorway(1580, FLOOR)
 
-    for x, y, t in ((200, 70, "W1"), (294, 164, "W1"), (464, 164, "W1"), (634, 292, "W1"),
-                    (294, 424, "W1"), (244, 364, "W2"), (374, FLOOR - 44, "W2"),
-                    (1294, 484, "W2"), (1394, 484, "W2"), (994, 386, "W3"),
-                    (1192, FLOOR - 52, "W3"), (1414, 188, "W3"), (1254, 252, "W1")):
-        wave_tag(x, y, t, {"W1": PALE_G, "W2": F_MID, "W3": RED_L}[t])
 
     # ── sheet furniture ─────────────────────────────────────────────────────
     screen_frame(14, 460)
     vignette(0.3)
     btitle_bar("PHYSFUN - ROOM CONCEPT 03:  THE SORTING PLANT",
                "BIG ROOM / ~3.6 X 3 SCREENS / GAME SCALE")
-    bcallout(120, 506, "1 IN, AND THE DOOR SEALS", 20, 660)
-    bcallout(260, 58, "2 WAVE 1 COMES DOWN THE CHUTE", 206, 96)
+    bcallout(120, 506, "1 IN", 20, 660)
+    bcallout(260, 58, "2 IN OFF THE CHUTE, RIDING", 206, 96)
     bcallout(890, 58, "3 EVERY BELT ENDS IN THE GRINDER", 800, 150)
     bcallout(1040, 350, "4 LEVERS TURN A BELT ROUND", 1374, 186)
-    bcallout(960, 760, "5 GRINDER PAYS SCRAP: FEED BINNY", 830, 776)
+    bcallout(960, 760, "5 THE BIN UNDER THE GRINDER", 830, 776)
     bcallout(80, 740, "6 THE FLOOR MOVES TOO", 360, 700)
     bcallout(520, 606, "7 PRESS", 480, 612)
     bcallout(1340, 66, "8 MAGNET: A FULL TUB", 1060, 250)
     bcallout(960, 540, "9 SPINNING PLANK", 830, 552)
-    bcallout(60, 250, "10 GRILLE: CACHE", 40, 400)
-    bcallout(1200, 548, "11 PEDESTAL ON CLEAR", 1400, 600)
+    bcallout(60, 250, "10 A STORE BEHIND THE GRILLE", 40, 400)
     blegend(20, 820, [
         ("BEATS", CYAN),
         ("A BELT DECIDES WHERE THINGS END UP", (170, 180, 195)),
-        ("W1 ON THE CHUTE  W2 FROM THE DUCTS  W3 TOO HEAVY TO THROW", F_MID),
+        ("ON THE CHUTE, BY THE DUCTS, BRUTES TOO HEAVY TO THROW", F_MID),
     ], 700)
-    glyph_key(1180, 796)
     return save(out_path("RoomConcept_SortingPlant.png"), scale=2)
 
 

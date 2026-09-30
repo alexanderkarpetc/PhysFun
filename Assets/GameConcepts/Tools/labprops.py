@@ -566,7 +566,7 @@ def faraday_cage():
 
 def specimen_safe():
     """A specimen safe: painted steel, dial and handle, brass plate. The heaviest small
-    thing in the lab; what is inside is the room's reward."""
+    thing in the lab, and it is locked."""
     R(1, 17, 3, 17, IRON_D)                                # feet
     R(12, 17, 14, 17, IRON_D)
     box(0, 0, 15, 16, SAFE_D, SAFE, SAFE_L)

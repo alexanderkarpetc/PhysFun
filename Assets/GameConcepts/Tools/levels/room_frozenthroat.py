@@ -116,7 +116,7 @@ def crystal(cx, base, h=14, w=6, c=CYAN, dark=(34, 62, 70), lit=ICE_XL):
 
 def frozen_giant(x, y):
     """A machine three times the size of a sentinel, stood in the ice where it stopped.
-    Its chest is the cache; the ice in front of it is the lid."""
+    Its chest hatch is shut; the ice in front of it is the lid."""
     body = (74, 82, 86)
     rect(x + 20, y + 30, x + 92, y + 110, body)              # torso
     rect(x + 20, y + 30, x + 92, y + 30, (110, 120, 124))
@@ -135,7 +135,6 @@ def frozen_giant(x, y):
         for xx in range(int(x), int(x) + 145):
             if at(xx, yy) != ICE_AIR:
                 px(xx, yy, ICE_BANDS[1], 0.42)
-    glyph("scrap", x + 56, y + 62)
 
 
 def frozen_body(x, y):
@@ -216,10 +215,9 @@ def build():
     frozen_body(1336, 190)
     frozen_body(620, 730)
     frozen_body(930, 752)
-    reward_pedestal(800, floor_at(m, 800, 700), "heart", ghost=True)
 
     # ── characters ──────────────────────────────────────────────────────────
-    hazard_slab(4, floor_at(m, 8, 160) - 30, 6, 29)
+    doorway(4, floor_at(m, 8, 160))
     ey = floor_at(m, 150, 160)
     hero(150, ey)
     binny_half(176, ey - 60)
@@ -232,14 +230,9 @@ def build():
     stand("Sentinel", 1380, floor_at(m, 1380, 440), flip=True)
     stand("Reaper", 900, floor_at(m, 900, 700), flip=True)
     stand("RiotBrute", 1480, floor_at(m, 1480, 690), flip=True)
-    exit_door(1584, floor_at(m, 1580, 120), "gun")
-    exit_door(1584, floor_at(m, 1580, 700), "skull")
+    doorway(1584, floor_at(m, 1580, 120))
+    doorway(1584, floor_at(m, 1580, 700))
 
-    for x, y, t in ((744, 420, "W1"), (584, 432, "W1"), (354, floor_at(m, 360, 320) - 30, "W1"),
-                    (434, floor_at(m, 440, 320) - 30, "W1"), (1114, floor_at(m, 1120, 200) - 36, "W2"),
-                    (1274, floor_at(m, 1280, 440) - 36, "W2"), (1374, floor_at(m, 1380, 440) - 38, "W2"),
-                    (894, floor_at(m, 900, 700) - 36, "W3"), (1474, floor_at(m, 1480, 690) - 36, "W3")):
-        wave_tag(x, y, t, {"W1": PALE_G, "W2": F_MID, "W3": RED_L}[t])
 
     # ── sheet furniture ─────────────────────────────────────────────────────
     screen_frame(4, 60)
@@ -254,13 +247,11 @@ def build():
     bcallout(1340, 56, "6 CRYSTAL CAVE", 1110, 190)
     bcallout(1040, 580, "7 COLUMNS HOLD THE ROOF", 1320, 470)
     bcallout(20, 400, "8 A CRAWL, NOT A DOOR", 360, 420)
-    bcallout(1100, 768, "9 PEDESTAL ON CLEAR", 800, 740)
     blegend(20, 822, [
         ("BEATS", CYAN),
         ("NO STOREYS: A THROAT, AND BUBBLES OFF IT", (170, 180, 195)),
-        ("W1 IN THE AIR  W2 IN THE SIDE CAVES  W3 AT THE BOTTOM", F_MID),
+        ("IN THE AIR, IN THE SIDE CAVES, AT THE BOTTOM", F_MID),
     ], 700)
-    glyph_key(1180, 796)
     return save(out_path("RoomConcept_FrozenThroat.png"), scale=2)
 
 

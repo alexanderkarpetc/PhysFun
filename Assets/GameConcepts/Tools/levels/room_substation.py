@@ -1,16 +1,16 @@
 """Room concept 01 - THE SUBSTATION.
 
-One room of a run, drawn at game scale. The toy is ArcField: a transformer in the
+One room, drawn at game scale. The toy is ArcField: a transformer in the
 middle of the room throws an arc at the nearest metal inside its reach, every few
 seconds, and does not care whose metal it is. So the room is sorted by material -
 a steel gantry and a steel floor grate that carry the arc, a timber scaffold that
 does not - and every setpiece in it is a way of choosing where the next arc lands.
 
-Three waves. The first stands on the gantry; the second is riot brutes, whose steel
-shields make them lightning rods walking towards you; the third is one sentinel on
-the scaffold, where the arcs cannot reach it. By then the banks are on the floor and
-the gas rack has gone off, so the last wave is fought in a different room from the
-first. Clear it and the pedestal rises; pick one of two doors by the reward on it.
+The enemies are all in the room when you walk in, and they are placed by the same
+rule: grenadiers up on the gantry, riot brutes on the grate - their steel shields make
+them lightning rods walking towards you - and one sentinel on the scaffold, where the
+arcs cannot reach it. What you do about any of that is up to you; by the time the banks
+are on the floor and the gas rack has gone off it is a different room.
 """
 import os
 import sys
@@ -262,18 +262,15 @@ def build():
     for lx in (46, 726):
         lamp(lx, 124, drop=4, bulb=LAMP, tint=LAMP, r=30, strength=0.2)
 
-    # ── 1  entry, sealed behind you ─────────────────────────────────────────
-    hazard_slab(18, FLOOR - 30, 6, 29)
-    rect(16, FLOOR - 33, 26, FLOOR - 31, MET_D)
-    disc(21, FLOOR - 37, 1.5, RED_L)
-    glow(21, FLOOR - 37, 7, RED_L, 0.4)
+    # ── 1  the way in ───────────────────────────────────────────────────────
+    doorway(18, FLOOR)
     hero(48, FLOOR)
     binny_half(58, FLOOR - 58)
 
-    # ── 2  the gantry, and exit A off the end of it ─────────────────────────
+    # ── 2  the gantry, and a way out off the end of it ──────────────────────
     gantry(88, 300, GANTRY, [(120, 94), (200, 94), (280, 94)])
     ladder(96, GANTRY + 4, FLOOR - 1, w=8, step=7)
-    exit_door(30, GANTRY, "gun")
+    doorway(30, GANTRY)
     stand("Grenadier", 176, GANTRY, flip=True)
     stand("Grenadier", 236, GANTRY, flip=True)
     lob(230, GANTRY - 14, 118, FLOOR - 4, peak=30)
@@ -290,7 +287,7 @@ def build():
     battery_bank(240, 60, 214)
     arc(372, 236, 252, 208, jag=7, seg=9)                               # nearest metal
 
-    # ── 6  grate + trench; wave 2 on it ─────────────────────────────────────
+    # ── 6  grate + trench; the brutes on it ─────────────────────────────────
     stand("RiotBrute", 480, FLOOR, flip=True)
     stand("RiotBrute", 530, FLOOR, flip=True)
     arc(418, 238, 474, 326, jag=6, seg=8)                               # to the shield
@@ -312,47 +309,37 @@ def build():
     # ── crane over the right half ───────────────────────────────────────────
     crane(470, 686, 112, 536, 160)
 
-    # ── 7  timber scaffold; wave 3 up on it ─────────────────────────────────
+    # ── 7  timber scaffold; the sentinel up on it ───────────────────────────
     scaffold(566, 690, DECK, FLOOR, [572, 616, 660])
     ladder(640, DECK + 4, FLOOR - 1, w=8, step=7)
     stand("Sentinel", 606, DECK, flip=True)
-    exit_door(764, DECK, "gear")
+    doorway(764, DECK)
 
-    # ── 8  gas rack, masonry, the cache behind ──────────────────────────────
+    # ── 8  gas rack, masonry, a store behind it ─────────────────────────────
     gas_rack(574, FLOOR, 4)                         # under the scaffold, against the posts
     masonry(688, 266, 704, FLOOR - 1)
     for k in range(3):
         crate(716 + k * 16, FLOOR - 13, 12)
-    reward_pedestal(752, FLOOR, "scrap")
 
-    # ── 9  pedestal, rises on clear ─────────────────────────────────────────
-    reward_pedestal(204, FLOOR, "heart", ghost=True)
-
-    for x, y, t in ((170, GANTRY - 34, "W1"), (230, GANTRY - 34, "W1"), (270, FLOOR - 30, "W1"),
-                    (474, FLOOR - 36, "W2"), (524, FLOOR - 36, "W2"), (618, DECK - 30, "W3")):
-        wave_tag(x, y, t, {"W1": PALE_G, "W2": F_MID, "W3": RED_L}[t])
 
     # ── sheet furniture ─────────────────────────────────────────────────────
     screen_frame(14, 104)
     vignette(0.35)
     btitle_bar("PHYSFUN - ROOM CONCEPT 01:  THE SUBSTATION",
-               "ONE ROOM OF A RUN / GAME SCALE")
-    bcallout(34, 256, "1 SEALS BEHIND YOU", 22, 300)
+               "ONE ROOM / GAME SCALE")
+    bcallout(34, 256, "1 IN", 22, 300)
     bcallout(104, 50, "2 STEEL GANTRY ON CHAINS", 200, 120)
     bcallout(56, 206, "3 SWITCHES: G / F", 134, 300)
     bcallout(560, 52, "4 ARCS TO NEAREST METAL", 420, 232)
     bcallout(560, 76, "5 DROP THE BANK OR THE CORE", 536, 150)
     bcallout(384, 382, "6 LIVE ON F", 420, 356)
     bcallout(620, 124, "7 WOOD: ARCS SKIP IT", 650, 198)
-    bcallout(598, 250, "8 GAS + WALL = CACHE", 700, 290)
-    bcallout(212, 250, "9 ON CLEAR", 204, 306)
+    bcallout(598, 250, "8 GAS RACK, THIN WALL", 700, 290)
     blegend(22, 378, [
         ("BEATS", CYAN),
         ("METAL CARRIES THE ARC, WOOD DOES NOT", (170, 180, 195)),
-        ("W1 GANTRY  W2 SHIELDS  W3 UP ON THE WOOD", F_MID),
-        ("CLEAR: PEDESTAL, THEN PICK A DOOR", GREEN_L),
+        ("GANTRY, SHIELDS, ONE UP ON THE WOOD", F_MID),
     ], 342)
-    glyph_key(510, 378)
     return save(out_path("RoomConcept_Substation.png"), scale=2)
 
 

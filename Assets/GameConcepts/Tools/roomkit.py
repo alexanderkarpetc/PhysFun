@@ -1,4 +1,4 @@
-"""Room concept sheets - one room of a run, drawn at the game's own scale.
+"""Room concept sheets - one room, drawn at the game's own scale.
 
 The level sheets are drawn at 400x225 with 12px stand-in humanoids, so a sheet there is
 roughly two screens across and the characters are symbols. A room sheet is the other
@@ -13,8 +13,7 @@ On top of conceptkit this adds only what a room needs and a level does not:
   level sheets (the art is at 2x, not 4x);
 * `sprite` / `stand` to paste `Characters/Char_*.png`, and a player and a half-size
   Binny at the same scale;
-* the run furniture - `exit_door` with the reward it leads to shown above it, and
-  `reward_pedestal` for what the room pays out on clear;
+* `doorway`, an open way in or out of the room - a lintel over a gap, nothing that shuts;
 * `screen_frame`, a dashed box one camera wide, so every sheet carries its own scale.
 """
 import math
@@ -111,14 +110,6 @@ def screen_frame(x, y, label="1 SCREEN"):
     btext(x + 6, y + SCREEN_H - 6 * k - 4, label, c, shadow=True, k=k)
 
 
-def wave_tag(x, y, s, c=F_MID):
-    """Small W1/W2/W3 marker over an enemy: which wave it belongs to."""
-    k = max(1, K - 1)
-    w = btext_w(s, k)
-    rect(x - 2, y - 2, x + w + 1, y + 5 * k + 1, INK, 0.75)
-    btext(x, y, s, c, shadow=False, k=k)
-
-
 # ─────────────────────────────────────────────────────────────────────────────
 #  Characters, pasted from the real sprites
 # ─────────────────────────────────────────────────────────────────────────────
@@ -168,7 +159,7 @@ def stand(name, cx, floor, flip=False, tint=None):
 
 
 def corpse(cx, floor, c=(99, 104, 101), blood=RED):
-    """What a wave leaves on the floor: a heap and a smear, not a pose."""
+    """What a fight leaves on the floor: a heap and a smear, not a pose."""
     rect(cx - 6, floor - 3, cx + 6, floor - 1, c)
     rect(cx - 6, floor - 3, cx - 3, floor - 2, tuple(int(v * 0.7) for v in c))
     for i in range(10):
@@ -274,88 +265,16 @@ def hazard_slab(x, y, w, h):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  Run furniture: the reward glyphs, the doors that show them, the pedestal
+#  Ways in and out
 # ─────────────────────────────────────────────────────────────────────────────
-GLYPHS = {
-    # weapon mod
-    "gun": (["###########.", "############", "######......", "###.........",
-             "###.........", "............"], (187, 187, 187)),
-    # Binny module
-    "gear": ([".#..#..#.", "#########", ".##...##.", "##.....##", ".##...##.",
-              "#########", ".#..#..#."], (121, 201, 213)),
-    # heal
-    "heart": ([".##...##.", "####.####", "#########", ".#######.", "..#####..",
-               "...###...", "....#...."], (180, 80, 70)),
-    # scrap - the currency Binny eats
-    "scrap": (["..###....", ".#####.#.", "#######..", "######.##", ".####.###",
-               "..#..####"], (158, 121, 80)),
-    # an elite room: harder, pays double
-    "skull": ([".#######.", "#########", "##..#..##", "#########", ".###.###.",
-               ".#.#.#.#."], (199, 215, 146)),
-}
-
-
-def glyph(name, cx, cy, glow_=True):
-    rows, c = GLYPHS[name]
-    w, h = len(rows[0]), len(rows)
-    x0, y0 = cx - w // 2, cy - h // 2
-    if glow_:
-        glow(cx, cy, 14, c, 0.28)
-    for j, row in enumerate(rows):
-        for i, ch in enumerate(row):
-            if ch == '#':
-                px(x0 + i, y0 + j, c)
-
-
-def exit_door(x, floor, reward, h=30, w=6, sealed=True):
-    """An exit, seen side-on in the wall's thickness: striped slab in the opening, and
-    above it a plaque with the reward on the far side - which is the whole choice the
-    room hands you, so it has to read across the room."""
+def doorway(x, floor, h=30, w=6):
+    """A way in or out, seen side-on in the wall's thickness: a steel lintel over an open
+    gap. Nothing shuts - you walk in, and you walk out when you like."""
     y = floor - h
-    rect(x - 2, y - 3, x + w + 2, y - 1, MET_D)          # lintel
+    rect(x - 2, y - 3, x + w + 2, y - 1, MET_D)
     rect(x - 2, y - 3, x + w + 2, y - 3, MET_L)
-    hazard_slab(x, y, w, h - 1)
-    lamp_c = RED_L if sealed else GREEN_L
-    disc(x + w // 2, y - 6, 1.5, lamp_c)
-    glow(x + w // 2, y - 6, 7, lamp_c, 0.4)
-    # plaque on a bracket, facing into the room
-    pcx, pcy = x + w // 2, y - 20
-    rect(pcx - 9, pcy - 7, pcx + 9, pcy + 7, (30, 34, 40))
-    frame(pcx - 9, pcy - 7, pcx + 9, pcy + 7, MET_L)
-    glyph(reward, pcx, pcy)
-
-
-def reward_pedestal(cx, floor, reward, ghost=False):
-    """What the room pays on clear: a squat plinth and the reward floating over it.
-    ghost=True draws it faint, for a pedestal that only rises when the wave is dead."""
-    a = 0.45 if ghost else 1.0
-    rect(cx - 9, floor - 10, cx + 9, floor - 1, STONE_D, a)
-    rect(cx - 7, floor - 13, cx + 7, floor - 10, STONE, a)
-    rect(cx - 7, floor - 13, cx + 7, floor - 13, STONE_L, a)
-    rect(cx - 9, floor - 10, cx + 9, floor - 10, STONE_L, a)
-    _, c = GLYPHS[reward]
-    glow(cx, floor - 24, 22, c, 0.35 if not ghost else 0.2)
-    glyph(reward, cx, floor - 24, glow_=False)
-    for i in range(6):
-        px(cx - 6 + rnd() * 12, floor - 16 - rnd() * 18, c, 0.6)
-
-
-def glyph_key(x, y, w=None):
-    """Bottom-corner plate: what each door plaque promises."""
-    items = [("gun", "WEAPON MOD"), ("gear", "BINNY MODULE"), ("heart", "HEAL"),
-             ("scrap", "SCRAP"), ("skull", "ELITE: X2")]
-    w = w or 125 * K
-    k = max(1, K - 1)
-    step = 8 * K
-    h = step * ((len(items) + 1) // 2) + 10 * K
-    rect(x - 3 * K, y - 3 * K - 1, x + w, y + h - K, INK, 0.78)
-    frame(x - 3 * K, y - 3 * K - 1, x + w, y + h - K, (70, 80, 92))
-    btext(x, y, "DOOR PLAQUES", CYAN, shadow=False)
-    for n, (g, s) in enumerate(items):
-        cx = x + 8 + (n % 2) * (w // 2)
-        cy = y + 12 * K + (n // 2) * step
-        glyph(g, cx, cy + 3, glow_=False)
-        btext(cx + 12, cy + 3 - (5 * k) // 2, s, (170, 180, 195), shadow=False, k=k)
+    for k in range(3):
+        px(x + 1 + k * 2, y - 2, MET)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

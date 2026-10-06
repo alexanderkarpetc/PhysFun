@@ -36,11 +36,12 @@ namespace Player
         private static readonly int IdleTrig = Animator.StringToHash("Idle");
         private static readonly int WalkTrig = Animator.StringToHash("Walk");
         private static readonly int WalkBackTrig = Animator.StringToHash("WalkBack");
-        private static readonly int JumpTrig = Animator.StringToHash("Jump");
+        private static readonly int LevitateTrig = Animator.StringToHash("Levitate");
+        private static readonly int FallTrig = Animator.StringToHash("Fall");
         // Scales walk playback so the stride matches the ground speed instead of skating.
         private static readonly int SpeedParam = Animator.StringToHash("Speed");
 
-        private enum State { Idle, Walk, WalkBack, Air }
+        private enum State { Idle, Walk, WalkBack, Levitate, Fall }
         private State _state = State.Idle;
 
         /// <summary>0..1 fraction of levitation capacity remaining (for HUD meters).</summary>
@@ -73,10 +74,12 @@ namespace Player
 
             var mouseW = _cam.ScreenToWorldPoint(Input.mousePosition);
 
-            // Animation: airborne when not grounded, otherwise ground locomotion.
+            // Animation: in the air it is thrust or a drop, otherwise ground locomotion.
+            // The staff is not part of these - StaffAim swings it at the cursor on top.
             if (!_grounded)
             {
-                SetState(State.Air, JumpTrig);
+                if (_levitating) SetState(State.Levitate, LevitateTrig);
+                else SetState(State.Fall, FallTrig);
             }
             else if (Mathf.Abs(_moveX) > 0.01f)
             {
@@ -212,7 +215,8 @@ namespace Player
             _animator.ResetTrigger(IdleTrig);
             _animator.ResetTrigger(WalkTrig);
             _animator.ResetTrigger(WalkBackTrig);
-            _animator.ResetTrigger(JumpTrig);
+            _animator.ResetTrigger(LevitateTrig);
+            _animator.ResetTrigger(FallTrig);
             _animator.SetTrigger(trigger);
         }
 

@@ -22,7 +22,6 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.abspath(os.path.join(HERE, "..", "PixelArt", "tools")))
 from conceptkit import *  # noqa: F403,E402
 import conceptkit as _ck  # noqa: E402
 import png as _png  # noqa: E402

@@ -28,8 +28,7 @@ import math
 import os
 import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                "..", "PixelArt", "tools"))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from pixelfix import write_png, upscale  # noqa: E402
 
 S = 80                      # sprite side, native pixels
@@ -44,7 +43,7 @@ OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                        "..", "..", "Sprites", "Props")
 
 # ── palettes ────────────────────────────────────────────────────────────────
-# Noita's swatches (see PixelArt/NOTES.md): flat fills, hard edges, <= 6 tones a sprite.
+# Noita's swatches: flat fills, hard edges, <= 6 tones a sprite.
 PLAIN = dict(ink=(51, 49, 45), dark=(67, 67, 67), mid=(135, 135, 135),
              lit=(187, 187, 187), iron=(99, 99, 99))
 WOOD = dict(ink=(55, 48, 40), dark=(81, 72, 54), mid=(149, 134, 101),

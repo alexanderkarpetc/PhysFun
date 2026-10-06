@@ -11,14 +11,13 @@ Native resolution is small on purpose (400x225): the art has to read as the same
 20-PPU pixel art the game uses, so it is drawn at final pixel size and upscaled by
 an integer factor with nearest-neighbour, never resampled.
 
-Pure stdlib. The png writer is the one already in PixelArt/tools.
+Pure stdlib. The png writer is `pixelfix.py`, next to this file.
 """
 import math
 import os
 import sys
 
-_TOOLS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "PixelArt", "tools")
-sys.path.insert(0, os.path.abspath(_TOOLS))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from pixelfix import write_png  # noqa: E402
 
 # ─────────────────────────────────────────────────────────────────────────────

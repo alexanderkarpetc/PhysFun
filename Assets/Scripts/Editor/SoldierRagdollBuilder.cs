@@ -9,20 +9,15 @@ using UnityEngine;
 namespace Editor
 {
     /// <summary>
-    /// Cuts a corpse out of soldier.aseprite.
+    /// Cuts a corpse out of a hand-drawn .aseprite enemy.
     ///
-    /// Every other creature gets its ragdoll from Noita's data, where the animator already worked
-    /// in separate limbs and the importer only has to read them back. The soldier is drawn as one
-    /// 11x18 figure on a single layer, so where he comes apart is a decision rather than a fact,
-    /// and that decision is the one thing a <see cref="Spec"/> holds: <see cref="Spec.Cuts"/> is his
-    /// idle frame divided along the joints, in canvas pixels. Everything after that — part sheet,
-    /// definition, prefab, hinges, masses — is <see cref="NoitaRagdollImporter"/>'s, so the
-    /// soldier's body behaves like everyone else's.
-    ///
-    /// The cuts belong to one drawing and nothing else: the dark soldier stands on a 20px canvas
-    /// with a shorter head, and his corpse was built by running this once with his rows and his
-    /// paths. Another figure means reading its idle frame and writing its own cuts — the menu item
-    /// here does the wizard, <see cref="CastBuilder"/> the rest of the hand-drawn cast.
+    /// Noita's creatures arrive with their limbs already separate; ours are one figure on one
+    /// layer, so where it comes apart is a decision rather than a fact, and that decision is the
+    /// one thing a <see cref="Spec"/> holds: <see cref="Spec.Cuts"/> is its idle frame divided
+    /// along the joints, in canvas pixels. Everything after that — part sheet, definition,
+    /// prefab, hinges, masses — is <see cref="NoitaRagdollImporter"/>'s, so the body behaves like
+    /// everyone else's. <see cref="CastBuilder"/> holds the cuts; Tools/ENEMIES.md says how to
+    /// get them.
     ///
     /// Run it after <see cref="SoldierBuilder"/>: it reads the frame through the import settings
     /// that one applies, and it is what puts the <see cref="RagdollSpawner"/> on the live soldier.
@@ -30,9 +25,6 @@ namespace Editor
     /// </summary>
     public static class SoldierRagdollBuilder
     {
-        /// <summary>The wizard's corpse — where <see cref="NoitaRagdollImporter.Write"/> puts creature "wizard".</summary>
-        public const string RagdollPrefabPath = "Assets/Resources/Ragdolls/wizard/WizardRagdoll.prefab";
-
         /// <summary>Matches <see cref="SoldierBuilder"/>; the corpse has to be drawn at his scale.</summary>
         private const float PixelsPerUnit = 20f;
 
@@ -85,34 +77,6 @@ namespace Editor
             }
         }
 
-        /// <summary>
-        /// The wizard read off his idle frame: hat and face down to row 9, sleeves out to both sides
-        /// on rows 11-13, and the robe below.
-        ///
-        /// The robe below the waist is cut into two legs even though the drawing has none: in one
-        /// piece it is a rigid slab with a flat bottom and no joint anywhere under the shoulders, so
-        /// the corpse lands on it and stands there. As two legs it buckles the way the soldier does.
-        ///
-        /// The seam runs straight down the middle, which halves the placket instead of leaving it
-        /// on the body. Leaving it would make the torso an L, and a part gets the box its pixels
-        /// fill — an L-shaped torso would get a box swallowing both legs, and he would rest on that
-        /// box with his legs dangling inside it. Two pixels of trim split down the seam is cheaper.
-        ///
-        /// The torso comes first because a hinge needs its parent to exist already.
-        /// </summary>
-        private static readonly Cut[] WizardCuts =
-        {
-            new("torso", -1, Vector2.zero, 2,
-                new RectInt(0, 10, 20, 1),   // shoulders
-                new RectInt(9, 11, 4, 3),    // chest, the strip the sleeves leave between them
-                new RectInt(0, 14, 20, 2)),  // waist
-            new("leg_l", 0, new Vector2(7.5f, 15.5f), 1, new RectInt(0, 16, 10, 6)),
-            new("leg_r", 0, new Vector2(12f, 15.5f), 0, new RectInt(10, 16, 10, 6)),
-            new("head", 0, new Vector2(10f, 9.5f), 4, new RectInt(0, 0, 20, 10)),
-            new("arm_l", 0, new Vector2(8.5f, 11.5f), 0, new RectInt(0, 11, 9, 3)),
-            new("arm_r", 0, new Vector2(12.5f, 11.5f), 3, new RectInt(13, 11, 7, 3)),
-        };
-
         /// <summary>One hand-drawn corpse: the art it is cut from, what to call it, and where the cuts go.</summary>
         public sealed class Spec
         {
@@ -130,26 +94,6 @@ namespace Editor
             /// <summary>Where <see cref="NoitaRagdollImporter.Write"/> puts the prefab for this creature.</summary>
             public string RagdollPrefabPath =>
                 $"Assets/Resources/Ragdolls/{Creature}/{char.ToUpperInvariant(Creature[0])}{Creature.Substring(1)}Ragdoll.prefab";
-        }
-
-        public static readonly Spec Wizard = new()
-        {
-            Source = "Assets/Sprites/Enemies/wizard.aseprite",
-            Creature = "wizard",
-            EnemyPrefabPath = "Assets/Resources/Prefabs/Enemies/Wizard.prefab",
-            Cuts = WizardCuts,
-        };
-
-        [MenuItem("PhysFun/Enemies/Build Soldier Ragdoll", false, 201)]
-        private static void BuildMenu()
-        {
-            if (Build(Wizard) == null) return;
-
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(Wizard.RagdollPrefabPath);
-            if (!prefab) return;
-
-            Selection.activeObject = prefab;
-            EditorGUIUtility.PingObject(prefab);
         }
 
         /// <summary>Part sheet, definition and prefab for one corpse. Returns null, having said why, on failure.</summary>
@@ -198,7 +142,7 @@ namespace Editor
         // ------------------------------------------------------------------ the frame
 
         /// <summary>The first idle frame — the pose he stands in, and the one the pieces are cut from.</summary>
-        private static Sprite IdleSprite(string source)
+        internal static Sprite IdleSprite(string source)
         {
             var sprites = AssetDatabase.LoadAllAssetRepresentationsAtPath(source).OfType<Sprite>().ToArray();
             return sprites.FirstOrDefault(s => s.name == "Frame_0") ?? sprites.FirstOrDefault();
@@ -211,7 +155,7 @@ namespace Editor
         /// pivot instead, so the pivot is where the canvas anchor ended up inside this frame —
         /// which is all it takes to work out where the trimmed image sat.
         /// </summary>
-        private static Color32[] ReadFrame(Sprite sprite, Vector2Int canvas)
+        internal static Color32[] ReadFrame(Sprite sprite, Vector2Int canvas)
         {
             var tex = Readable(sprite.texture);
             var pixels = tex.GetPixels32();

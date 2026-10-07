@@ -19,12 +19,8 @@ namespace Editor
     /// the tags and the hull is the sprite's own bounds. Re-run it whenever the art changes and it
     /// overwrites what it made last time, keeping every reference to the prefab intact.
     ///
-    /// What differs from one enemy to the next is a <see cref="Spec"/>. The menu item builds the
-    /// wizard; <see cref="CastBuilder"/> holds the specs for the rest of the hand-drawn cast.
-    ///
-    /// One thing the art does not carry yet is a shot: the importer only turns Aseprite user data
-    /// into animation events, and there is none on the Shoot frames, so nothing calls
-    /// RegularEnemyController.Shoot(). Tag a frame in Aseprite when the muzzle should flash.
+    /// What differs from one enemy to the next is a <see cref="Spec"/>; <see cref="CastBuilder"/>
+    /// holds them and has the menu items. Tools/ENEMIES.md walks through adding one.
     /// </summary>
     public static class SoldierBuilder
     {
@@ -60,27 +56,19 @@ namespace Editor
             /// <summary>The corpse to hand him, if it has been built yet. Null for none.</summary>
             public string RagdollPrefabPath;
 
+            /// <summary>
+            /// A bolt he throws at the player while he can see them - the mages' magic. Null for
+            /// none, which leaves the controller's cast off.
+            /// </summary>
+            public string BoltPrefabPath;
+            public Color BoltColor = Color.white;
+            public int BoltDamage = 6;
+            /// <summary>Where the bolt leaves from, from the feet, facing right.</summary>
+            public Vector2 CastOffset = new(0.4f, 0.5f);
+
             public string ControllerDir => $"Assets/Resources/Animations/Enemies/{Name}";
             public string ControllerPath => $"{ControllerDir}/{Name}Animator.controller";
             public string PrefabPath => $"{PrefabDir}/{Name}.prefab";
-        }
-
-        public static readonly Spec Wizard = new()
-        {
-            Name = "Wizard",
-            Source = "Assets/Sprites/Enemies/wizard.aseprite",
-            States = new[] { ("Idle", "Idle"), ("Walk", "Walk"), ("Shoot", "Attack") },
-            RagdollPrefabPath = SoldierRagdollBuilder.RagdollPrefabPath,
-        };
-
-        [MenuItem("PhysFun/Enemies/Build Soldier", false, 200)]
-        private static void BuildMenu()
-        {
-            var prefab = Build(Wizard);
-            if (!prefab) return;
-
-            Selection.activeObject = prefab;
-            EditorGUIUtility.PingObject(prefab);
         }
 
         /// <summary>Controller and prefab for one enemy. Returns null, having said why, when the art is not there.</summary>
@@ -119,7 +107,7 @@ namespace Editor
         /// stand next to the others: 100 pixels per unit would make him thumbnail-sized, and the
         /// model prefab it offers is a second, rival soldier with none of the physics on it.
         /// </summary>
-        private static void FixImportSettings(AsepriteImporter importer)
+        internal static void FixImportSettings(AsepriteImporter importer)
         {
             bool dirty = false;
 
@@ -156,7 +144,7 @@ namespace Editor
         /// enemy standing in an open scene, most of all — is left holding nothing, which shows up
         /// in play mode as "Animator is not playing an AnimatorController".
         /// </summary>
-        private static AnimatorController BuildController(Spec spec, Dictionary<string, AnimationClip> clips)
+        internal static AnimatorController BuildController(Spec spec, Dictionary<string, AnimationClip> clips)
         {
             EnsureFolder(spec.ControllerDir);
 
@@ -242,13 +230,19 @@ namespace Editor
             body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
             body.interpolation = RigidbodyInterpolation2D.Interpolate;
 
+            // The body, not the sprite: a sickle or a reaching claw widens the sprite's bounds,
+            // and a hull that wide snags on every doorway the figure itself would fit through.
+            var core = CoreRect(spec.Source, fullHeight: true);
+            if (core.width <= 0f) core = new Rect(bounds.min, bounds.size);
+
             var hull = root.AddComponent<CapsuleCollider2D>();
             hull.direction = CapsuleDirection2D.Vertical;
-            hull.size = new Vector2(bounds.size.x * 0.9f, bounds.size.y);
-            hull.offset = bounds.center;
+            hull.size = new Vector2(core.width * 0.9f, core.height);
+            hull.offset = core.center;
 
-            WireController(root.AddComponent<RegularEnemyController>(), view.transform, body, animator, eye.transform,
-                spec.WalkSpeed);
+            var brain = root.AddComponent<RegularEnemyController>();
+            WireController(brain, view.transform, body, animator, eye.transform, spec.WalkSpeed);
+            WireCast(brain, spec);
             WireHealth(root.AddComponent<Damageable>(), spec.MaxHealth);
 
             // The corpse is a separate build and he stands up fine without one, so this only
@@ -264,7 +258,67 @@ namespace Editor
         /// The first frame of Idle — what he looks like standing still, and what the hull is
         /// measured against. Sub-assets come back in no particular order, hence the name.
         /// </summary>
-        private static Sprite FirstSprite(string source)
+        /// <summary>
+        /// The solid middle of Frame_0, in local units from the canvas bottom centre (where the
+        /// sprite is pivoted): the rows that are at least about half as wide as the widest, and
+        /// across them the columns that are mostly ink. Strands, trails, tails and whatever is
+        /// held out at arm's length are thin, so they fall out of both; what stays is the body
+        /// something should collide with.
+        ///
+        /// <paramref name="fullHeight"/> keeps every row top to bottom - a walker has to stand
+        /// on its feet, and its legs are never the widest thing on it.
+        /// </summary>
+        internal static Rect CoreRect(string source, bool fullHeight)
+        {
+            var importer = AssetImporter.GetAtPath(source) as AsepriteImporter;
+            var sprite = FirstSprite(source);
+            if (!importer || !sprite) return default;
+
+            var canvas = new Vector2Int(Mathf.RoundToInt(importer.canvasSize.x), Mathf.RoundToInt(importer.canvasSize.y));
+            var frame = SoldierRagdollBuilder.ReadFrame(sprite, canvas);
+            int w = canvas.x, h = canvas.y;
+
+            var rows = new int[h];
+            for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+                if (frame[y * w + x].a > 0) rows[y]++;
+
+            int widest = rows.Max();
+            if (widest == 0) return default;
+
+            var cols = new int[w];
+            for (int y = 0; y < h; y++)
+            {
+                if (rows[y] < widest * 0.45f) continue;
+                for (int x = 0; x < w; x++)
+                    if (frame[y * w + x].a > 0) cols[x]++;
+            }
+
+            int deepest = cols.Max();
+            int x0 = -1, x1 = -1, y0 = -1, y1 = -1;
+            for (int x = 0; x < w; x++)
+            {
+                if (cols[x] < deepest * 0.35f) continue;
+                if (x0 < 0) x0 = x;
+                x1 = x;
+            }
+
+            for (int y = 0; y < h; y++)
+            {
+                if (rows[y] == 0 || (!fullHeight && rows[y] < widest * 0.45f)) continue;
+                if (y0 < 0) y0 = y;
+                y1 = y;
+            }
+
+            if (x0 < 0 || y0 < 0) return default;
+
+            // canvas pixels are top-down; local space is y up from the bottom edge
+            return Rect.MinMaxRect(
+                (x0 - w * 0.5f) / PixelsPerUnit, (h - (y1 + 1)) / PixelsPerUnit,
+                (x1 + 1 - w * 0.5f) / PixelsPerUnit, (h - y0) / PixelsPerUnit);
+        }
+
+        internal static Sprite FirstSprite(string source)
         {
             var sprites = AssetDatabase.LoadAllAssetRepresentationsAtPath(source).OfType<Sprite>().ToArray();
             return sprites.FirstOrDefault(s => s.name == "Frame_0") ?? sprites.FirstOrDefault();
@@ -288,6 +342,26 @@ namespace Editor
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
+        private static void WireCast(RegularEnemyController enemy, Spec spec)
+        {
+            if (string.IsNullOrEmpty(spec.BoltPrefabPath)) return;
+
+            var bolt = AssetDatabase.LoadAssetAtPath<GameObject>(spec.BoltPrefabPath);
+            var projectile = bolt ? bolt.GetComponent<Projectile>() : null;
+            if (!projectile)
+            {
+                Debug.LogWarning($"[PhysFun] {spec.Name}: no Projectile at {spec.BoltPrefabPath}, so he will not cast.");
+                return;
+            }
+
+            var so = new SerializedObject(enemy);
+            so.FindProperty("_bolt").objectReferenceValue = projectile;
+            so.FindProperty("_boltColor").colorValue = spec.BoltColor;
+            so.FindProperty("_boltDamage").intValue = spec.BoltDamage;
+            so.FindProperty("_castOffset").vector2Value = spec.CastOffset;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
         /// <summary>Hurt by the same things as the shotgunner: whatever the world throws.</summary>
         private static void WireHealth(Damageable damageable, int maxHealth)
         {
@@ -298,7 +372,7 @@ namespace Editor
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        private static void EnsureFolder(string path)
+        internal static void EnsureFolder(string path)
         {
             if (AssetDatabase.IsValidFolder(path)) return;
 

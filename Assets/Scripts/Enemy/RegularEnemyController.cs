@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Common;
+using UnityEngine;
 using Weapons;
 
 namespace Enemy
@@ -15,6 +16,18 @@ namespace Enemy
         [Tooltip("Optional. When present the creature aims it at the player and pulls the " +
                  "trigger; the weapon asset decides rate, spread and how far the shot drops.")]
         [SerializeField] private WeaponHolder _weapon;
+
+        [Header("Cast (optional)")]
+        [Tooltip("A bolt thrown at the player every Cast Interval while they are in sight - " +
+                 "what the mages do instead of carrying a gun. Leave empty for none.")]
+        [SerializeField] private Projectile _bolt;
+        [Tooltip("Tint on the bolt's sprite: the colour of this caster's magic.")]
+        [SerializeField] private Color _boltColor = Color.white;
+        [SerializeField] private float _boltSpeed = 7f;
+        [SerializeField] private int _boltDamage = 6;
+        [SerializeField] private float _castInterval = 1.6f;
+        [Tooltip("Where the bolt leaves from, from the feet, facing right; x mirrors with facing.")]
+        [SerializeField] private Vector2 _castOffset = new(0.4f, 0.5f);
 
         [Header("Patrol")]
         [SerializeField] private float walkSpeed = 2f;
@@ -35,6 +48,7 @@ namespace Enemy
 
         // timers
         private float _stateTimer;
+        private float _castTimer;
 
         // movement dir: +1 right, -1 left
         private int _dir = 1;
@@ -64,6 +78,16 @@ namespace Enemy
                 if (_weapon && App.Instance.PlayerTransform)
                 {
                     if (_weapon.Aim(App.Instance.PlayerTransform.position)) _weapon.TryFire();
+                }
+
+                if (_bolt && App.Instance.PlayerTransform)
+                {
+                    _castTimer -= Time.deltaTime;
+                    if (_castTimer <= 0f)
+                    {
+                        Cast(App.Instance.PlayerTransform.position);
+                        _castTimer = _castInterval;
+                    }
                 }
             }
             else
@@ -111,8 +135,24 @@ namespace Enemy
                     break;
                 case State.Shoot:
                     _animator.SetTrigger(ShootTrig);
+                    // Half an interval of wind-up, so the first bolt follows the raised arm
+                    // instead of leaving on the frame he notices you.
+                    _castTimer = _castInterval * 0.5f;
                     break;
             }
+        }
+
+        private void Cast(Vector2 target)
+        {
+            float facing = Mathf.Sign(_body.localScale.x);
+            Vector2 origin = (Vector2)transform.position + new Vector2(_castOffset.x * facing, _castOffset.y);
+            Vector2 dir = target - origin;
+            if (dir.sqrMagnitude < 1e-4f) return;
+
+            var bolt = Instantiate(_bolt, origin, Quaternion.identity);
+            var look = bolt.GetComponent<SpriteRenderer>();
+            if (look) look.color = _boltColor;
+            bolt.Fire(dir.normalized * _boltSpeed, gameObject, _boltDamage);
         }
 
         private void SetVelX(float x)

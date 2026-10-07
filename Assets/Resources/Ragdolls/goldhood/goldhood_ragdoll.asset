@@ -1,0 +1,91 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8f1e07af96acd2418429a8e18e2602c, type: 3}
+  m_Name: goldhood_ragdoll
+  m_EditorClassIdentifier: Assembly-CSharp::Ragdolls.RagdollDefinition
+  creature: goldhood
+  frameWidth: 29
+  frameHeight: 29
+  originPx: {x: 14.5, y: 29}
+  pixelsPerUnit: 20
+  parts:
+  - name: torso
+    sprite: {fileID: 1284661944, guid: 9fd5c888da1b80848b8f2ee194017ec6, type: 3}
+    parent: -1
+    pivotPx: {x: 9, y: 18}
+    anchorPx: {x: 9, y: 18}
+    useLimits: 0
+    limitLow: -55
+    limitHigh: 55
+    uvColor:
+      serializedVersion: 2
+      rgba: 0
+  - name: leg_l
+    sprite: {fileID: 695782378, guid: 9fd5c888da1b80848b8f2ee194017ec6, type: 3}
+    parent: 0
+    pivotPx: {x: 7, y: 24.5}
+    anchorPx: {x: 8.5, y: 20.5}
+    useLimits: 1
+    limitLow: -55
+    limitHigh: 55
+    uvColor:
+      serializedVersion: 2
+      rgba: 0
+  - name: leg_r
+    sprite: {fileID: -1962946971, guid: 9fd5c888da1b80848b8f2ee194017ec6, type: 3}
+    parent: 0
+    pivotPx: {x: 16, y: 24.5}
+    anchorPx: {x: 12.5, y: 20.5}
+    useLimits: 1
+    limitLow: -55
+    limitHigh: 55
+    uvColor:
+      serializedVersion: 2
+      rgba: 0
+  - name: head
+    sprite: {fileID: -895316745, guid: 9fd5c888da1b80848b8f2ee194017ec6, type: 3}
+    parent: 0
+    pivotPx: {x: 10.5, y: 9}
+    anchorPx: {x: 10, y: 15.5}
+    useLimits: 1
+    limitLow: -55
+    limitHigh: 55
+    uvColor:
+      serializedVersion: 2
+      rgba: 0
+  - name: arm_r
+    sprite: {fileID: -2017855711, guid: 9fd5c888da1b80848b8f2ee194017ec6, type: 3}
+    parent: 0
+    pivotPx: {x: 19.5, y: 19}
+    anchorPx: {x: 16, y: 18}
+    useLimits: 1
+    limitLow: -55
+    limitHigh: 55
+    uvColor:
+      serializedVersion: 2
+      rgba: 0
+  poses:
+  - anim: Frame
+    frame: 0
+    positionsPx:
+    - {x: 9, y: 18}
+    - {x: 7, y: 24.5}
+    - {x: 16, y: 24.5}
+    - {x: 10.5, y: 9}
+    - {x: 19.5, y: 19}
+    rotations:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+  defaultAnim: Frame

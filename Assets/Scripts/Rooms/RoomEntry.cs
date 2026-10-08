@@ -3,9 +3,8 @@ using UnityEngine;
 namespace Rooms
 {
     /// <summary>
-    /// A place the player arrives at: where a <see cref="RoomDoorway"/> in another room puts
-    /// you, or where you start when this room is the first one. The transform is the point
-    /// between the player's feet.
+    /// Where the player starts when the floor starts in this room. The transform is the
+    /// point between the player's feet.
     /// </summary>
     public sealed class RoomEntry : MonoBehaviour
     {

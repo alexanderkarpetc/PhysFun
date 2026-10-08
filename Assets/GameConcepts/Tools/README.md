@@ -425,17 +425,32 @@ rock, the way a Noita screen is. `rock_blob()` in `roomkit` puts rock back into 
 (shelves, mounds, bulges); keep blobs attached to a wall or a floor, because a blob in
 open air reads as a cloud, not terrain.
 
-## Room scenes in Unity
+## Rooms and floors in Unity
 
-Concept sheets are not converted into scenes automatically; a room scene is built by hand.
-How they run: `Scenes/Game.unity` (made once with **PhysFun > Rooms > Create Game Scene**, a
-stripped copy of SampleScene) holds the player, Binny, camera and HUD, plus a `RoomLoader`
-that keeps exactly one `Room_*` scene from `Scenes/Rooms/` loaded next to it. A room scene
-needs a `Room` root, a TerrainBuilder with the room's own TerrainMap, at least one
-`RoomEntry`, and colliders on the `Untouchable` layer touching the map's outer rock (the
-support pass drops terrain connected to none). A `RoomDoorway` trigger swaps rooms; F2 in
-play opens a room picker. Pressing Play with a room scene open loads Game by itself.
-**PhysFun > Rooms > Sync Build Settings** lists the rooms. No room logic - no waves, no locks.
+A room is a prefab under `Assets/Rooms/`: a `Room` root pointing at the room's own
+TerrainMap (`Assets/Rooms/Maps/`), a TerrainBuilder child to see and paint it, a
+`RoomSocket` per way in, a `RoomEntry`, and its enemies and props as children. A floor is
+built at runtime by `FloorLoader` (in `Scenes/Game.unity`) from a `FloorRecipe`
+(`Assets/Rooms/Floor.asset`): the rooms are laid out on a grid, joined socket to socket by
+corridors routed through fill, unused sockets are filled back in, and the whole thing
+becomes one terrain in a scene of its own. F2 in play: a new floor, or the same seed again.
+To try one room, drop its prefab into an empty scene and press Play. No room logic - no
+waves, no locks.
+
+```bash
+python Assets/GameConcepts/Tools/export_rooms.py            # S01, S02, S06, S17 -> prefabs
+python Assets/GameConcepts/Tools/export_rooms.py small_09_powdervaults
+python Assets/GameConcepts/Tools/export_rooms.py --force ...  # overwrite (rooms are finished by hand)
+```
+
+`export_rooms.py` is the starting point for a room, not a pipeline: it writes the map (the
+concept's air with every stub open, a shell of `rock`, `rock_hard` fill for the rest of the
+box) and a prefab with sockets, an entry, and the concept's enemies and kegs as prefab
+instances, then leaves both alone unless `--force` is given. What a room is built round goes
+in as terrain of the right material - timber as `wood`, a parted slab as `rock_alt`, a
+boulder as `templerock` - drawn so that the thing it hangs on is the only thing it touches,
+because the support pass counts any contact as support. `EXTRAS` in the script holds those,
+per room; `ENEMIES` maps concept sprites to the enemy prefabs that exist.
 
 ## Pulley wheel sprites
 

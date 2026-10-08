@@ -76,6 +76,10 @@ namespace Phys.Pixels
             public Vector2 PivotPx;       // sprite pivot in texture pixels
             public int SolidCount;        // pixels with alpha > 0
 
+            /// <summary>Bumped on every <see cref="MarkPixels"/>, so a cache keyed on this
+            /// record (the support pass's contact graph) can tell its pixels changed.</summary>
+            public int Version { get; private set; }
+
             // Pixel-write dirty rect (inclusive bounds).
             internal int dx0 = int.MaxValue, dy0 = int.MaxValue, dx1 = -1, dy1 = -1;
             internal bool pixelsDirty;
@@ -94,6 +98,7 @@ namespace Phys.Pixels
             public void MarkPixels(int x0, int y0, int x1, int y1, int clearedPixels = 0, bool colliderChanged = true)
             {
                 pixelsDirty = true;
+                Version++;
                 if (colliderChanged) colliderDirty = true;
                 if (clearedPixels > 0)
                 {

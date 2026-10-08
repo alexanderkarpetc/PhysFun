@@ -1,40 +1,56 @@
+using Phys.Terrain;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Rooms
 {
     /// <summary>
-    /// The root of a room scene. A room is one scene - terrain, props and enemies - loaded on
-    /// its own next to the persistent Game scene (player, camera, HUD) and unloaded when you
-    /// leave; see <see cref="RoomLoader"/>. Nothing here runs the room: you walk in, the
-    /// enemies are already there, and there is no clear condition to track.
+    /// The root of a room template. A room is a prefab: its own <see cref="TerrainMap"/>, the
+    /// <see cref="RoomSocket"/>s corridors may join it by, a <see cref="RoomEntry"/> for when the
+    /// floor starts in it, and whatever lives in it - props, enemies - as children. Nothing here
+    /// runs the room: you walk in, the enemies are already there.
     ///
-    /// Pressing Play with only a room scene open still works: the room notices there is no
-    /// Game scene and loads it, and the loader then adopts the room instead of loading its
-    /// own start room. That is what lets a room be edited and tried from its own scene.
+    /// The template is the map's rectangle. Everything in the map is stamped into the floor
+    /// as is: air, the room's own rock round it, and the fill tile for the rest of the box, so
+    /// a room looks the same in its prefab as it does in a floor. A TerrainBuilder on a child
+    /// is only there to show and paint the map; <see cref="FloorBuilder"/> strips it, because
+    /// the floor builds one terrain out of every room.
+    ///
+    /// To try one room, drop its prefab into an empty scene and press Play. The room turns
+    /// itself off before anything in it wakes, loads the Game scene, and the loader builds a
+    /// floor of just that room.
     /// </summary>
     [DisallowMultipleComponent]
+    [DefaultExecutionOrder(-1000)]
     public sealed class Room : MonoBehaviour
     {
-        [Tooltip("Where the room sits in world units - normally the terrain map's bounds. " +
-                 "Drawn as a gizmo; nothing at runtime depends on it yet.")]
-        [SerializeField] private Rect _bounds;
+        [Tooltip("This room's terrain. Its origin should be (0, 0): the template's bottom-left " +
+                 "corner is then the room's own origin.")]
+        [SerializeField] private TerrainMap _map;
 
-        public Rect Bounds => _bounds;
-        public Scene Scene => gameObject.scene;
+        public TerrainMap Map => _map;
+
+        /// <summary>The template rectangle, relative to this object's position.</summary>
+        public Rect LocalRect => _map ? _map.LocalBounds : new Rect(0f, 0f, 1f, 1f);
+
+        public RoomSocket[] Sockets => GetComponentsInChildren<RoomSocket>(true);
 
         private void Awake()
         {
-            if (RoomLoader.Instance || RoomLoader.GameLoading) return;
-            if (!Application.CanStreamedLevelBeLoaded(RoomLoader.GameSceneName))
+            if (FloorLoader.Instance) return;
+
+            // Play pressed with this room open on its own: keep it as a template, not a level.
+            gameObject.SetActive(false);
+            if (FloorLoader.GameLoading) return;
+            if (!Application.CanStreamedLevelBeLoaded(FloorLoader.GameSceneName))
             {
-                Debug.LogWarning($"Room: no '{RoomLoader.GameSceneName}' scene in Build Settings, " +
-                                 "so this room runs without a player. Run PhysFun/Rooms/Create Game Scene.",
+                Debug.LogWarning($"Room: no '{FloorLoader.GameSceneName}' scene in Build Settings, " +
+                                 "so there is nothing to play this room in. Run PhysFun/Rooms/Create Game Scene.",
                     this);
                 return;
             }
-            RoomLoader.GameLoading = true;
-            SceneManager.LoadScene(RoomLoader.GameSceneName, LoadSceneMode.Additive);
+            FloorLoader.GameLoading = true;
+            SceneManager.LoadScene(FloorLoader.GameSceneName, LoadSceneMode.Additive);
         }
 
         /// <summary>The entry called <paramref name="id"/>, else the first one, else null.</summary>
@@ -49,8 +65,9 @@ namespace Rooms
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
+            var r = LocalRect;
             Gizmos.color = new Color(0.6f, 0.7f, 0.8f, 0.6f);
-            Gizmos.DrawWireCube(_bounds.center, _bounds.size);
+            Gizmos.DrawWireCube((Vector3)r.center + transform.position, r.size);
         }
 #endif
     }

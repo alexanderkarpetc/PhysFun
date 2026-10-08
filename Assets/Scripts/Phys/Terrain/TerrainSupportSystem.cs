@@ -17,7 +17,9 @@ namespace Phys.Terrain
     /// comes down with it.
     ///
     /// Contact is measured with <see cref="Collider2D.Distance"/> rather than tracked as
-    /// pixel adjacency, so it keeps working after pieces are split, moved or retraced.
+    /// pixel adjacency, so it keeps working after pieces are split, moved or retraced. It is
+    /// measured once per pair and cached (see <see cref="Node"/>), so a pass costs a walk over
+    /// the links rather than a test of every pair.
     ///
     /// What comes loose is welded rather than released chunk by chunk — see
     /// <see cref="TerrainPiece"/>. The chunk grid is how terrain is edited, not how it is
@@ -65,22 +67,50 @@ namespace Phys.Terrain
         private const int UnsetMask = -1;
         private static int _bedrockMask = UnsetMask;
 
-        private static readonly List<TerrainBody> Bodies = new();
+        /// <summary>
+        /// One anchored body in the contact graph. Which bodies touch which is the expensive
+        /// question - a collider distance and a pixel scan per pair - and between two pieces of
+        /// standing terrain the answer only changes when one of them changes. So each pair is
+        /// asked once and the answer kept as a link; a body is only re-asked about when it is
+        /// new, its pixel record has moved on (<see cref="PixelSpriteRegistry.Record.Version"/>)
+        /// or its collider has changed shape. The pass itself is then a walk over the links,
+        /// cheap enough to run on every poll with thousands of chunks standing - which is what
+        /// a whole floor of rooms is.
+        /// </summary>
+        private sealed class Node
+        {
+            public int Id;
+            public int Index;                       // in NodeList
+            public TerrainBody Body;
+            public Collider2D Col;
+            public Bounds Bounds;
+            public PixelSpriteRegistry.Record Record;
+            public int Version;
+            public bool Stale = true;
+            public bool OnBedrock;
+            public int Mark;                        // pass stamp: relinked / supported / grouped
+            public readonly List<Node> Links = new();
+            public readonly List<long> Cells = new();
+        }
+
+        /// <summary>Side of a cell in the spatial hash that finds a body's neighbours.</summary>
+        private const float GridCell = 2f;
+
+        private static readonly Dictionary<int, Node> Nodes = new();
+        private static readonly List<Node> NodeList = new();
+        private static readonly Dictionary<long, List<Node>> Grid = new();
         private static TerrainSupportSystem _instance;
         private static bool _dirty;
         private static bool _warnedNoBedrock;
+        private static int _stamp;
 
-        // Per-pass scratch, kept alive so a pass allocates nothing.
-        private static readonly List<Collider2D> Cols = new();
-        private static readonly List<Bounds> Bnds = new();
-        private static readonly List<Collider2D> Anchors = new();
-        private static readonly List<int> Frontier = new();
-        private static readonly List<TerrainBody> Snapshot = new();
-        private static readonly List<int> Loose = new();
-        private static readonly List<int> Group = new();
-        private static readonly List<TerrainBody> GroupBodies = new();
-        private static bool[] _supported = new bool[64];
-        private static bool[] _grouped = new bool[64];
+        // Per-pass scratch, kept alive so a pass allocates as little as possible.
+        private static readonly List<Node> Stale = new();
+        private static readonly List<Node> Frontier = new();
+        private static readonly List<Node> Loose = new();
+        private static readonly HashSet<Node> Candidates = new();
+        private static readonly List<Collider2D> AnchorHits = new();
+        private static readonly List<List<TerrainBody>> Groups = new();
 
         private float _nextPoll;
 
@@ -88,14 +118,21 @@ namespace Phys.Terrain
         {
             // Support is a runtime concern; edit-mode preview chunks must not pile up here.
             if (!Application.isPlaying) return;
-            if (!body || Bodies.Contains(body)) return;
-            Bodies.Add(body);
+            if (!body) return;
+            int id = body.GetInstanceID();
+            if (Nodes.ContainsKey(id)) return;
+            var node = new Node { Id = id, Body = body, Index = NodeList.Count };
+            Nodes.Add(id, node);
+            NodeList.Add(node);
             _dirty = true;
         }
 
         public static void Unregister(TerrainBody body)
         {
-            if (Bodies.Remove(body)) _dirty = true;
+            if (ReferenceEquals(body, null)) return;
+            if (!Nodes.Remove(body.GetInstanceID(), out var node)) return;
+            Drop(node);
+            _dirty = true;
         }
 
         /// <summary>Ask for a pass on the next <c>LateUpdate</c>.</summary>
@@ -113,7 +150,9 @@ namespace Phys.Terrain
         private static void ResetForPlayMode()
         {
             // Play mode can be entered without a domain reload, so the statics survive.
-            Bodies.Clear();
+            Nodes.Clear();
+            NodeList.Clear();
+            Grid.Clear();
             _dirty = false;
             _warnedNoBedrock = false;
             _bedrockMask = UnsetMask;
@@ -136,7 +175,7 @@ namespace Phys.Terrain
 
         private void LateUpdate()
         {
-            if (Bodies.Count == 0) { _dirty = false; return; }
+            if (NodeList.Count == 0) { _dirty = false; return; }
             if (!_dirty && Time.unscaledTime < _nextPoll) return;
             Recompute();
         }
@@ -151,37 +190,40 @@ namespace Phys.Terrain
             _dirty = false;
             _nextPoll = Time.unscaledTime + PollInterval;
 
-            for (int i = Bodies.Count - 1; i >= 0; i--)
+            // Who is gone, and who has changed since their links were worked out.
+            var reg = PixelSpriteRegistry.Instance;
+            Stale.Clear();
+            for (int i = NodeList.Count - 1; i >= 0; i--)
             {
-                var body = Bodies[i];
-                if (!body || !body.Anchored) Bodies.RemoveAt(i);
+                var node = NodeList[i];
+                if (!node.Body || !node.Body.Anchored)
+                {
+                    Nodes.Remove(node.Id);
+                    Drop(node);
+                    continue;
+                }
+                reg.TryGet(node.Body.gameObject, out var rec);
+                int version = rec != null ? rec.Version : 0;
+                if (!node.Col) node.Col = node.Body.GetComponent<Collider2D>();
+                bool reshaped = node.Col && node.Col.bounds != node.Bounds;
+                if (node.Stale || reshaped || rec != node.Record || version != node.Version)
+                {
+                    node.Record = rec;
+                    node.Version = version;
+                    Stale.Add(node);
+                }
             }
+            if (NodeList.Count == 0) return;
+            if (Stale.Count > 0) Relink();
 
-            int n = Bodies.Count;
-            if (n == 0) return;
-
-            Cols.Clear();
-            Bnds.Clear();
-            for (int i = 0; i < n; i++)
-            {
-                var col = Bodies[i].GetComponent<Collider2D>();
-                Cols.Add(col);
-                Bnds.Add(col
-                    ? col.bounds
-                    : new Bounds(Bodies[i].transform.position, Vector3.zero));
-            }
-
-            CollectAnchors();
-
-            if (_supported.Length < n) _supported = new bool[Mathf.NextPowerOfTwo(n)];
-            for (int i = 0; i < n; i++) _supported[i] = false;
-
+            // Support spreads out from bedrock along the links.
+            int supported = ++_stamp;
             Frontier.Clear();
-            for (int i = 0; i < n; i++)
+            foreach (var node in NodeList)
             {
-                if (!Bodies[i].Bedrock && !TouchesAnchor(Cols[i], Bnds[i])) continue;
-                _supported[i] = true;
-                Frontier.Add(i);
+                if (!node.Body.Bedrock && !node.OnBedrock) continue;
+                node.Mark = supported;
+                Frontier.Add(node);
             }
 
             if (Frontier.Count == 0)
@@ -198,114 +240,170 @@ namespace Phys.Terrain
                 return;
             }
 
-            // Breadth-first over "touching" pairs. Each body is scanned against the rest
-            // once, when it is popped, so this stays O(n²) AABB tests at worst.
             for (int q = 0; q < Frontier.Count; q++)
-            {
-                int i = Frontier[q];
-                var ci = Cols[i];
-                if (!ci) continue;
-                var bi = Bnds[i];
-
-                for (int j = 0; j < n; j++)
+                foreach (var next in Frontier[q].Links)
                 {
-                    if (_supported[j]) continue;
-                    if (!Overlaps(bi, Bnds[j])) continue;
-                    if (!Touching(ci, Cols[j])) continue;
-                    _supported[j] = true;
-                    Frontier.Add(j);
+                    if (next.Mark == supported) continue;
+                    next.Mark = supported;
+                    Frontier.Add(next);
                 }
-            }
+
+            Loose.Clear();
+            foreach (var node in NodeList)
+                if (node.Mark != supported) Loose.Add(node);
+            if (Loose.Count == 0) return;
 
             // Everything the pass could not reach comes down — but as few bodies as possible.
             // Chunks are a unit of editing, not of physics: a six-chunk overhang that arrives
             // as six rigid bodies overlapping along their shared seams shoves itself apart in
             // the frame it is created, and a slab reads as a dropped stack of bricks. Chunks
-            // that are still touching each other are still one lump, so they are grouped by the
-            // same test that measured support and welded into one falling body.
-            Snapshot.Clear();
-            Snapshot.AddRange(Bodies);
-
-            Loose.Clear();
-            for (int i = 0; i < n; i++)
-                if (!_supported[i]) Loose.Add(i);
-            if (Loose.Count == 0) return;
-
-            // Off the register first, and all of it: welding calls Release, which unregisters,
-            // and that would be mutating Bodies underneath the indices Cols and Bnds share.
-            for (int i = n - 1; i >= 0; i--)
-                if (!_supported[i]) Bodies.RemoveAt(i);
-
-            if (_grouped.Length < n) _grouped = new bool[Mathf.NextPowerOfTwo(n)];
-            for (int i = 0; i < n; i++) _grouped[i] = false;
-
-            for (int s = 0; s < Loose.Count; s++)
+            // that are still linked to each other are still one lump, so they are welded into
+            // one falling body.
+            int grouped = ++_stamp;
+            Groups.Clear();
+            foreach (var seed in Loose)
             {
-                int seed = Loose[s];
-                if (_grouped[seed]) continue;
-
-                Group.Clear();
-                Group.Add(seed);
-                _grouped[seed] = true;
-
-                // Same breadth-first walk as the support pass, over the loose set only.
-                for (int q = 0; q < Group.Count; q++)
+                if (seed.Mark == grouped) continue;
+                var bodies = new List<TerrainBody>();
+                Frontier.Clear();
+                Frontier.Add(seed);
+                seed.Mark = grouped;
+                for (int q = 0; q < Frontier.Count; q++)
                 {
-                    int a = Group[q];
-                    var ca = Cols[a];
-                    if (!ca) continue;
-                    var ba = Bnds[a];
-
-                    for (int t = 0; t < Loose.Count; t++)
+                    var a = Frontier[q];
+                    if (a.Body) bodies.Add(a.Body);
+                    foreach (var b in a.Links)
                     {
-                        int b = Loose[t];
-                        if (_grouped[b]) continue;
-                        if (!Overlaps(ba, Bnds[b])) continue;
-                        if (!Touching(ca, Cols[b])) continue;
-                        _grouped[b] = true;
-                        Group.Add(b);
+                        if (b.Mark == supported || b.Mark == grouped) continue;
+                        b.Mark = grouped;
+                        Frontier.Add(b);
                     }
                 }
-
-                GroupBodies.Clear();
-                for (int g = 0; g < Group.Count; g++)
-                {
-                    var body = Snapshot[Group[g]];
-                    if (body) GroupBodies.Add(body);
-                }
-                TerrainPiece.Weld(GroupBodies);
+                Groups.Add(bodies);
             }
 
-            Snapshot.Clear();
-        }
-
-        /// <summary>Immovable colliders anywhere near the terrain, refreshed once per pass.</summary>
-        private static void CollectAnchors()
-        {
-            Anchors.Clear();
-            int mask = BedrockMask;
-            if (mask == 0 || Bnds.Count == 0) return;
-
-            var region = Bnds[0];
-            for (int i = 1; i < Bnds.Count; i++) region.Encapsulate(Bnds[i]);
-            region.Expand(ContactEpsilon * 4f);
-
-            var found = Physics2D.OverlapAreaAll(region.min, region.max, mask);
-            for (int i = 0; i < found.Length; i++)
-                if (found[i]) Anchors.Add(found[i]);
-        }
-
-        private static bool TouchesAnchor(Collider2D col, Bounds bounds)
-        {
-            if (!col) return false;
-            for (int i = 0; i < Anchors.Count; i++)
+            // Off the graph first, and all of it: welding calls Release, which unregisters.
+            foreach (var node in Loose)
             {
-                var anchor = Anchors[i];
-                if (!anchor) continue;
-                if (!Overlaps(bounds, anchor.bounds)) continue;
-                if (Touching(col, anchor)) return true;
+                Nodes.Remove(node.Id);
+                Drop(node);
+            }
+            foreach (var bodies in Groups) TerrainPiece.Weld(bodies);
+            Groups.Clear();
+        }
+
+        /// <summary>Work out the links of every stale node again.</summary>
+        private static void Relink()
+        {
+            // Pull them all out first, so a pair of stale neighbours is decided once, by
+            // whichever of the two comes first, and nothing stays linked to an old outline.
+            foreach (var node in Stale)
+            {
+                Unlink(node);
+                Unhash(node);
+                if (!node.Col) node.Col = node.Body.GetComponent<Collider2D>();
+                node.Bounds = node.Col
+                    ? node.Col.bounds
+                    : new Bounds(node.Body.transform.position, Vector3.zero);
+                Hash(node);
+            }
+
+            int done = ++_stamp;
+            int mask = BedrockMask;
+            foreach (var node in Stale)
+            {
+                node.Mark = done;
+                // A body whose collider is not there yet is asked about again next pass.
+                node.Stale = !node.Col;
+                if (!node.Col) continue;
+
+                node.OnBedrock = mask != 0 && TouchesBedrock(node, mask);
+
+                Candidates.Clear();
+                foreach (var key in node.Cells)
+                    if (Grid.TryGetValue(key, out var bucket))
+                        foreach (var other in bucket)
+                            if (other != node && other.Mark != done) Candidates.Add(other);
+
+                foreach (var other in Candidates)
+                {
+                    if (!other.Col) continue;
+                    if (!Overlaps(node.Bounds, other.Bounds)) continue;
+                    if (!Touching(node.Col, other.Col)) continue;
+                    node.Links.Add(other);
+                    other.Links.Add(node);
+                }
+            }
+        }
+
+        private static bool TouchesBedrock(Node node, int mask)
+        {
+            var region = node.Bounds;
+            region.Expand(ContactEpsilon * 4f);
+            var filter = new ContactFilter2D
+            {
+                useLayerMask = true,
+                layerMask = mask,
+                useTriggers = Physics2D.queriesHitTriggers,
+            };
+            AnchorHits.Clear();
+            Physics2D.OverlapArea(region.min, region.max, filter, AnchorHits);
+            foreach (var anchor in AnchorHits)
+            {
+                if (!anchor || !Overlaps(node.Bounds, anchor.bounds)) continue;
+                if (Touching(node.Col, anchor)) return true;
             }
             return false;
+        }
+
+        // ─────────────────────────────────────────────────────────────────────────
+        // Graph bookkeeping
+        // ─────────────────────────────────────────────────────────────────────────
+
+        private static void Drop(Node node)
+        {
+            Unlink(node);
+            Unhash(node);
+            int last = NodeList.Count - 1;
+            if (node.Index <= last && NodeList[node.Index] == node)
+            {
+                NodeList[node.Index] = NodeList[last];
+                NodeList[node.Index].Index = node.Index;
+                NodeList.RemoveAt(last);
+            }
+        }
+
+        private static void Unlink(Node node)
+        {
+            foreach (var other in node.Links) other.Links.Remove(node);
+            node.Links.Clear();
+        }
+
+        private static void Hash(Node node)
+        {
+            var b = node.Bounds;
+            float e = ContactEpsilon;
+            int x0 = Mathf.FloorToInt((b.min.x - e) / GridCell), x1 = Mathf.FloorToInt((b.max.x + e) / GridCell);
+            int y0 = Mathf.FloorToInt((b.min.y - e) / GridCell), y1 = Mathf.FloorToInt((b.max.y + e) / GridCell);
+            for (int y = y0; y <= y1; y++)
+            for (int x = x0; x <= x1; x++)
+            {
+                long key = ((long)x << 32) | (uint)y;
+                if (!Grid.TryGetValue(key, out var bucket)) Grid[key] = bucket = new List<Node>();
+                bucket.Add(node);
+                node.Cells.Add(key);
+            }
+        }
+
+        private static void Unhash(Node node)
+        {
+            foreach (var key in node.Cells)
+                if (Grid.TryGetValue(key, out var bucket))
+                {
+                    bucket.Remove(node);
+                    if (bucket.Count == 0) Grid.Remove(key);
+                }
+            node.Cells.Clear();
         }
 
         private static bool Overlaps(Bounds a, Bounds b)

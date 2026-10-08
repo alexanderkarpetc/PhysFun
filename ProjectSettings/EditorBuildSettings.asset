@@ -9,9 +9,6 @@ EditorBuildSettings:
     path: Assets/Scenes/Game.unity
     guid: df2508b93944e174c8665ea2a044c3b8
   - enabled: 1
-    path: Assets/Scenes/Rooms/Room_DryingLoft.unity
-    guid: 4e255a1b51229654a9d6ac756cec0c85
-  - enabled: 1
     path: Assets/Scenes/SampleScene.unity
     guid: 2cda990e2423bbf4892e6590ba056729
   m_configObjects:

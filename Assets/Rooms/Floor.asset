@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91ea44979a630e34ca283054159bae0c, type: 3}
+  m_Name: Floor
+  m_EditorClassIdentifier: Assembly-CSharp::Rooms.FloorRecipe
+  _rooms:
+  - {fileID: 903597102623877105, guid: 51d00b0dbbc05db1e462effc9ad85143, type: 3}
+  - {fileID: 749722814784161355, guid: 62701b28379dff5aada50c0e86fef5a8, type: 3}
+  - {fileID: 512874594484988291, guid: 8f0d322a8667501aba91d49ac3384b94, type: 3}
+  - {fileID: 912933556615244930, guid: d800f7e647a99021cdbe5a2225846aac, type: 3}
+  _roomCount: 4
+  _startRoom: {fileID: 0}
+  _fillTile: rock_hard
+  _fillMaterial: 0
+  _margin: 6
+  _gap: 5
+  _jitter: 0.35
+  _extraLinks: 1
+  _corridorSize: 1.6

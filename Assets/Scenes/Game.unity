@@ -342,7 +342,7 @@ GameObject:
   - component: {fileID: 1460815954}
   - component: {fileID: 1460815953}
   m_Layer: 0
-  m_Name: RoomLoader
+  m_Name: FloorLoader
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -359,10 +359,9 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1393fc2359cba8c4ca2b863a1789649c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Rooms.RoomLoader
-  _startRoom: Room_DryingLoft
-  _startEntry: 
-  _arrivalGrace: 0.6
+  m_EditorClassIdentifier: Assembly-CSharp::Rooms.FloorLoader
+  _recipe: {fileID: 11400000, guid: c8e0b0283e30cbfbf59c5d162bfd2d0a, type: 2}
+  _seed: 0
   _menuKey: 283
 --- !u!4 &1460815954
 Transform:

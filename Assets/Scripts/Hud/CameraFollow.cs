@@ -26,11 +26,16 @@ namespace Siege
         [Tooltip("Art scale. Sprites in this project import at 20 pixels per unit.")]
         [SerializeField] private float _pixelsPerUnit = 20f;
         [Tooltip("View height in art pixels. Noita renders 427x242, so 242 frames the world the " +
-                 "same way it does. 240 is the value that scales by an exact 3x at 720p. " +
+                 "same way it does. With integer scale on this is a target, not exact. " +
                  "Set to 0 to leave the orthographic size to something else, e.g. a " +
                  "Pixel Perfect Camera.")]
         [SerializeField] private float _viewHeightPixels = 242f;
-        [Tooltip("Keep the camera on whole art pixels. Stops pixel art shimmering as it moves.")]
+        [Tooltip("Draw every art pixel as a whole number of screen pixels (the nearest to the " +
+                 "target height). At a fractional scale art pixels come out 4 and 5 screen " +
+                 "pixels wide in turn, and that pattern crawls as the view moves.")]
+        [SerializeField] private bool _integerScale = true;
+        [Tooltip("Keep the camera on whole screen pixels. Not art pixels: stepping a whole art " +
+                 "pixel at a time makes the world judder against the smoothly moving player.")]
         [SerializeField] private bool _snapToPixelGrid = true;
 
         [Header("Follow")]
@@ -55,8 +60,19 @@ namespace Siege
         private Vector2 _pos, _posVel, _lean, _leanVel;
 
         /// <summary>Half-height of the view in units, i.e. the orthographic size it wants.</summary>
-        public float FramedSize =>
-            _pixelsPerUnit > 0f ? _viewHeightPixels / (2f * _pixelsPerUnit) : 0f;
+        public float FramedSize
+        {
+            get
+            {
+                if (_pixelsPerUnit <= 0f || _viewHeightPixels <= 0f) return 0f;
+                // Outside play mode Screen is whichever editor window is drawing, not the game.
+                if (!_integerScale || !Application.isPlaying || Screen.height <= 0)
+                    return _viewHeightPixels / (2f * _pixelsPerUnit);
+
+                int scale = Mathf.Max(1, Mathf.RoundToInt(Screen.height / _viewHeightPixels));
+                return Screen.height / (2f * scale * _pixelsPerUnit);
+            }
+        }
 
         private void Awake()
         {
@@ -143,10 +159,14 @@ namespace Siege
 
         private void Commit(Vector2 p)
         {
-            if (_snapToPixelGrid && _pixelsPerUnit > 0f)
+            if (_snapToPixelGrid && _cam && _cam.orthographic && Screen.height > 0)
             {
-                p.x = Mathf.Round(p.x * _pixelsPerUnit) / _pixelsPerUnit;
-                p.y = Mathf.Round(p.y * _pixelsPerUnit) / _pixelsPerUnit;
+                // Snap the screen's corner, not its centre: with an odd screen size the centre
+                // sits mid-pixel, which would put every texel edge on a pixel centre and flicker.
+                float unit = _cam.orthographicSize * 2f / Screen.height;
+                float hx = Screen.width * 0.5f * unit, hy = Screen.height * 0.5f * unit;
+                p.x = Mathf.Round((p.x - hx) / unit) * unit + hx;
+                p.y = Mathf.Round((p.y - hy) / unit) * unit + hy;
             }
 
             var rest = new Vector3(p.x, p.y, transform.position.z);

@@ -632,11 +632,11 @@ def outline(x0, y0, x1, y1, c=INK, key=KEY):
 
 def out_path(name):
     """Sheets land next to the scene scripts' parent — Assets/GameConcepts/. The level
-    sheets (LevelConcept_*) are the old room concepts and live in OldRooms/; the room
-    sheets (RoomConcept_*) live in Rooms/."""
+    sheets (LevelConcept_*) and the big room sheets (RoomConcept_*) are the older
+    concepts and live in OldRooms/. Rooms/ holds the small rooms, which go through
+    smallroomkit.small_path instead."""
     here = os.path.dirname(os.path.abspath(__file__))
-    sub = ("OldRooms" if name.startswith("LevelConcept_")
-           else "Rooms" if name.startswith("RoomConcept_") else "")
+    sub = "OldRooms" if name.startswith(("LevelConcept_", "RoomConcept_")) else ""
     return os.path.abspath(os.path.join(here, "..", sub, name))
 
 

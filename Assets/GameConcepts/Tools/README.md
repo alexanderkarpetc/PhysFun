@@ -376,6 +376,22 @@ at 2x) so they come out the same size on the png as on the level sheets.
 | R07 `room_bucketwheel.py` | big room, round: a bucket-wheel excavator left running - buckets are lifts, the boom is the bridge |
 | R08 `room_frozenthroat.py` | big room, organic: one ice throat top to bottom, bubbles off it at every height; the ice room to use instead of R05 |
 | R09 `room_fallentower.py` | big room, at angles: a tower fallen through the roof in three pieces - floor, ramp, wall |
+| `floor_stitch.py` | two sheets: three small (~400x400) rooms with sockets (`RoomConcept_SmallRooms`), and the same three stitched into one terrain - corridors between chosen sockets, unused ones left as rock, the rest filled with Default rock under its own tile (`RoomConcept_FloorStitch`) |
+
+### Small rooms (S-series)
+
+`levels/small_NN_<slug>.py`, one room each, drawn with `smallroomkit.py`; sheets land in
+`Rooms/` - the only sheets there; everything older is in `OldRooms/`. A small room is 300-460 px a side (about one screen across) and is made to
+be stitched with others into one terrain rather than loaded on its own, so each declares
+**sockets** - stubs from its air to its template edge, two on top where the shape allows
+and the rest on the sides. A socket no corridor uses stays rock. Each room keeps a shell of
+its own rock round its air; the rest of its box is fill (Default rock, colder tile).
+`small_index.py` puts every room on one contact sheet (`OldRooms/RoomConcept_SmallIndex.png`) for
+choosing between them.
+
+**No ice for now.** Ice is still rough in the game, so new rooms are not built around it.
+Codes are never reused: S10 (ice), S15 (spore clouds) and S40 (crystal cave) were cut,
+and the numbers stay empty.
 
 ### Topology, not storeys
 
@@ -394,7 +410,8 @@ every time. R07-R09 each pick a different *shape* for the whole room instead:
 a dark ceiling lip; `floor_at()` / `ceil_at()` find where something stands or hangs in it,
 which is how props and characters are placed in a cave with no flat floors.
 
-Sheets land in `Assets/GameConcepts/Rooms/` (`out_path` routes `RoomConcept_*` there).
+Sheets land in `Assets/GameConcepts/OldRooms/` (`out_path` routes `RoomConcept_*` there;
+`Rooms/` is for the small rooms).
 
 ### Big rooms
 

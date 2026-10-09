@@ -30,6 +30,8 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import smallroomkit as K  # noqa: E402
+import propexport as PE  # noqa: E402
+from roomkit import _load as R_load, _foot_row as R_foot, _CHARS as R_CHARS  # noqa: E402
 
 ASSETS = os.path.abspath(os.path.join(HERE, "..", ".."))
 OUT = os.path.join(ASSETS, "Rooms")
@@ -66,6 +68,7 @@ ENEMIES = {
     "WizHollowhood": "Hollowhood", "WizMaskwraith": "Maskwraith", "WizRamskull": "Ramskull",
 }
 BARREL = "Hazards/ExplosiveBarrel"
+ROPE = "Hazards/Rope"
 
 
 def guid(name):
@@ -129,15 +132,114 @@ def rasterise(mod):
         open_ |= cells
     shell = K.shell(open_, ox, oy, w, h)
 
-    # Run the furnish pass to learn where the enemies and kegs stand.
+    # Run the furnish pass to learn where the enemies, kegs and props are.
     spawns = []
     mod.stand = lambda name, cx, floor, flip=False, tint=None: spawns.append(("enemy", name, cx - ox, floor - oy))
     mod.keg = lambda x, floor: spawns.append(("barrel", None, x + 4.5 - ox, floor - oy))
+
+    def placed(name, x, y, flip=False, tint=None):
+        """An enemy pasted by its top-left (sprite()) rather than stood (stand()). Inside
+        draw_rotated the coords are the little canvas's own - those land outside the room."""
+        cw_, ch_, pix = R_load(os.path.join(R_CHARS, "Char_%s.png" % name))
+        cx, floor = x + cw_ // 2 - ox, y + R_foot(ch_, pix) + 1 - oy
+        if 0 <= cx < w and 0 <= floor < h:
+            spawns.append(("enemy", name, cx, floor))
+    mod.sprite = placed
+
+    def add(prefab, cx, cy, scale=1.0, angle=0.0, rope=None):
+        r = None if rope is None else [rope[0] - ox, None if rope[1] is None else rope[1] - oy, rope[2] - oy]
+        spawns.append(("prop", prefab, cx - ox, cy - oy, dict(scale=scale, angle=angle, rope=r)))
+    for fn, hook in prop_hooks(add, mod).items():
+        setattr(mod, fn, hook)
     room["furnish"](ox, oy, open_)
 
     air = {(x - ox, y - oy) for (x, y) in open_}
     shell = {(x - ox, y - oy) for (x, y) in shell}
-    return Grid(w, h, air, shell), spawns
+    g = Grid(w, h, air, shell)
+    for sp in spawns:                                        # no roof given: up to the rock above
+        if sp[0] == "prop" and sp[4]["rope"] and sp[4]["rope"][1] is None:
+            sp[4]["rope"][1] = g.ceil(sp[4]["rope"][0], sp[4]["rope"][2]) + 1
+    return g, spawns
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Props: the sheet's draw calls, turned into prefab instances
+# ─────────────────────────────────────────────────────────────────────────────
+def prop_hooks(add, mod):
+    """{draw function: replacement} for the furnish pass. Each replacement calls
+    add(prefab under Resources/Prefabs/Props, centre x, centre y, scale=, angle=, rope=)
+    in sheet coords, the centre being where the prop's sprite centre lands so that it
+    covers what the sheet drew. rope=(x, roof y or None, eye y) hangs it on a Hazards/Rope
+    from the roof (None = the rock straight above) down to the prefab's Eye child.
+
+    The art is `roomprops.py`. Local helpers share names across sheets (S12's drum is an
+    oil drum, S18's is the winch drum), so a hook names the sheets it is for."""
+    sheet = mod.__name__.split(".")[-1]
+
+    def only(*sheets):
+        return sheet in sheets
+
+    h = {}
+    h["crate_g"] = lambda x, floor, s=12: add("Crate", x + s / 2.0, floor - s / 2.0, scale=(s + 1) / 13.0)
+    # the cage sprite: eye 0-4, bars to 26, floor 27-28 on the sheet's `bottom`
+    h["cage"] = lambda cx, top, bottom, roof: add("HangingCage", cx + 0.5, bottom - 12.5,
+                                                   rope=(cx, roof, top - 4))
+    if only("small_04_belfry"):
+        h["bell"] = lambda cx, top, lip: add("Bell", cx + 0.5, top + 23, rope=(cx, None, top - 11))
+    if only("small_11_furnace"):
+        h["coal_sack"] = lambda x, floor: add("CoalSack", x + 6, floor - 6.5)
+    if only("small_14_ossuary", "small_26_idol"):
+        quiet = []
+
+        def skull(x, y, flip=False):
+            if not quiet:
+                add("Skull", x + 2, y - 2)
+        h["skull"] = skull
+        # the skulls packed into niches and heaps are part of the bone, not 70 loose bodies
+        for packed in ("fill_niche", "charnel_heap"):
+            if hasattr(mod, packed):
+                def wrapped(*a, _fn=getattr(mod, packed), **k):
+                    quiet.append(1)
+                    try:
+                        return _fn(*a, **k)
+                    finally:
+                        quiet.pop()
+                h[packed] = wrapped
+    if only("small_14_ossuary"):
+        h["gibbet"] = lambda x, roof, top: add("Gibbet", x + 0.5, top + 11, rope=(x, roof, top - 3))
+    if only("small_26_idol"):
+        h["censer"] = lambda x, roof, drop: add("Censer", x + 0.5, roof + drop + 1,
+                                                rope=(x, roof, roof + drop - 4))
+    if only("small_13_counterweight"):
+        h["counterweight"] = lambda cx, y: add("Counterweight", cx + 0.5, y + 23.5, rope=(cx, None, y))
+    if only("small_12_magnetcrane"):
+        h["drum"] = lambda x, floor, c=None: add("OilDrum", x + 4, floor - 7)
+    if only("small_20_scrapyard"):
+        def drum_(x, floor, c=None, cl=None, lying=False):
+            name = "OilDrumGreen" if c is not None and c[1] > c[0] else "OilDrum"
+            if lying:
+                add(name, x + 7, floor - 5.5, angle=90)
+            else:
+                add(name, x + 5, floor - 7)
+        h["drum_"] = drum_
+    if only("small_05_sawpit"):
+        def log(x0, x1, y, r=4):
+            ln = x1 - x0
+            add("LogLong" if ln > 60 else "LogShort", (x0 + x1) / 2.0, y + 0.5,
+                scale=ln / (88.0 if ln > 60 else 44.0))
+        h["log"] = log
+    if only("small_23_timberchute"):
+        h["log_end"] = lambda cx, cy, r=5: add("LogEnd", cx + 0.5, cy + 0.5, scale=(2 * r + 1) / 12.0)
+    if only("small_25_gasroom"):
+        tints = {(110, 58, 50): "GasBottleRed", (128, 112, 60): "GasBottleOchre",
+                 (78, 96, 70): "GasBottleGreen"}
+
+        def bottle(cx, floor, h=34, c=(70, 84, 96), valve=True):
+            add(tints.get(tuple(c), "GasBottle"), cx + 0.5, floor - (h + 4) / 2.0)
+        h["bottle"] = bottle
+    for name, fn in getattr(mod, "PROP_HOOKS", {}).items():   # a sheet may bring its own
+        h[name] = lambda *a, _fn=fn, **k: _fn(add, *a, **k)
+    return {k: v for k, v in h.items() if hasattr(mod, k)}
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -298,6 +400,15 @@ def prefab_root(path):
     raise ValueError("no root transform in " + path)
 
 
+def rope_component(path):
+    """File id of the Rope2D on the rope prefab (the one MonoBehaviour with `points:`)."""
+    text = open(path, encoding="utf-8").read()
+    for block in text.split("--- !u!")[1:]:
+        if block.startswith("114 &") and "\n  points:" in block:
+            return int(block[5:block.index("\n")].split()[0])
+    raise ValueError("no Rope2D in " + path)
+
+
 class Prefab:
     def __init__(self, name):
         self.name = name
@@ -342,21 +453,33 @@ MonoBehaviour:
 {fields}""")
         return tid, cids
 
-    def instance(self, key, src_rel, name, parent_t, pos):
-        """A nested prefab instance of Resources/Prefabs/<src_rel>.prefab."""
+    def instance(self, key, src_rel, name, parent_t, pos, angle=0.0, scale=1.0, mods=(), refs=()):
+        """A nested prefab instance of Resources/Prefabs/<src_rel>.prefab. `mods` are extra
+        (target file id in the source, property path, value); `refs` are (target, path,
+        file id in this prefab) object references. Returns (instance id, source guid)."""
         path = os.path.join(ASSETS, "Resources", "Prefabs", src_rel + ".prefab")
         src = open(path + ".meta").read().split("guid: ")[1].split()[0]
         rgo, rt = prefab_root(path)
         pid, sid = fid(self.name, key, "pi"), fid(self.name, key, "st")
-        mods = [(rt, "m_LocalPosition.x", "%.4f" % pos[0]), (rt, "m_LocalPosition.y", "%.4f" % pos[1]),
-                (rt, "m_LocalPosition.z", "0"), (rt, "m_LocalRotation.w", "1"),
+        a = math.radians(angle) / 2
+        base = [(rt, "m_LocalPosition.x", "%.4f" % pos[0]), (rt, "m_LocalPosition.y", "%.4f" % pos[1]),
+                (rt, "m_LocalPosition.z", "0"), (rt, "m_LocalRotation.w", "%.6f" % math.cos(a)),
                 (rt, "m_LocalRotation.x", "0"), (rt, "m_LocalRotation.y", "0"),
-                (rt, "m_LocalRotation.z", "0"), (rgo, "m_Name", name)]
+                (rt, "m_LocalRotation.z", "%.6f" % math.sin(a)), (rgo, "m_Name", name)]
+        if angle:
+            base.append((rt, "m_LocalEulerAnglesHint.z", "%g" % angle))
+        if scale != 1.0:
+            base += [(rt, "m_LocalScale.x", "%.4f" % scale), (rt, "m_LocalScale.y", "%.4f" % scale)]
         m = "".join(f"""    - target: {{fileID: {t}, guid: {src}, type: 3}}
       propertyPath: {p}
       value: {v}
       objectReference: {{fileID: 0}}
-""" for t, p, v in mods)
+""" for t, p, v in base + list(mods))
+        m += "".join(f"""    - target: {{fileID: {t}, guid: {src}, type: 3}}
+      propertyPath: {p}
+      value:
+      objectReference: {{fileID: {r}}}
+""" for t, p, r in refs)
         self.docs.append(f"""--- !u!1001 &{pid}
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -377,6 +500,18 @@ Transform:
   m_PrefabAsset: {{fileID: 0}}
 """)
         self.docs.append(("child", parent_t, sid))
+        return pid, src
+
+    def stripped(self, key, pid, src, source_fid):
+        """A Transform inside a nested instance, so something in this prefab can point at it."""
+        tid = fid(self.name, key, "strip")
+        self.docs.append(f"""--- !u!4 &{tid} stripped
+Transform:
+  m_CorrespondingSourceObject: {{fileID: {source_fid}, guid: {src}, type: 3}}
+  m_PrefabInstance: {{fileID: {pid}}}
+  m_PrefabAsset: {{fileID: 0}}
+""")
+        return tid
 
     def text(self):
         children = {}
@@ -446,8 +581,26 @@ def build_prefab(name, mod, g, spawns):
 
     enemies_t, _ = p.go("enemies", "Enemies", root_t, (0, 0), [])
     props_t, _ = p.go("props", "Props", root_t, (0, 0), [])
-    for i, (kind, who, x, floor) in enumerate(spawns):
+    for i, sp in enumerate(spawns):
+        kind, who, x, floor = sp[:4]
         fx, fy = local(x, floor)
+        if kind == "prop":
+            opts = sp[4]
+            pid, src = p.instance("p%d" % i, "Props/" + who, who, props_t, (fx, fy),
+                                  angle=opts["angle"], scale=opts["scale"])
+            if opts["rope"]:
+                rx, ry, eye_y = opts["rope"]
+                top, eye = local(rx, ry), local(rx, eye_y)
+                anchor = p.stripped("p%d/eye" % i, pid, src, PE.anchor_id(who, "Eye"))
+                rope_c = rope_component(os.path.join(ASSETS, "Resources", "Prefabs", ROPE + ".prefab"))
+                p.instance("r%d" % i, ROPE, who + "Rope", props_t, top, mods=[
+                    (rope_c, "points.Array.size", "2"),
+                    (rope_c, "points.Array.data[0].x", "0"), (rope_c, "points.Array.data[0].y", "0"),
+                    (rope_c, "points.Array.data[1].x", "0"),
+                    (rope_c, "points.Array.data[1].y", "%.4f" % (eye[1] - top[1])),
+                    (rope_c, "pinStart", "1"), (rope_c, "pinEnd", "0")],
+                    refs=[(rope_c, "anchorB", anchor)])
+            continue
         if kind == "enemy":
             src = ENEMIES.get(who)
             if not src:

@@ -21,6 +21,7 @@ upscaled x4 nearest). Pure stdlib, no pip install, no Unity involvement.
 | `icons.py` | legacy: the first 32x32 object icons, now in `Icons/Legacy/` — see **Object icons (legacy)** below |
 | `mineprops.py` | the mine objects at game scale — see **Mine props** below |
 | `labprops.py` | the lab objects at game scale, on the same kit — see **Lab props** below |
+| `roomprops.py` (+ `roomprops_*.py`, `propexport.py`) | the small rooms' loose and moving objects as **game assets** — sprites and prefabs, see **Room props** below |
 
 
 `conceptkit` is the part that should grow. If a new sheet needs a prop that another
@@ -451,6 +452,55 @@ in as terrain of the right material - timber as `wood`, a parted slab as `rock_a
 boulder as `templerock` - drawn so that the thing it hangs on is the only thing it touches,
 because the support pass counts any contact as support. `EXTRAS` in the script holds those,
 per room; `ENEMIES` maps concept sprites to the enemy prefabs that exist.
+
+What has to fall, swing, roll or be thrown cannot be terrain, so it is a prop prefab from
+**Room props** below. `prop_hooks` in the script swaps a sheet's draw calls (`bell`,
+`cage`, `crate_g`, `coal_sack`, `drum`, `log_end`...) for instances of those prefabs, centred
+where the sheet drew them; a hung one also gets a `Hazards/Rope` from the roof (or the rock
+straight above it) down to the prefab's `Eye` child. Local helpers share names across
+sheets, so a hook names the sheets it is for; a sheet can also bring its own as
+`PROP_HOOKS = {"fn": lambda add, *args: add("Prefab", cx, cy, ...)}`. Enemies pasted with
+`sprite()` instead of `stand()` (S04's ghast, S12's sentinel on the magnet) are picked up too.
+Machines that need joints - the turntable, the trebuchet, the scales, the stamps - are left
+for the hand pass: their parts are prefabs, the hinges are not generated.
+
+## Room props
+
+```bash
+python Assets/GameConcepts/Tools/roomprops.py                    # every part
+python Assets/GameConcepts/Tools/roomprops.py roomprops_hung     # one part
+```
+
+The S-series sheets draw their bells, cages, gas bottles and idols straight onto the room.
+These are the same objects as **game assets**: each part (`roomprops_hung`,
+`roomprops_machines`, `roomprops_dwellings`) is a catalogue in the mineprops format plus a
+material and an optional extra, and for every entry `propexport.py` writes
+
+| file | what |
+|---|---|
+| `Assets/Sprites/Props/Rooms/<Name>.png` | 1x, real alpha; Sprite, point, uncompressed, **readable** (fire and the eraser edit it), 20 PPU, centre pivot |
+| `Assets/Resources/Prefabs/Props/<Name>.prefab` | SpriteRenderer, Rigidbody2D, PolygonCollider2D, MaterialView (+ Explosive for the gas bottles); an empty `Eye` child where a hung prop's rope ties on |
+| `Icons/Rooms/Icon_<Name>.png`, `Icons/IconSheet_Rooms_<Part>.png` | x4 icon and a contact sheet with the hero for scale |
+
+The collider is traced from the pixels by the script itself (loops round the opaque pixels,
+holes as holes, a diagonal touch is two loops, then Douglas-Peucker) so the prefab collides
+right from the first frame; `PixelSpriteRegistry` retraces it once fire or the eraser start
+taking pixels. Mass is what `MassRecalculator` would give it - area x 100 x the material's
+density - so a bronze bell weighs about a tonne and a crate about 25. Guids come from the
+names: a re-run rewrites everything in place and keeps every reference.
+
+The art rules are mineprops' (game scale, top-left light, ordered dither, grime only on
+drawn pixels, every pixel collides, one 4-connected body - the script warns when a drawing
+breaks it) plus two of its own:
+
+- **Outline only the outside.** The kit's `outline` rings every gap, which fills the 2px
+  between a cage's bars and turns them into a plate; `roomprops` rings the outside only.
+- **Hung things carry their eye, not their chain.** `ANCHORS = {"Bell": {"Eye": (x, y)}}` in
+  a part puts the `Eye` child; the chain is a rope the room sets up.
+
+The bell is the worked example of drawing something open underneath: a hollow U side-on
+reads as a tent, so it is a solid body with the mouth as an arch at the bottom and the
+clapper hanging in it - still open to fall over someone, and it reads as a bell.
 
 ## Pulley wheel sprites
 

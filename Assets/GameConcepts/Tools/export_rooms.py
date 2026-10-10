@@ -57,6 +57,9 @@ MATERIALS = {
     "gravel": ("gravel", 0),
     "steel": ("steel", 3),
     "boulder": ("templerock", 0),
+    "brick": ("templebrick", 0),
+    "firebrick": ("brick", 0),
+    "coal": ("coal", 0),
 }
 
 # concept sprite -> prefab under Resources/Prefabs/Enemies (closest thing that exists)
@@ -69,6 +72,31 @@ ENEMIES = {
 }
 BARREL = "Hazards/ExplosiveBarrel"
 ROPE = "Hazards/Rope"
+G_DAMAGEABLE = "baa9384630d24df0977c63474029daee"  # Common/Damageable
+HUNG_LINK = 1.0         # kg a link of a rope a prop hangs from
+HUNG_LOAD = 60.0        # kg at most a hung prop weighs, per rope (a bell is a tonne by area)
+
+
+def prop_mass(prefab):
+    t = open(os.path.join(ASSETS, "Resources", "Prefabs", "Props", prefab + ".prefab"), encoding="utf-8").read()
+    return float(t.split("m_Mass: ")[1].split()[0])
+G_ROPE2D = "354d5a79391726947894a3cca5cc16e5"      # Props/Rope2D
+G_BRIDGE = "1276b41eb86147aa816dfa8b19a81a02"      # Spawners/BridgeBuilder2D
+G_FUSE = "f1a0ab60ff6834642af8ee11fbd989a0"        # Phys/Explosions/FuseCord
+
+
+def anchor_halfwidth(prefab):
+    """Half the width of a prop's sprite, world units - where a plank's hinges go."""
+    t = open(os.path.join(ASSETS, "Resources", "Prefabs", "Props", prefab + ".prefab"), encoding="utf-8").read()
+    return float(t.split("m_Size: {x: ")[1].split(",")[0]) / 2.0
+
+
+def script_guid(rel):
+    """A script's guid from the .meta Unity wrote for it - never one made up here."""
+    meta = os.path.join(ASSETS, rel + ".meta")
+    if not os.path.exists(meta):
+        raise SystemExit("%s has no .meta yet: let the Unity editor import it, then run again" % rel)
+    return open(meta).read().split("guid: ")[1].split()[0]
 
 
 def guid(name):
@@ -116,6 +144,10 @@ class Grid:
         return y
 
 
+AIR_MARK = (1, 2, 3)
+ROCK_COLOURS = {K.ROCK, K.ROCK_D, K.ROCK_M, K.ROCK_L, K.FILL, K.FILL_D, K.FILL_M, K.FILL_L}
+
+
 def rasterise(mod):
     """Rebuild the room's air exactly as its sheet does - same canvas, same seed, the
     fill painted first so the noise lines up - then shift it to the room's own coords."""
@@ -135,7 +167,9 @@ def rasterise(mod):
     # Run the furnish pass to learn where the enemies, kegs and props are.
     spawns = []
     mod.stand = lambda name, cx, floor, flip=False, tint=None: spawns.append(("enemy", name, cx - ox, floor - oy))
-    mod.keg = lambda x, floor: spawns.append(("barrel", None, x + 4.5 - ox, floor - oy))
+    # a keg is the Keg prop (9x11, the sheet's own size, explosive); the four rooms exported
+    # before it existed keep their ExplosiveBarrels until they are exported again
+    mod.keg = lambda x, floor: add("Keg", x + 4.5, floor - 5.5)
 
     def placed(name, x, y, flip=False, tint=None):
         """An enemy pasted by its top-left (sprite()) rather than stood (stand()). Inside
@@ -146,25 +180,124 @@ def rasterise(mod):
             spawns.append(("enemy", name, cx, floor))
     mod.sprite = placed
 
-    def add(prefab, cx, cy, scale=1.0, angle=0.0, rope=None):
-        r = None if rope is None else [rope[0] - ox, None if rope[1] is None else rope[1] - oy, rope[2] - oy]
-        spawns.append(("prop", prefab, cx - ox, cy - oy, dict(scale=scale, angle=angle, rope=r)))
-    for fn, hook in prop_hooks(add, mod).items():
-        setattr(mod, fn, hook)
-    room["furnish"](ox, oy, open_)
+    def add(prefab, cx, cy, scale=1.0, angle=0.0, rope=None, ropes=(), static=False,
+            key=None, fields=None, mass=None):
+        """rope=(x, roof y or None, eye y) is the old one-rope form; ropes=[(anchor, roof x,
+        roof y or None)] ties each named anchor of the prop to the roof above that x.
+        key names the instance for add.joint; fields = {component index: {field: value}}
+        overrides the prefab's own components (index into its extras, 0 = the first);
+        mass overrides its Rigidbody2D's."""
+        hung = [("Eye", rope[0], rope[1])] if rope else []
+        hung += list(ropes)
+        r = [[a, x - ox, None if y is None else y - oy] for a, x, y in hung]
+        spawns.append(("prop", prefab, cx - ox, cy - oy,
+                       dict(scale=scale, angle=angle, ropes=r, static=static, key=key,
+                            fields=fields or {}, mass=mass)))
 
+    def joint(body, anchor, connected=None, kind=0, **fields):
+        """A PropJoint at `anchor` of the prop keyed `body`, to the prop keyed `connected`
+        (None = the world). kind 0 hinge, 1 slider, 2 fixed; fields are PropJoint's
+        (_useMotor, _motorSpeed, ...)."""
+        spawns.append(("joint", body, anchor, connected, dict(kind=kind, **fields)))
+    add.joint = joint
+
+    def rope(key, x0, y0, x1, y1):
+        """A rope from (x0, y0) - pinned there - towards (x1, y1), its far end left for
+        whatever ties it on at runtime (a bridge's hanger), under a Tether2D so it can be
+        shot through. Sheet coords."""
+        spawns.append(("rope", key, x0 - ox, y0 - oy, (x1 - ox, y1 - oy)))
+    add.rope = rope
+
+    def bridge(x0, y0, x1, y1, count, hangers, plank="BridgePlank"):
+        """A BridgeBuilder2D built when the room wakes: `count` planks from (x0, y0) to
+        (x1, y1), ends left loose, hung from ropes made with add.rope - hangers =
+        [(rope key, 0..1 along the bridge)]. Sheet coords."""
+        spawns.append(("bridge", plank, x0 - ox, y0 - oy, (x1 - ox, y1 - oy, count, list(hangers))))
+    add.bridge = bridge
+
+    def fuse(points, burn_speed=1.0):
+        """A FuseCord along `points` (sheet coords, first = the free end), lit by fire."""
+        spawns.append(("fuse", None, points[0][0] - ox, points[0][1] - oy,
+                       dict(points=[(x - ox, y - oy) for x, y in points], speed=burn_speed)))
+    add.fuse = fuse
+
+    def place(rel, cx, cy, mods=(), angle=0.0, scale=1.0, name=None):
+        """An instance of any prefab under Resources/Prefabs (a Conveyor, a Grinder), centred
+        at (cx, cy) sheet coords, with mods = [(file id in that prefab, property path, value)]."""
+        spawns.append(("inst", rel, cx - ox, cy - oy, dict(mods=list(mods), angle=angle,
+                                                           scale=scale, name=name)))
+    add.place = place
+
+    def component(name, script_rel, cx, cy, fields=""):
+        """A bare GameObject at (cx, cy) sheet coords carrying one of the game's scripts
+        (a FireSource, say), its serialized fields given as YAML lines."""
+        spawns.append(("comp", name, cx - ox, cy - oy, dict(script=script_rel, fields=fields)))
+    add.component = component
+    hooks = prop_hooks(add, mod)
+    rb = room_module(mod)
+    if rb and hasattr(rb, "hooks"):
+        rb.ORIGIN = (ox, oy)                                 # sheet coords of the room's corner
+        hooks.update({k: v for k, v in rb.hooks(add, mod).items() if hasattr(mod, k)})
+    for fn, hook in hooks.items():
+        setattr(mod, fn, hook)
+    # Paint the air one colour no sheet uses, and switch the light off, so that afterwards
+    # whatever the furnish pass drew in rock colours over the air - teeth off the roof,
+    # shelves off the walls, mounds - can be told apart and turned into rock.
+    for (x, y) in open_:
+        K.px(x, y, AIR_MARK)
+    mod.glow = lambda *a, **k: None
+    # The furnish pass sees the room without its socket stubs: on the sheet every stub is
+    # open, but in a floor an unused one is rock again, and a floor_at / ceil_at that runs
+    # down a stub stands a gaper at the bottom of a hole that is about to be filled in, or
+    # hangs a rod from the top of a corridor that may not be there.
+    room["furnish"](ox, oy, set(a))
+    if rb and hasattr(rb, "furnish"):                        # props the sheet draws inline
+        rb.furnish(add, mod, ox, oy)
+
+    grown = {(x, y) for (x, y) in open_ if K.at(x, y) in ROCK_COLOURS}
+    open_ -= grown
     air = {(x - ox, y - oy) for (x, y) in open_}
-    shell = {(x - ox, y - oy) for (x, y) in shell}
+    shell = {(x - ox, y - oy) for (x, y) in shell | grown}
     g = Grid(w, h, air, shell)
     for sp in spawns:                                        # no roof given: up to the rock above
-        if sp[0] == "prop" and sp[4]["rope"] and sp[4]["rope"][1] is None:
-            sp[4]["rope"][1] = g.ceil(sp[4]["rope"][0], sp[4]["rope"][2]) + 1
+        if sp[0] != "prop" or len(sp) < 5 or not isinstance(sp[4], dict) or "ropes" not in sp[4]:
+            continue
+        for r in sp[4]["ropes"]:
+            if r[2] is None:
+                r[2] = g.ceil(r[1], sp[3]) + 1
     return g, spawns
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  Props: the sheet's draw calls, turned into prefab instances
 # ─────────────────────────────────────────────────────────────────────────────
+def room_module(mod):
+    """`roombuild/<sheet>.py`, if the room has one: what is particular to assembling that
+    room - `extras(g, mod)` for its structure as terrain, `hooks(add, mod)` for its own
+    draw calls as props, `furnish(add, mod, ox, oy)` for props the sheet draws inline."""
+    sheet = mod.__name__.split(".")[-1]
+    try:
+        return importlib.import_module("roombuild." + sheet)
+    except ModuleNotFoundError as e:
+        if e.name not in ("roombuild." + sheet, "roombuild"):
+            raise
+        return None
+
+
+def anchor_local(prefab, anchor):
+    """Where a prop prefab's anchor child sits, local units - read from the prefab."""
+    path = os.path.join(ASSETS, "Resources", "Prefabs", "Props", prefab + ".prefab")
+    text = open(path, encoding="utf-8").read()
+    t = "--- !u!4 &%d\n" % PE.anchor_id(prefab, anchor)
+    if t not in text:
+        raise ValueError("%s has no anchor %s" % (prefab, anchor))
+    block = text.split(t)[1]
+    pos = block.split("m_LocalPosition: {x: ")[1]
+    x = float(pos.split(",")[0])
+    y = float(pos.split("y: ")[1].split(",")[0])
+    return x, y
+
+
 def prop_hooks(add, mod):
     """{draw function: replacement} for the furnish pass. Each replacement calls
     add(prefab under Resources/Prefabs/Props, centre x, centre y, scale=, angle=, rope=)
@@ -413,6 +546,7 @@ class Prefab:
     def __init__(self, name):
         self.name = name
         self.docs = []
+        self.strips = {}        # (instance, source file id) -> the one stripped object for it
 
     def go(self, key, name, parent_t, pos, components):
         """A GameObject with a Transform and the given MonoBehaviours (script guid, fields).
@@ -461,6 +595,7 @@ MonoBehaviour:
         src = open(path + ".meta").read().split("guid: ")[1].split()[0]
         rgo, rt = prefab_root(path)
         pid, sid = fid(self.name, key, "pi"), fid(self.name, key, "st")
+        self.strips[(pid, rt)] = sid
         a = math.radians(angle) / 2
         base = [(rt, "m_LocalPosition.x", "%.4f" % pos[0]), (rt, "m_LocalPosition.y", "%.4f" % pos[1]),
                 (rt, "m_LocalPosition.z", "0"), (rt, "m_LocalRotation.w", "%.6f" % math.cos(a)),
@@ -502,9 +637,37 @@ Transform:
         self.docs.append(("child", parent_t, sid))
         return pid, src
 
+    def docs_add_component(self, tid, key, script, fields):
+        """Put one more MonoBehaviour on the GameObject whose Transform is `tid` (made by go())."""
+        gid = fid(self.name, key, "go")
+        cid = fid(self.name, key, "extra")
+        for i, d in enumerate(self.docs):
+            if isinstance(d, str) and d.startswith("--- !u!1 &%d\n" % gid):
+                self.docs[i] = d.replace("  m_Layer: 0\n", "  - component: {fileID: %d}\n  m_Layer: 0\n" % cid, 1)
+                break
+        self.docs.append(f"""--- !u!114 &{cid}
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {{fileID: 0}}
+  m_PrefabInstance: {{fileID: 0}}
+  m_PrefabAsset: {{fileID: 0}}
+  m_GameObject: {{fileID: {gid}}}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {{fileID: 11500000, guid: {script}, type: 3}}
+  m_Name:
+  m_EditorClassIdentifier:
+{fields}""")
+        return cid
+
     def stripped(self, key, pid, src, source_fid):
-        """A Transform inside a nested instance, so something in this prefab can point at it."""
+        """A Transform inside a nested instance, so something in this prefab can point at it.
+        Unity allows one stripped object per (instance, source object): a second one for the
+        same pair is not resolved, and whatever points at it gets null - so reuse."""
+        if (pid, source_fid) in self.strips:
+            return self.strips[(pid, source_fid)]
         tid = fid(self.name, key, "strip")
+        self.strips[(pid, source_fid)] = tid
         self.docs.append(f"""--- !u!4 &{tid} stripped
 Transform:
   m_CorrespondingSourceObject: {{fileID: {source_fid}, guid: {src}, type: 3}}
@@ -512,6 +675,30 @@ Transform:
   m_PrefabAsset: {{fileID: 0}}
 """)
         return tid
+
+    def stripped_component(self, key, pid, src, source_fid, type_id, type_name, script=None):
+        """A component inside a nested instance (its Rigidbody2D, a script on it), so a
+        component in this prefab can hold a reference to it."""
+        if (pid, source_fid) in self.strips:
+            return self.strips[(pid, source_fid)]
+        cid = fid(self.name, key, "stripc")
+        self.strips[(pid, source_fid)] = cid
+        extra = ""
+        if type_name == "MonoBehaviour":
+            extra = f"""  m_GameObject: {{fileID: 0}}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {{fileID: 11500000, guid: {script}, type: 3}}
+  m_Name:
+  m_EditorClassIdentifier:
+"""
+        self.docs.append(f"""--- !u!{type_id} &{cid} stripped
+{type_name}:
+  m_CorrespondingSourceObject: {{fileID: {source_fid}, guid: {src}, type: 3}}
+  m_PrefabInstance: {{fileID: {pid}}}
+  m_PrefabAsset: {{fileID: 0}}
+{extra}""")
+        return cid
 
     def text(self):
         children = {}
@@ -563,11 +750,13 @@ def build_prefab(name, mod, g, spawns):
     sockets_t, _ = p.go("sockets", "Sockets", root_t, (0, 0), [])
     side_index = {"L": 0, "R": 1, "T": 2, "B": 3}
     entry = None
+    rb = room_module(mod)
+    want = getattr(rb, "ENTRY", None)                        # a room module may pick the way in
     for sid, (side, pos, depth) in room["sockets"].items():
         if side in "LR":
             at = local(0 if side == "L" else w, pos)
             size = 1.5
-            if entry is None:
+            if entry is None and want in (None, sid):
                 inward = (depth * U + 0.9) * (1 if side == "L" else -1)
                 entry = ((at[0] + inward, at[1]), side == "L")
         else:
@@ -575,31 +764,91 @@ def build_prefab(name, mod, g, spawns):
             size = 1.3
         p.go("socket/" + sid, sid, sockets_t, at,
              [(G_SOCKET, f"  _side: {side_index[side]}\n  _size: {size}\n  _depth: {depth * U:.4f}\n")])
+    at = getattr(rb, "ENTRY_AT", None)                     # or a point on the floor, local px
+    if at:
+        entry = (local(*at), at[0] < w / 2)
     if entry:
         p.go("entry", "Entry", root_t, entry[0],
              [(G_ENTRY, f"  _id: start\n  _faceRight: {1 if entry[1] else 0}\n")])
 
     enemies_t, _ = p.go("enemies", "Enemies", root_t, (0, 0), [])
     props_t, _ = p.go("props", "Props", root_t, (0, 0), [])
+    keyed = {}
     for i, sp in enumerate(spawns):
+        if sp[0] == "inst":
+            _, rel, x, y, o = sp
+            p.instance("i%d" % i, rel, o["name"] or os.path.basename(rel), props_t, local(x, y),
+                       angle=o["angle"], scale=o["scale"], mods=o["mods"])
+            continue
+        if sp[0] == "comp":
+            _, cname, x, y, o = sp
+            p.go("c%d" % i, cname, props_t, local(x, y), [(script_guid(o["script"]), o["fields"])])
+            continue
+        if sp[0] == "fuse":
+            _, _, x, y, o = sp
+            a = local(x, y)
+            pts = "".join("  - {x: %.4f, y: %.4f}\n" % (local(px_, py_)[0] - a[0], local(px_, py_)[1] - a[1])
+                          for px_, py_ in o["points"])
+            p.go("f%d" % i, "FuseCord", props_t, a, [(G_FUSE, (
+                "  points:\n%s  pixelsPerUnit: 20\n  burnSpeed: %g\n  litByFire: 1\n"
+                "  targets: []\n  triggerRadius: 0.25\n  lightOnStart: 0\n  removeWhenSpent: 1\n")
+                % (pts, o["speed"]))])
+            continue
+        if sp[0] in ("joint", "rope", "bridge"):
+            continue
         kind, who, x, floor = sp[:4]
         fx, fy = local(x, floor)
         if kind == "prop":
             opts = sp[4]
+            mods = [(PE.fid("prop", who, "rb"), "m_BodyType", "2")] if opts["static"] else []
+            if opts["mass"] is not None:
+                mods.append((PE.fid("prop", who, "rb"), "m_Mass", "%g" % opts["mass"]))
+            for ci, fl in opts["fields"].items():
+                for fname, val in fl.items():
+                    mods.append((PE.fid("prop", who, "x%d" % ci), fname, str(val)))
+            if opts["ropes"]:
+                # A rope holds what hangs on it only if the load is not hundreds of times a
+                # link: the prop's own mass (area x density) can be a tonne, so a hung prop is
+                # capped at HUNG_LOAD per rope it hangs from.
+                cap = HUNG_LOAD * len(opts["ropes"])
+                if prop_mass(who) > cap:
+                    mods.append((PE.fid("prop", who, "rb"), "m_Mass", "%g" % cap))
             pid, src = p.instance("p%d" % i, "Props/" + who, who, props_t, (fx, fy),
-                                  angle=opts["angle"], scale=opts["scale"])
-            if opts["rope"]:
-                rx, ry, eye_y = opts["rope"]
-                top, eye = local(rx, ry), local(rx, eye_y)
-                anchor = p.stripped("p%d/eye" % i, pid, src, PE.anchor_id(who, "Eye"))
-                rope_c = rope_component(os.path.join(ASSETS, "Resources", "Prefabs", ROPE + ".prefab"))
-                p.instance("r%d" % i, ROPE, who + "Rope", props_t, top, mods=[
+                                  angle=opts["angle"], scale=opts["scale"], mods=mods)
+            if opts["key"]:
+                keyed[opts["key"]] = (i, pid, src, who, fx, fy, opts["scale"])
+            g_tether = script_guid("Scripts/Props/Tether2D.cs")
+            rope_c = rope_component(os.path.join(ASSETS, "Resources", "Prefabs", ROPE + ".prefab"))
+            for k, (aname, rx, ry) in enumerate(opts["ropes"]):
+                ax, ay = anchor_local(who, aname)
+                eye = (fx + ax * opts["scale"], fy + ay * opts["scale"])
+                top = (eye[0], local(rx, ry)[1])
+                anchor = p.stripped("p%d/%s" % (i, aname), pid, src, PE.anchor_id(who, aname))
+                # A Rope2D to look at, bend, collide and be cut; a Tether2D over it carrying the
+                # weight on a distance joint a little shorter than the rope, so the links never
+                # take the load and never stretch. The rope sits under the tether so a hit on
+                # any link finds the tether's Damageable.
+                key = "t%d_%d" % (i, k)
+                tether_t, _ = p.go(key, who + "Rope", props_t, top, [
+                    (g_tether, "  _rope: {fileID: %d}\n  _cutDamage: 5\n"
+                               % fid(p.name, key + "/rope", "stripc")),
+                    (G_DAMAGEABLE, "  maxHealth: 100000\n  targetLayers:\n    serializedVersion: 2\n"
+                                   "    m_Bits: 0\n  deathKick: 0\n  config: {fileID: 0}\n"
+                                   "  takesPhysicsDamage: 0\n  showDamageNumbers: 0\n  bleeds: 0\n"
+                                   "  bloodColor: {r: 0, g: 0, b: 0, a: 0}\n")])
+                rpid, rsrc = p.instance(key + "/r", ROPE, "Rope", tether_t, (0, 0), mods=[
                     (rope_c, "points.Array.size", "2"),
                     (rope_c, "points.Array.data[0].x", "0"), (rope_c, "points.Array.data[0].y", "0"),
                     (rope_c, "points.Array.data[1].x", "0"),
                     (rope_c, "points.Array.data[1].y", "%.4f" % (eye[1] - top[1])),
-                    (rope_c, "pinStart", "1"), (rope_c, "pinEnd", "0")],
+                    (rope_c, "pinStart", "1"), (rope_c, "pinEnd", "1"),    # pinEnd ties it to anchorB
+                    # longRangeHold: no link further from the tie than its length along the
+                    # rope, the load no further than the whole rope - so it cannot stretch
+                    (rope_c, "longRangeHold", "1"),
+                    (rope_c, "massPerSegment", "%g" % HUNG_LINK), (rope_c, "tensionIterations", "12"),
+                    (rope_c, "maxTension", "0"), (rope_c, "breakable", "0")],
                     refs=[(rope_c, "anchorB", anchor)])
+                p.stripped_component(key + "/rope", rpid, rsrc, rope_c, 114, "MonoBehaviour", G_ROPE2D)
             continue
         if kind == "enemy":
             src = ENEMIES.get(who)
@@ -609,6 +858,69 @@ def build_prefab(name, mod, g, spawns):
             p.instance("e%d" % i, "Enemies/" + src, src, enemies_t, (fx, fy + 0.1))
         else:
             p.instance("b%d" % i, BARREL, "ExplosiveBarrel", props_t, (fx, fy + 0.4))
+
+    rope_c = rope_component(os.path.join(ASSETS, "Resources", "Prefabs", ROPE + ".prefab"))
+    ropes = {}
+    for i, sp in enumerate(spawns):
+        if sp[0] != "rope":
+            continue
+        _, key, x0, y0, (x1, y1) = sp
+        a, b = local(x0, y0), local(x1, y1)
+        k = "rope/" + key
+        tether_t, _ = p.go(k, "Rope_" + key, props_t, a, [
+            (script_guid("Scripts/Props/Tether2D.cs"),
+             "  _rope: {fileID: %d}\n  _cutDamage: 5\n" % fid(p.name, k + "/rope", "stripc")),
+            (G_DAMAGEABLE, "  maxHealth: 100000\n  targetLayers:\n    serializedVersion: 2\n"
+                           "    m_Bits: 0\n  deathKick: 0\n  config: {fileID: 0}\n"
+                           "  takesPhysicsDamage: 0\n  showDamageNumbers: 0\n  bleeds: 0\n"
+                           "  bloodColor: {r: 0, g: 0, b: 0, a: 0}\n")])
+        rpid, rsrc = p.instance(k + "/r", ROPE, "Rope", tether_t, (0, 0), mods=[
+            (rope_c, "points.Array.size", "2"),
+            (rope_c, "points.Array.data[0].x", "0"), (rope_c, "points.Array.data[0].y", "0"),
+            (rope_c, "points.Array.data[1].x", "%.4f" % (b[0] - a[0])),
+            (rope_c, "points.Array.data[1].y", "%.4f" % (b[1] - a[1])),
+            (rope_c, "pinStart", "1"), (rope_c, "pinEnd", "0"), (rope_c, "buildOnAwake", "0"),
+            (rope_c, "longRangeHold", "1"), (rope_c, "massPerSegment", "%g" % HUNG_LINK)])
+        ropes[key] = p.stripped_component(k + "/rope", rpid, rsrc, rope_c, 114, "MonoBehaviour", G_ROPE2D)
+    for i, sp in enumerate(spawns):
+        if sp[0] != "bridge":
+            continue
+        _, plank, x0, y0, (x1, y1, count, hangers) = sp
+        k = "bridge%d" % i
+        bt, _ = p.go(k, "Bridge", props_t, (0, 0), [])
+        lt, _ = p.go(k + "/l", "LeftAnchor", bt, local(x0, y0), [])
+        rt_, _ = p.go(k + "/r", "RightAnchor", bt, local(x1, y1), [])
+        pg = open(os.path.join(ASSETS, "Resources", "Prefabs", "Props", plank + ".prefab.meta")).read()
+        pguid = pg.split("guid: ")[1].split()[0]
+        hy = "".join("  - rope: {fileID: %d}\n    at: %g\n" % (ropes[rk], t) for rk, t in hangers)
+        half = anchor_halfwidth(plank)
+        p.docs_add_component(bt, k, G_BRIDGE, (
+            "  leftAnchor: {fileID: %d}\n  rightAnchor: {fileID: %d}\n"
+            "  segmentPrefab: {fileID: %d, guid: %s, type: 3}\n"
+            "  segmentCount: %d\n  autoSegmentLength: 1\n  segmentLength: 1\n"
+            "  localAnchorA: {x: %.4f, y: 0}\n  localAnchorB: {x: %.4f, y: 0}\n"
+            "  enableBreak: 1\n  breakForce: 15000\n  attachToWorldIfNoRB: 1\n  useFixedOnEnds: 0\n"
+            "  useStabilizers: 0\n  stabilizerHeight: 2.5\n  stabilizerEvery: 2\n  stabilizerSlack: 0.2\n"
+            "  segmentsRoot: {fileID: 0}\n  buildOnStart: 1\n  pinEnds: 0\n  hangers:\n%s"
+            % (lt, rt_, PE.fid("prop", plank, "go"), pguid, count, -half, half, hy)))
+
+    for i, sp in enumerate(spawns):
+        if sp[0] != "joint":
+            continue
+        _, body, aname, conn, f = sp
+        bi, bpid, bsrc, bwho, bx, by, bsc = keyed[body]
+        ax, ay = anchor_local(bwho, aname)
+        at = (bx + ax * bsc, by + ay * bsc)
+        body_t = p.stripped("j%d/body" % i, bpid, bsrc, PE.fid("prop", bwho, "t"))
+        conn_t = 0
+        if conn:
+            ci, cpid, csrc, cwho, *_ = keyed[conn]
+            conn_t = p.stripped("j%d/conn" % i, cpid, csrc, PE.fid("prop", cwho, "t"))
+        f = dict(f)
+        kind = f.pop("kind")
+        fields = "".join("  %s: %s\n" % kv for kv in f.items())
+        p.go("j%d" % i, "Joint_" + bwho, props_t, at, [(script_guid("Scripts/Rooms/PropJoint.cs"),
+             "  _body: {fileID: %d}\n  _connectedTo: {fileID: %d}\n  _kind: %d\n%s" % (body_t, conn_t, kind, fields))])
 
     meta = f"""fileFormatVersion: 2
 guid: {guid('Room_' + name + '.prefab')}
@@ -686,6 +998,9 @@ def main(argv):
         g, spawns = rasterise(mod)
         if n in EXTRAS:
             EXTRAS[n](g, mod)
+        rb = room_module(mod)
+        if rb and hasattr(rb, "extras"):
+            rb.extras(g, mod)
         asset, meta = write_map(name, g)
         put(os.path.join(OUT, "Maps", name + "_Map.asset"), asset, force)
         put(os.path.join(OUT, "Maps", name + "_Map.asset.meta"), meta, force)

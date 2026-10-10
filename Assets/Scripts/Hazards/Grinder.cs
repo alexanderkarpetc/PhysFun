@@ -34,6 +34,22 @@ namespace Hazards
                  "the teeth were travelling.")]
         [SerializeField] private float fling = 2f;
 
+        [Tooltip("Eat what it grinds: the teeth carve the pixels of whatever loose thing they " +
+                 "touch - a crate, a keg, a corpse - so what goes between two wheels comes out " +
+                 "as crumbs rather than whole. Living things are only hurt, as before.")]
+        [SerializeField] private bool eats;
+        [Tooltip("World radius of one bite, taken at each contact every physics step.")]
+        [SerializeField] private float biteRadius = 0.1f;
+
+        private void Eat(Collision2D c)
+        {
+            var body = c.rigidbody;
+            if (!body || body.bodyType != RigidbodyType2D.Dynamic) return;
+            int n = Mathf.Min(c.contactCount, 2);
+            for (int i = 0; i < n; i++)
+                SpriteEraseService.EraseCircle(body.gameObject, c.GetContact(i).point, biteRadius);
+        }
+
         private Rigidbody2D _rb;
 
         // Damage owed to each thing currently in contact. Kept per victim so two creatures caught
@@ -74,6 +90,7 @@ namespace Hazards
         private void OnCollisionStay2D(Collision2D c)
         {
             var victim = c.collider.GetComponentInParent<Damageable>();
+            if (eats && (!victim || victim.IsDead)) Eat(c);
             if (!victim || victim.IsDead) return;
 
             _biting.TryGetValue(victim, out var bite);

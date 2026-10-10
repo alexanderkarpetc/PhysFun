@@ -32,6 +32,8 @@ Hanging things (a bell, a cage, a wrecking ball) are drawn with the eye or bail 
 from, and without the chain: the chain is a Hazards/Rope set up in the room. A part can
 give a module-level `ANCHORS = {"Bell": {"Eye": (x, y)}}` (pixels from the top-left) and
 the prefab gets an empty child there - what `export_rooms.py` ties the rope's end to.
+`STATIC = {"TeslaCoil"}` makes those prefabs' bodies static (bolted down, still metal,
+still burnt and carved), and extra "arc" adds an ArcEmitter whose tip is ANCHORS' "Tip".
 """
 import importlib
 import re
@@ -45,23 +47,77 @@ from mineprops import *  # noqa: F403,E402
 import propexport as PE  # noqa: E402
 from propexport import DEFAULT, WOOD, METAL  # noqa: E402,F401
 
-PARTS = ["roomprops_hung", "roomprops_machines", "roomprops_dwellings"]
+PARTS = ["roomprops_hung", "roomprops_machines", "roomprops_dwellings", "roomprops_rooms"]
 ICON_DIR = os.path.join("Icons", "Rooms")
 SPRITE_DIR = "Sprites/Props/Rooms"
 PREFAB_DIR = "Resources/Prefabs/Props"
 
 
+G_DAMAGEABLE = "baa9384630d24df0977c63474029daee"   # Common/Damageable
+G_FUSE = "f1a0ab60ff6834642af8ee11fbd989a0"        # Phys/Explosions/FuseCord
+
+
 def _explosive(radius=2.0, damage=60, fireball=120):
-    """The ExplosiveBarrel's Explosive, read from its prefab and scaled down a little."""
+    """The ExplosiveBarrel's Explosive, read from its prefab and scaled down a little - set
+    off by a hit (OnDamage) rather than on death, with a Damageable for hits to land on, so
+    a round, a hard knock or a fall sets it off. Fire sets it off through the short fuse on
+    top (see FUSE): a flame on the fuse lights it, and it burns down into the charge."""
     path = os.path.join(PE.ASSETS, "Resources", "Prefabs", "Hazards", "ExplosiveBarrel.prefab")
     text = open(path, encoding="utf-8").read()
     block = text.split("Assembly-CSharp::Phys.Explosions.Explosive\n")[1].split("--- !u!")[0]
     for key, val in (("radius", radius), ("damage", damage), ("fireball", fireball)):
         block = re.sub(r"(?m)^(    %s: ).*$" % key, r"\g<1>%s" % val, block, count=1)
-    return [(PE.G_EXPLOSIVE, "Assembly-CSharp::Phys.Explosions.Explosive", block)]
+    block = re.sub(r"(?m)^  trigger: .*$", "  trigger: 3", block, count=1)       # OnDamage
+    hp = ("  maxHealth: 100000\n  targetLayers:\n    serializedVersion: 2\n    m_Bits: 4294967295\n"
+          "  deathKick: 0\n  config: {fileID: 0}\n  takesPhysicsDamage: 1\n  showDamageNumbers: 0\n"
+          "  bleeds: 0\n  bloodColor: {r: 0, g: 0, b: 0, a: 0}\n")
+    return [(PE.G_EXPLOSIVE, "Assembly-CSharp::Phys.Explosions.Explosive", block),
+            (G_DAMAGEABLE, "Assembly-CSharp::Common.Damageable", hp)]
 
 
-EXTRAS = {None: lambda: None, "explosive": _explosive}
+# The fuse an explosive prop carries: from a free end 0.3 above its top, down onto it.
+FUSE = [(G_FUSE, "Assembly-CSharp::Phys.Explosions.FuseCord",
+         "  points:\n  - {x: 0, y: 0.3}\n  - {x: 0, y: 0}\n  pixelsPerUnit: 20\n  burnSpeed: 0.2\n"
+         "  litByFire: 1\n  targets: []\n  triggerRadius: 0.25\n  lightOnStart: 0\n"
+         "  removeWhenSpent: 1\n")]
+
+
+def _script_guid(rel):
+    """A script's guid, read from the .meta Unity wrote for it (never made up here: a guid
+    invented before Unity sees the script is one it throws away)."""
+    meta = os.path.join(PE.ASSETS, rel + ".meta")
+    if not os.path.exists(meta):
+        return None
+    return open(meta).read().split("guid: ")[1].split()[0]
+
+
+def _arc():
+    """An ArcEmitter (Scripts/Phys/Electricity): throws a bolt at the nearest metal now and
+    then. Its tip is set per prop from ANCHORS["Tip"]; the rest keep the script's defaults."""
+    g = _script_guid("Scripts/Phys/Electricity/ArcEmitter.cs")
+    if not g:
+        print("  !! ArcEmitter.cs has no .meta yet (Unity has not imported it): "
+              "written without the emitter - run this again once it has")
+        return None
+    return [(g, "Assembly-CSharp::Phys.Electricity.ArcEmitter", "{tip}")]
+
+
+def _script(rel, cls):
+    """A component of one of the game's scripts with its own defaults - for the per-room
+    machines (RailShuttle, SawBlade); a room sets what differs on its instance."""
+    def make():
+        g = _script_guid(rel)
+        if not g:
+            print("  !! %s has no .meta yet (Unity has not imported it): "
+                  "written without it - run this again once it has" % rel)
+            return None
+        return [(g, "Assembly-CSharp::" + cls, "")]
+    return make
+
+
+EXTRAS = {None: lambda: None, "explosive": _explosive, "arc": _arc,
+          "shuttle": _script("Scripts/Hazards/RailShuttle.cs", "Hazards.RailShuttle"),
+          "saw": _script("Scripts/Hazards/SawBlade.cs", "Hazards.SawBlade")}
 
 
 def islands(rows):
@@ -105,6 +161,9 @@ def build_part(modname):
     mod = importlib.import_module(modname)
     seed0 = mod.SEED
     anchors = getattr(mod, "ANCHORS", {})
+    static = getattr(mod, "STATIC", set())
+    kinematic = getattr(mod, "KINEMATIC", set())
+    triggers = getattr(mod, "TRIGGER", set())
     for g, (group, items) in enumerate(mod.GROUPS):
         for i, (name, label, fn, (w, h), material, extra) in enumerate(items):
             new_canvas(w, h, seed=seed0 + g * 101 + i * 7, bg=KEY)
@@ -113,8 +172,21 @@ def build_part(modname):
             rows = [[(0, 0, 0, 0) if c == KEY else (c[0], c[1], c[2], 255) for c in row]
                     for row in snapshot()]
             n = islands(rows)
-            path, loops, mass = PE.export(name, rows, SPRITE_DIR, PREFAB_DIR, material,
-                                          EXTRAS[extra](), anchors=anchors.get(name))
+            comps = EXTRAS[extra]()
+            if comps and "{tip}" in comps[0][2]:                  # the emitter's tip, local units
+                tx, ty = anchors[name]["Tip"]
+                # no ignite: it fires every couple of seconds into metal something is tied to,
+                # and a room that burns its own ropes down before anyone walks in is no room
+                comps = [(g_, c_, "  _tip: {x: %.4f, y: %.4f}\n  _profile:\n    igniteChancePercent: 0\n"
+                          % ((tx - w / 2.0) / PE.PPU, (h / 2.0 - ty) / PE.PPU))
+                         for g_, c_, _f in comps]
+            anc, kids = anchors.get(name), None
+            if extra == "explosive":                              # its fuse, on its top
+                anc = dict(anc or {}, Fuse=(w / 2.0, 0.0))
+                kids = {"Fuse": FUSE}
+            path, loops, mass = PE.export(name, rows, SPRITE_DIR, PREFAB_DIR, material, comps,
+                                          anchors=anc, child_components=kids, body_type=2 if name in static else 1 if name in kinematic else 0,
+                                          trigger=name in triggers)
             warn = "" if n == 1 else "   <-- %d bodies, should be one" % n
             print("  %-18s %3dx%-3d %s  mass %7.2f  %d loop(s)%s"
                   % (name, w, h, ("default", "wood", "ice", "metal")[material], mass, loops, warn))

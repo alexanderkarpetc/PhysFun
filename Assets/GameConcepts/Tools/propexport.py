@@ -307,11 +307,13 @@ def anchor_id(name, anchor):
 
 
 def export(name, rows, sprite_dir, prefab_dir, material, extra=None, angular_damping=0.05,
-           sorting_order=0, anchors=None):
+           sorting_order=0, anchors=None, body_type=0, trigger=False, child_components=None):
     """rows: [[(r, g, b, a)]] top to bottom. `extra` is a list of (script guid, editor
     class, field yaml) MonoBehaviours to add (an Explosive, say). `anchors` maps a child's
     name to a point in pixels (x right, y down from the top-left corner): an empty child
-    is put there, e.g. "Eye" where a hung prop's rope ties on. Returns the prefab path."""
+    is put there, e.g. "Eye" where a hung prop's rope ties on. `body_type` is the
+    Rigidbody2D's: 0 dynamic, 1 kinematic, 2 static (a coil bolted to its plinth).
+    Returns the prefab path."""
     h, w = len(rows), len(rows[0])
     sdir = ensure_dir(sprite_dir)
     pdir = ensure_dir(prefab_dir)
@@ -357,6 +359,23 @@ MonoBehaviour:
     for aname, (ax, ay) in (anchors or {}).items():
         ag, at_ = fid("prop", name, "anchor", aname, "go"), anchor_id(name, aname)
         kids.append(at_)
+        kcomps = (child_components or {}).get(aname, [])
+        kcids = [fid("prop", name, "anchor", aname, "c%d" % ci) for ci in range(len(kcomps))]
+        kcomp_txt = "".join("  - component: {fileID: %d}\n" % c for c in kcids)
+        for kc, (script, cls, fields) in zip(kcids, kcomps):
+            kid_docs.append(f"""--- !u!114 &{kc}
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {{fileID: 0}}
+  m_PrefabInstance: {{fileID: 0}}
+  m_PrefabAsset: {{fileID: 0}}
+  m_GameObject: {{fileID: {ag}}}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {{fileID: 11500000, guid: {script}, type: 3}}
+  m_Name:
+  m_EditorClassIdentifier: {cls}
+{fields}""")
         kid_docs.append(f"""--- !u!1 &{ag}
 GameObject:
   m_ObjectHideFlags: 0
@@ -366,7 +385,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {{fileID: {at_}}}
-  m_Layer: 0
+{kcomp_txt}  m_Layer: 0
   m_Name: {aname}
   m_TagString: Untagged
   m_Icon: {{fileID: 0}}
@@ -489,7 +508,7 @@ Rigidbody2D:
   m_PrefabInstance: {{fileID: 0}}
   m_PrefabAsset: {{fileID: 0}}
   m_GameObject: {{fileID: {go}}}
-  m_BodyType: 0
+  m_BodyType: {body_type}
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
@@ -530,7 +549,7 @@ PolygonCollider2D:
 {_layers(4294967295)}
   m_CallbackLayers:
 {_layers(4294967295)}
-  m_IsTrigger: 0
+  m_IsTrigger: {1 if trigger else 0}
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0

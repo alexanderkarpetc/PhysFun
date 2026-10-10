@@ -39,6 +39,28 @@ public class BridgeBuilder2D : MonoBehaviour
     [Header("Generated")]
     public Transform segmentsRoot;
 
+    [Header("Built at runtime (a bridge a room generator placed)")]
+    [Tooltip("Build when the scene starts, rather than in the editor beforehand.")]
+    public bool buildOnStart;
+    [Tooltip("Hinge the end segments to the anchors. Off: the ends hang only from the hangers.")]
+    public bool pinEnds = true;
+    [Tooltip("Ropes the bridge hangs from. Each is tied to the segment at `at` along the bridge " +
+             "(0 = left end, 1 = right end) and built once the bridge is - leave the rope's " +
+             "buildOnAwake off. Cut one and that part of the bridge goes down.")]
+    public Hanger[] hangers;
+
+    [System.Serializable]
+    public struct Hanger
+    {
+        public Props.Rope2D rope;
+        [Range(0f, 1f)] public float at;
+    }
+
+    private void Start()
+    {
+        if (buildOnStart) Build();
+    }
+
     private void Reset()
     {
         // Попытка авто-настроить якоря по ширине объекта
@@ -120,7 +142,11 @@ public class BridgeBuilder2D : MonoBehaviour
         Rigidbody2D leftRB  = leftAnchor.GetComponent<Rigidbody2D>();
         Rigidbody2D rightRB = rightAnchor.GetComponent<Rigidbody2D>();
 
-        if (useFixedOnEnds)
+        if (!pinEnds)
+        {
+            // hung from ropes only - nothing ties the ends down
+        }
+        else if (useFixedOnEnds)
         {
             CreateFixed(rbs[0],     leftRB,  leftAnchor.position);
             CreateFixed(rbs[^1],    rightRB, rightAnchor.position);
@@ -129,6 +155,19 @@ public class BridgeBuilder2D : MonoBehaviour
         {
             CreateHingeToAnchor(rbs[0],  leftRB,  leftAnchor.position, localAnchorA);
             CreateHingeToAnchor(rbs[^1], rightRB, rightAnchor.position, localAnchorB);
+        }
+
+        // Hangers: each rope's far end goes onto its segment, then the rope is built
+        if (hangers != null && !inEditor)
+        {
+            foreach (var h in hangers)
+            {
+                if (!h.rope) continue;
+                var seg = rbs[Mathf.Clamp(Mathf.RoundToInt(h.at * (segmentCount - 1)), 0, segmentCount - 1)];
+                h.rope.anchorB = seg.transform;
+                h.rope.pinEnd = true;
+                h.rope.Build();
+            }
         }
 
         // Стабилизаторы (тросы) вверх

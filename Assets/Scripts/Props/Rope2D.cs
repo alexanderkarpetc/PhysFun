@@ -64,6 +64,11 @@ namespace Props
                  "0 = velocity only (softer), 1 = snapped straight (can shove links through thin walls).")]
         [Range(0f, 1f)] public float stretchCorrection = 0.4f;
 
+        [Tooltip("For a rope something hangs from: no link may get further from the start tie than " +
+                 "its length along the rope, nor the load on the end further than the whole rope. " +
+                 "Makes it truly inextensible under any load. Needs a fixed start (pinned, no anchorA body).")]
+        public bool longRangeHold;
+
         [Header("Breaking")]
         [Tooltip("Load the rope parts at, in newtons. 0 = it never parts from being pulled. " +
                  "Roughly: a hanging mass of m kg pulls m * 9.81 N.")]
@@ -95,6 +100,7 @@ namespace Props
 
         [SerializeField, HideInInspector] private Transform _root;
         [SerializeField, HideInInspector] private LineRenderer _line;
+        [SerializeField, HideInInspector] private LineRenderer _lineTail;   // the far piece, once parted
 
         private readonly List<Rigidbody2D> _links = new();
         private HingeJoint2D _anchorJoint;   // pin of the topmost payed-out link, re-made while spooling
@@ -299,8 +305,10 @@ namespace Props
             _severed = -1;
             if (_root) DestroyBuilt(_root.gameObject);
             if (_line) DestroyBuilt(_line.gameObject);
+            if (_lineTail) DestroyBuilt(_lineTail.gameObject);
             _root = null;
             _line = null;
+            _lineTail = null;
             IsTearingDown = false;
         }
 
@@ -385,6 +393,65 @@ namespace Props
         {
             if (!inextensible || _links.Count < 1) return;
             SolveTension(Time.fixedDeltaTime);
+            if (longRangeHold) HoldLongRange(Time.fixedDeltaTime);
+        }
+
+        /// <summary>
+        /// The pass that makes a rope something to hang weight from. However many times the chain
+        /// is relaxed link by link, a load hundreds of times a link's mass never lets it converge -
+        /// the links drift apart and the load sinks. So on top of it: no link may be further from
+        /// the tie than its own length along the rope, and the load on the far end no further than
+        /// the whole rope. That is a ceiling, not a spring: closer is fine (the rope goes slack, the
+        /// load swings), further is taken out of the positions and the outward velocity. The rope
+        /// is exactly as long as it looks, and the load hangs at the end of it.
+        /// </summary>
+        private void HoldLongRange(float dt)
+        {
+            if (!_pinnedA || _pinBodyA) return;                  // held from a fixed tie only
+            Vector2 tie = _pinLocalA;
+            float rest = LinkLength;
+            int last = _severed >= 0 ? _severed : _links.Count - 1;   // past a cut nothing is held
+
+            for (int i = _first; i <= last; i++)
+            {
+                var link = _links[i];
+                float max = (i - _first + 1f) * rest;
+                Vector2 d = link.position - tie;
+                float len = d.magnitude;
+                if (len <= max || len < 1e-5f) continue;
+                Vector2 n = d / len;
+                link.position = tie + n * max;
+                float out_ = Vector2.Dot(link.linearVelocity, n);
+                if (out_ > 0f) link.linearVelocity -= n * out_;
+            }
+
+            if (!_pinnedB || _severed >= 0 || !_pinBodyB || _pinBodyB.bodyType != RigidbodyType2D.Dynamic) return;
+            var load = _pinBodyB;
+            Vector2 hook = PinPoint(load, _pinLocalB);
+            float length = (_links.Count - _first) * rest;
+            Vector2 dl = hook - tie;
+            float l = dl.magnitude;
+            if (l <= length || l < 1e-5f) return;
+            Vector2 nl = dl / l;
+
+            // stop it moving away at the hook: an impulse there, with the turn it gives the load
+            Vector2 r = hook - load.worldCenterOfMass;
+            float rn = r.x * nl.y - r.y * nl.x;
+            float invM = 1f / Mathf.Max(load.mass, 1e-4f);
+            float invI = load.inertia > 0f ? 1f / load.inertia : 0f;
+            float vOut = Vector2.Dot(load.GetPointVelocity(hook), nl);
+            if (vOut > 0f)
+            {
+                float j = vOut / (invM + rn * rn * invI);
+                load.AddForceAtPosition(-nl * j, hook, ForceMode2D.Impulse);
+                float tension = j / dt;
+                if (maxTension > 0f && _severed < 0)
+                {
+                    _overloadFor = tension > maxTension ? _overloadFor + dt : 0f;
+                    if (_overloadFor >= overloadGrace) Cut(Mathf.Clamp(_links.Count - 2, _first, _links.Count - 2));
+                }
+            }
+            load.position -= nl * (l - length);
         }
 
         /// <summary>
@@ -566,38 +633,65 @@ namespace Props
 
         private void SetupLine()
         {
-            var go = new GameObject("RopeLine");
-            go.transform.SetParent(transform, worldPositionStays: false);
-            _line = go.AddComponent<LineRenderer>();
-            _line.useWorldSpace = true;
-            _line.textureMode = LineTextureMode.Tile;
-            _line.numCapVertices = 2;
-            _line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            _line.receiveShadows = false;
-            _line.sortingLayerName = sortingLayer;
-            _line.sortingOrder = sortingOrder;
-
-            float w = renderWidth > 0f ? renderWidth : thickness;
-            _line.startWidth = w;
-            _line.endWidth = w;
-
-            _line.sharedMaterial = lineMaterial ? lineMaterial : new Material(Shader.Find("Sprites/Default"));
-            _line.startColor = color;
-            _line.endColor = color;
-
+            _line = MakeLine("RopeLine");
             UpdateLine();
         }
 
+        private LineRenderer MakeLine(string name)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(transform, worldPositionStays: false);
+            var line = go.AddComponent<LineRenderer>();
+            line.useWorldSpace = true;
+            line.textureMode = LineTextureMode.Tile;
+            line.numCapVertices = 2;
+            line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            line.receiveShadows = false;
+            line.sortingLayerName = sortingLayer;
+            line.sortingOrder = sortingOrder;
+
+            float w = renderWidth > 0f ? renderWidth : thickness;
+            line.startWidth = w;
+            line.endWidth = w;
+
+            line.sharedMaterial = lineMaterial ? lineMaterial : new Material(Shader.Find("Sprites/Default"));
+            line.startColor = color;
+            line.endColor = color;
+            return line;
+        }
+
+        /// <summary>
+        /// One polyline per piece. Intact, that is the whole rope; once it has parted, the piece
+        /// still tied at the start and the piece that fell with the far end are drawn apart -
+        /// one line through every link would go on showing it whole across the cut.
+        /// </summary>
         private void UpdateLine()
         {
+            int end = _severed >= 0 ? _severed : _links.Count - 1;
+            Trace(_line, _first, end);
+
+            if (_severed < 0 || _severed >= _links.Count - 1)
+            {
+                if (_lineTail) _lineTail.positionCount = 0;
+                return;
+            }
+            if (!_lineTail) _lineTail = MakeLine("RopeLineTail");
+            Trace(_lineTail, _severed + 1, _links.Count - 1);
+        }
+
+        /// <summary>Links <paramref name="from"/>..<paramref name="to"/> end to end into <paramref name="line"/>.</summary>
+        private void Trace(LineRenderer line, int from, int to)
+        {
             float half = LinkLength * 0.5f;
-            int shown = _links.Count - _first;
-            if (_line.positionCount != shown + 1) _line.positionCount = shown + 1;
-
+            int shown = Mathf.Max(0, to - from + 1);
+            if (line.positionCount != shown + 1) line.positionCount = shown + 1;
             for (int i = 0; i < shown; i++)
-                _line.SetPosition(i, _links[_first + i].transform.TransformPoint(new Vector3(-half, 0f, 0f)));
-
-            _line.SetPosition(shown, _links[^1].transform.TransformPoint(new Vector3(half, 0f, 0f)));
+            {
+                var link = _links[from + i];
+                if (link) line.SetPosition(i, link.transform.TransformPoint(new Vector3(-half, 0f, 0f)));
+            }
+            var last = _links[Mathf.Max(from, to)];
+            if (last) line.SetPosition(shown, last.transform.TransformPoint(new Vector3(half, 0f, 0f)));
         }
 
         private static void DestroyBuilt(Object o)

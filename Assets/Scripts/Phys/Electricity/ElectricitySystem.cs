@@ -63,7 +63,14 @@ namespace Phys.Electricity
         /// which is 0 for a bolt that found nothing but air.
         /// </summary>
         /// <param name="source">What to blame for the damage.</param>
-        public static int Strike(Vector2 origin, ElectricityProfile p, GameObject source = null)
+        public static int Strike(Vector2 origin, ElectricityProfile p, GameObject source = null) =>
+            Strike(origin, p, source, null);
+
+        /// <summary>
+        /// The same, for a bolt that came from somewhere - a coil, a broken cable end - rather
+        /// than out of nowhere: <paramref name="from"/> gets a bolt drawn from it to the strike.
+        /// </summary>
+        public static int Strike(Vector2 origin, ElectricityProfile p, GameObject source, Vector2? from)
         {
             if (p == null || p.strikeRadius <= 0f) return 0;
 
@@ -72,6 +79,7 @@ namespace Phys.Electricity
             Victims.Clear();
 
             var charge = new Charge { Profile = p, Source = source, Origin = origin };
+            if (from.HasValue) charge.Hops.Add(new Hop(from.Value, origin, 0));
 
             Seed(origin, p, charge);
             Spread(p, charge);

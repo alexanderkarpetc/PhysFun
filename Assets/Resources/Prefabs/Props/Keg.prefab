@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 702631774208403238}
   - component: {fileID: 846866913928777718}
   - component: {fileID: 336972246138580571}
+  - component: {fileID: 575675901886724527}
   m_Layer: 0
   m_Name: Keg
   m_TagString: Untagged
@@ -33,7 +34,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 855645050329411149}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1125896467126060851
@@ -244,7 +246,7 @@ MonoBehaviour:
     chainRadius: 3.5
     chainDelay: 0.12
     chainJitter: 0.06
-  trigger: 2
+  trigger: 3
   delay: 0.6
   damageToSetOff: 15
   chainable: 1
@@ -252,3 +254,79 @@ MonoBehaviour:
   selfShardImpulse: 5
   consumedByBlast: 1
   spent: 0
+--- !u!114 &575675901886724527
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 952936037520536729}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: baa9384630d24df0977c63474029daee, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::Common.Damageable
+  maxHealth: 100000
+  targetLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  deathKick: 0
+  config: {fileID: 0}
+  takesPhysicsDamage: 1
+  showDamageNumbers: 0
+  bleeds: 0
+  bloodColor: {r: 0, g: 0, b: 0, a: 0}
+--- !u!114 &200412374152529934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 147181325679581087}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1a0ab60ff6834642af8ee11fbd989a0, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::Phys.Explosions.FuseCord
+  points:
+  - {x: 0, y: 0.3}
+  - {x: 0, y: 0}
+  pixelsPerUnit: 20
+  burnSpeed: 0.2
+  litByFire: 1
+  targets: []
+  triggerRadius: 0.25
+  lightOnStart: 0
+  removeWhenSpent: 1
+--- !u!1 &147181325679581087
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 855645050329411149}
+  - component: {fileID: 200412374152529934}
+  m_Layer: 0
+  m_Name: Fuse
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &855645050329411149
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 147181325679581087}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.275, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 763480380684504581}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

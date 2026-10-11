@@ -53,6 +53,15 @@ namespace Rooms
             SceneManager.LoadScene(FloorLoader.GameSceneName, LoadSceneMode.Additive);
         }
 
+        // A room in a floor sleeps while the player is far from it (see RoomSleeper). A template
+        // played on its own turned itself off in Awake, so it never gets here.
+        private void OnEnable()
+        {
+            if (FloorLoader.Instance) RoomSleeper.Register(this);
+        }
+
+        private void OnDisable() => RoomSleeper.Unregister(this);
+
         /// <summary>The entry called <paramref name="id"/>, else the first one, else null.</summary>
         public RoomEntry FindEntry(string id)
         {

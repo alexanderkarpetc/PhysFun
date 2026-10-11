@@ -1,3 +1,4 @@
+using Props;
 using UnityEngine;
 
 namespace Player
@@ -6,6 +7,11 @@ namespace Player
     /// Noita-style locomotion: there is no jump. Holding the levitate key applies upward
     /// thrust that burns a flight meter (see <see cref="MovementConfig"/>). The meter recharges
     /// on the ground (and drips a little in the air). Tune everything live via the config asset.
+    ///
+    /// Two Terraria borrowings for built rooms: a <see cref="Ladder"/> is climbed with W / S
+    /// at a walk without touching the meter (Space jumps off it), and a
+    /// <see cref="OneWayPlatform"/> deck is stood on from above and dropped through by
+    /// holding S.
     /// </summary>
     public class PlayerMovement : MonoBehaviour
     {
@@ -31,6 +37,15 @@ namespace Player
         private bool _lockedOut;      // true after fully draining, until capacity recharges past the refire threshold
         private float _capacity;      // remaining flight, in seconds
         private float _regenTimer;    // delay before recharge resumes
+
+        // Ladders and decks
+        private bool _upHeld, _downHeld, _spaceHeld;
+        private bool _climbing;
+        private bool _upLatched;      // W still held from the ladder: it does not levitate until let go
+        private Ladder _ladder;
+        private Collider2D _bodyCol;
+        private Collider2D[] _ownCols;
+        private static readonly Collider2D[] GroundHits = new Collider2D[8];
 
         // Animator triggers
         private static readonly int IdleTrig = Animator.StringToHash("Idle");
@@ -62,6 +77,9 @@ namespace Player
 
             _capacity = _config.capacity;
             _rigidbody.gravityScale = _config.gravityScale;
+
+            _bodyCol = _rigidbody.GetComponent<Collider2D>();
+            _ownCols = System.Array.FindAll(_rigidbody.GetComponentsInChildren<Collider2D>(true), c => !c.isTrigger);
         }
 
         private void Update()
@@ -69,14 +87,21 @@ namespace Player
             _moveX = Mathf.Clamp(Input.GetAxisRaw("Horizontal"), -1f, 1f);
             _grounded = IsOnGround();
 
-            // Levitate input: Space / W / Up.
-            _levitateHeld = Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow);
+            // Levitate input: Space / W / Up - except that on a ladder W / Up climb it.
+            _upHeld = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow);
+            _downHeld = Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow);
+            _spaceHeld = Input.GetKey(KeyCode.Space);
 
             var mouseW = _cam.ScreenToWorldPoint(Input.mousePosition);
 
             // Animation: in the air it is thrust or a drop, otherwise ground locomotion.
             // The staff is not part of these - StaffAim swings it at the cursor on top.
-            if (!_grounded)
+            if (_climbing)
+            {
+                if (Mathf.Abs(_rigidbody.linearVelocity.y) > 0.1f) SetState(State.Walk, WalkTrig);
+                else SetState(State.Idle, IdleTrig);
+            }
+            else if (!_grounded)
             {
                 if (_levitating) SetState(State.Levitate, LevitateTrig);
                 else SetState(State.Fall, FallTrig);
@@ -99,9 +124,22 @@ namespace Player
             float dt = Time.fixedDeltaTime;
             var v = _rigidbody.linearVelocity;
 
-            UpdateHorizontal(ref v, dt);
-            UpdateLevitation(ref v, dt);
-            ShapeGravity(v);
+            UpdateClimb(ref v);
+            if (!_upHeld) _upLatched = false;
+            _levitateHeld = _spaceHeld || (_upHeld && !_climbing && !_upLatched);
+            if (_climbing)
+            {
+                UpdateLevitation(ref v, dt);     // no thrust on a ladder - this only recharges
+                _rigidbody.gravityScale = 0f;
+            }
+            else
+            {
+                UpdateHorizontal(ref v, dt);
+                UpdateLevitation(ref v, dt);
+                ShapeGravity(v);
+                if (_downHeld && _grounded && !_spaceHeld)
+                    OneWayPlatform.DropThrough(_groundCheck.position, 0.12f, _ownCols, _config.dropThroughTime);
+            }
 
             // Terminal velocity clamp on the way down.
             if (v.y < -_config.maxFallSpeed) v.y = -_config.maxFallSpeed;
@@ -177,14 +215,57 @@ namespace Player
                 }
                 else if (_capacity < _config.capacity)
                 {
-                    float rate = _grounded ? _config.groundRegenRate : _config.airRegenRate;
+                    float rate = _grounded || _climbing ? _config.groundRegenRate : _config.airRegenRate;
                     _capacity = Mathf.Min(_config.capacity, _capacity + rate * dt);
                 }
 
                 // Grounded always clears lockout; otherwise wait until we cross the refire threshold.
-                if (_grounded || _capacity >= _config.refireThreshold * _config.capacity)
+                if (_grounded || _climbing || _capacity >= _config.refireThreshold * _config.capacity)
                     _lockedOut = false;
             }
+        }
+
+        /// <summary>
+        /// Get on a ladder with W at its foot (or anywhere along it) or S at its top, go up
+        /// and down it at <see cref="MovementConfig.climbSpeed"/>, hang on it with neither.
+        /// Off it with Space, by walking away at the foot, or by running out of ladder - at
+        /// the top that leaves you stood on the deck it comes up through.
+        /// </summary>
+        private void UpdateClimb(ref Vector2 v)
+        {
+            if (!_bodyCol) return;
+            var b = _bodyCol.bounds;
+            float feet = b.min.y;
+            float dir = _upHeld ? 1f : _downHeld ? -1f : 0f;
+
+            if (!_climbing)
+            {
+                if (dir == 0f || _spaceHeld) return;
+                // Up: a ladder where the feet are. Down: one just under them - the top of a
+                // ladder that comes up through the deck being stood on.
+                var ladder = Ladder.At(new Vector2(b.center.x, feet + (dir > 0f ? 0.05f : -0.08f)));
+                if (!ladder) return;
+                if (dir < 0f && feet - ladder.Bottom < 0.1f) return;     // already at its foot
+                _ladder = ladder;
+                _climbing = true;
+            }
+
+            bool onIt = _ladder && Ladder.At(new Vector2(b.center.x, feet + (dir < 0f ? -0.08f : 0.02f))) == _ladder;
+            bool walkOff = _grounded && dir == 0f && Mathf.Abs(_moveX) > 0.01f;
+            if (_spaceHeld || !onIt || walkOff)
+            {
+                _climbing = false;
+                _upLatched = _upHeld;
+                _ladder = null;
+                return;
+            }
+
+            v.y = dir * _config.climbSpeed;
+            v.x = Mathf.Abs(_moveX) > 0.01f
+                ? _moveX * _config.climbSideSpeed
+                : Mathf.Clamp((_ladder.CenterX - b.center.x) * 10f, -_config.climbSideSpeed, _config.climbSideSpeed);
+            if (dir < 0f)
+                OneWayPlatform.DropThrough(new Vector2(b.center.x, feet), 0.1f, _ownCols, _config.dropThroughTime);
         }
 
         private void ShapeGravity(Vector2 v)
@@ -242,7 +323,22 @@ namespace Player
 
         private bool IsOnGround()
         {
-            return Physics2D.OverlapCircle(_groundCheck.position, 0.1f, _groundMask) != null;
+            var filter = new ContactFilter2D
+            {
+                useLayerMask = true,
+                layerMask = _groundMask,
+                useTriggers = Physics2D.queriesHitTriggers,
+            };
+            int n = Physics2D.OverlapCircle(_groundCheck.position, 0.1f, filter, GroundHits);
+            // A deck is not ground while coming up through it or being let down through it.
+            bool rising = _rigidbody.linearVelocity.y > 0.05f;
+            for (int i = 0; i < n; i++)
+            {
+                var c = GroundHits[i];
+                if (OneWayPlatform.Is(c) && (rising || OneWayPlatform.IsPassing(c, _bodyCol))) continue;
+                return true;
+            }
+            return false;
         }
     }
 }

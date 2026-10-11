@@ -90,6 +90,13 @@ namespace Phys.Pixels
             internal float colliderReadyAt;
             internal float splitReadyAt;
 
+            // The registry that tracks this record: an edit puts it on that registry's active
+            // set, which is all the per-frame passes ever look at.
+            internal PixelSpriteRegistry Owner;
+
+            /// <summary>Nothing left for the per-frame passes to do with it.</summary>
+            internal bool Settled => !pixelsDirty && !colliderDirty && !splitDirty && SolidCount > 0;
+
             /// <summary>
             /// Report a written region. <paramref name="clearedPixels"/> is how many solid
             /// pixels went fully transparent, which drives split checks and the
@@ -110,6 +117,7 @@ namespace Phys.Pixels
                 if (y0 < dy0) dy0 = y0;
                 if (x1 > dx1) dx1 = x1;
                 if (y1 > dy1) dy1 = y1;
+                Owner?._active.Add(this);
             }
 
             /// <summary>Texture pixels covered by one world-space unit, accounting for object scale.</summary>
@@ -161,6 +169,18 @@ namespace Phys.Pixels
         public event Action<GameObject> Consumed;
 
         private readonly Dictionary<GameObject, Record> _records = new();
+        // Records with work pending (pixels to upload, a collider to retrace, a split to
+        // check, nothing left to draw). The per-frame passes walk this, not _records: a floor
+        // tracks thousands of sprites - every terrain chunk, every plank - and almost none
+        // of them change in any given frame.
+        private readonly HashSet<Record> _active = new();
+        private readonly List<Record> _settled = new();
+        private int _sweepFrame;
+
+        /// <summary>Frames between full passes over every record for objects destroyed
+        /// without the registry being told (their textures are freed then).</summary>
+        public static int DeadSweepFrames = 120;
+
         private readonly List<GameObject> _scratch = new();
         private readonly List<GameObject> _dead = new();
         private Color32[] _uploadBuf = Array.Empty<Color32>();
@@ -210,6 +230,7 @@ namespace Phys.Pixels
                 if (rec.Tex == sr.sprite.texture) return rec;
                 DisposeRecord(rec, sr);
                 _records.Remove(go);
+                _active.Remove(rec);
             }
 
             var original = sr.sprite;
@@ -237,8 +258,9 @@ namespace Phys.Pixels
                 Ppu = original.pixelsPerUnit,
                 PivotPx = new Vector2(pivotNorm.x * tex.width, pivotNorm.y * tex.height),
                 SolidCount = CountSolid(pixels),
+                Owner = this,
             };
-            _records[go] = rec;
+            Track(go, rec);
             return rec;
         }
 
@@ -269,8 +291,9 @@ namespace Phys.Pixels
                 Ppu = sr.sprite.pixelsPerUnit,
                 PivotPx = sr.sprite.pivot,
                 SolidCount = CountSolid(pixels),
+                Owner = this,
             };
-            _records[go] = rec;
+            Track(go, rec);
             return rec;
         }
 
@@ -286,11 +309,19 @@ namespace Phys.Pixels
             if (!go || !_records.TryGetValue(go, out var rec)) return;
             DisposeRecord(rec, go.GetComponent<SpriteRenderer>());
             _records.Remove(go);
+            _active.Remove(rec);
         }
 
         public void ForgetAll()
         {
             _records.Clear();
+            _active.Clear();
+        }
+
+        private void Track(GameObject go, Record rec)
+        {
+            _records[go] = rec;
+            if (!rec.Settled) _active.Add(rec);
         }
 
         // ─────────────────────────────────────────────────────────────────────────
@@ -305,9 +336,8 @@ namespace Phys.Pixels
         public void Flush()
         {
             using var _ = s_flush.Auto();
-            foreach (var kv in _records)
+            foreach (var rec in _active)
             {
-                var rec = kv.Value;
                 if (!rec.pixelsDirty || !rec.Tex) continue;
 
                 int w = rec.dx1 - rec.dx0 + 1;
@@ -406,12 +436,18 @@ namespace Phys.Pixels
         public void CollectConsumed()
         {
             if (_records.Count == 0) return;
+            if (++_sweepFrame >= DeadSweepFrames)
+            {
+                _sweepFrame = 0;
+                SweepDead();
+            }
             if (!CollectDirty(r => r.SolidCount <= 0)) return;
 
             foreach (var go in _scratch)
             {
                 if (!_records.TryGetValue(go, out var rec)) continue;
                 _records.Remove(go);
+                _active.Remove(rec);
                 if (rec.Tex) UnityEngine.Object.Destroy(rec.Tex);
                 Consumed?.Invoke(go);
                 UnityEngine.Object.Destroy(go);
@@ -423,20 +459,41 @@ namespace Phys.Pixels
         // ─────────────────────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Snapshot records matching <paramref name="predicate"/> into _scratch,
-        /// dropping records whose GameObject has been destroyed externally.
+        /// Snapshot active records matching <paramref name="predicate"/> into _scratch,
+        /// dropping records whose GameObject has been destroyed externally and records with
+        /// nothing left to do.
         /// </summary>
         private bool CollectDirty(Func<Record, bool> predicate)
         {
             _scratch.Clear();
             _dead.Clear();
-            foreach (var kv in _records)
+            _settled.Clear();
+            foreach (var rec in _active)
             {
-                if (!kv.Key) { _dead.Add(kv.Key); continue; }
-                if (predicate(kv.Value)) _scratch.Add(kv.Key);
+                if (!rec.Go) { _dead.Add(rec.Go); _settled.Add(rec); continue; }
+                if (rec.Settled) { _settled.Add(rec); continue; }
+                if (predicate(rec)) _scratch.Add(rec.Go);
             }
-            foreach (var key in _dead) _records.Remove(key);
+            foreach (var rec in _settled) _active.Remove(rec);
+            foreach (var key in _dead) DropDead(key);
             return _scratch.Count > 0;
+        }
+
+        /// <summary>Every record, for objects destroyed without the registry being told.</summary>
+        private void SweepDead()
+        {
+            _dead.Clear();
+            foreach (var kv in _records)
+                if (!kv.Key) _dead.Add(kv.Key);
+            foreach (var key in _dead) DropDead(key);
+        }
+
+        private void DropDead(GameObject key)
+        {
+            if (!_records.TryGetValue(key, out var rec)) return;
+            _records.Remove(key);
+            _active.Remove(rec);
+            if (rec.Tex) UnityEngine.Object.Destroy(rec.Tex);
         }
 
         private void ProcessSplit(GameObject go, Record rec, int simplifyLevel, int minPixels)
@@ -453,6 +510,7 @@ namespace Phys.Pixels
             // The pre-split texture belongs to the registry and no sprite references it now.
             if (rec.Tex) UnityEngine.Object.Destroy(rec.Tex);
             _records.Remove(go);
+            _active.Remove(rec);
 
             // Re-track every piece so later edits hit a cached buffer. Pieces get fresh
             // textures and colliders from the split, so they start clean.
@@ -461,7 +519,7 @@ namespace Phys.Pixels
                 var sprite = part.Go.GetComponent<SpriteRenderer>().sprite;
                 var tex = (Texture2D)sprite.texture;
                 var pixels = tex.GetPixels32();
-                _records[part.Go] = new Record
+                Track(part.Go, new Record
                 {
                     Go = part.Go,
                     Tex = tex,
@@ -471,7 +529,8 @@ namespace Phys.Pixels
                     Ppu = sprite.pixelsPerUnit,
                     PivotPx = sprite.pivot,
                     SolidCount = CountSolid(pixels),
-                };
+                    Owner = this,
+                });
             }
 
             Split?.Invoke(go, parts);

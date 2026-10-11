@@ -159,6 +159,10 @@ def rasterise(mod):
     K.label_scale(2)
     K.paint_fill()
     a, stubs = K.room_masks(room, ox, oy)
+    for sid, cells in stubs.items():            # a stub that stops short of the room is a wall
+        if not any((x + dx, y + dy) in a for (x, y) in cells
+                   for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+            print("  !! socket %s does not reach the room's air - raise its depth" % sid)
     open_ = set(a)
     for cells in stubs.values():
         open_ |= cells

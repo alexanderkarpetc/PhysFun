@@ -24,8 +24,14 @@ MonoBehaviour:
   - {fileID: 1077652230104633088, guid: 245d5b868f7d39d3200a73970cad3d4f, type: 3}
   - {fileID: 1097629818906597196, guid: 15dbe8b5b27c9bb2930d700d5a6993ec, type: 3}
   - {fileID: 868216030458622138, guid: 613102ab0965a633e96f2ef1c33105c5, type: 3}
-  _roomCount: 11
-  _startRoom: {fileID: 868216030458622138, guid: 613102ab0965a633e96f2ef1c33105c5, type: 3}
+  - {fileID: 1152658725534768637, guid: fbcef3adf38de0570d09f819be848e58, type: 3}
+  - {fileID: 477108207773401587, guid: bdabd4537eb8042dd1b879407032e5b5, type: 3}
+  - {fileID: 775078214373815080, guid: 3223a100261bf374decc603903d3eb0b, type: 3}
+  - {fileID: 285867004403375950, guid: 6b1e392cf30b70b16bf1a2a342c81a99, type: 3}
+  - {fileID: 548629307743707079, guid: ba0f0cc635897bfcff8a45c1d6e9f284, type: 3}
+  - {fileID: 623154306296810126, guid: 97b39ffd98d7da9eb7b1b449ef3c6493, type: 3}
+  _roomCount: 17
+  _startRoom: {fileID: 623154306296810126, guid: 97b39ffd98d7da9eb7b1b449ef3c6493, type: 3}
   _fillTile: rock_hard
   _fillMaterial: 0
   _margin: 6

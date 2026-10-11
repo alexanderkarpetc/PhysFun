@@ -34,6 +34,9 @@ give a module-level `ANCHORS = {"Bell": {"Eye": (x, y)}}` (pixels from the top-l
 the prefab gets an empty child there - what `export_rooms.py` ties the rope's end to.
 `STATIC = {"TeslaCoil"}` makes those prefabs' bodies static (bolted down, still metal,
 still burnt and carved), and extra "arc" adds an ArcEmitter whose tip is ANCHORS' "Tip".
+`DAMPING = {"Name": 3.0}` sets a prefab's angular damping, extra "oneway" adds a
+Props.OneWayPlatform, "door" a Props.Door, and `AFTER = [fn]` runs exporters for assets that are not bodies
+(the ladder in `roomprops_structures`).
 """
 import importlib
 import re
@@ -47,7 +50,8 @@ from mineprops import *  # noqa: F403,E402
 import propexport as PE  # noqa: E402
 from propexport import DEFAULT, WOOD, METAL  # noqa: E402,F401
 
-PARTS = ["roomprops_hung", "roomprops_machines", "roomprops_dwellings", "roomprops_rooms"]
+PARTS = ["roomprops_hung", "roomprops_machines", "roomprops_dwellings", "roomprops_rooms",
+         "roomprops_structures"]
 ICON_DIR = os.path.join("Icons", "Rooms")
 SPRITE_DIR = "Sprites/Props/Rooms"
 PREFAB_DIR = "Resources/Prefabs/Props"
@@ -117,7 +121,9 @@ def _script(rel, cls):
 
 EXTRAS = {None: lambda: None, "explosive": _explosive, "arc": _arc,
           "shuttle": _script("Scripts/Hazards/RailShuttle.cs", "Hazards.RailShuttle"),
-          "saw": _script("Scripts/Hazards/SawBlade.cs", "Hazards.SawBlade")}
+          "saw": _script("Scripts/Hazards/SawBlade.cs", "Hazards.SawBlade"),
+          "oneway": _script("Scripts/Props/OneWayPlatform.cs", "Props.OneWayPlatform"),
+          "door": _script("Scripts/Props/Door.cs", "Props.Door")}
 
 
 def islands(rows):
@@ -164,6 +170,7 @@ def build_part(modname):
     static = getattr(mod, "STATIC", set())
     kinematic = getattr(mod, "KINEMATIC", set())
     triggers = getattr(mod, "TRIGGER", set())
+    damping = getattr(mod, "DAMPING", {})
     for g, (group, items) in enumerate(mod.GROUPS):
         for i, (name, label, fn, (w, h), material, extra) in enumerate(items):
             new_canvas(w, h, seed=seed0 + g * 101 + i * 7, bg=KEY)
@@ -186,10 +193,13 @@ def build_part(modname):
                 kids = {"Fuse": FUSE}
             path, loops, mass = PE.export(name, rows, SPRITE_DIR, PREFAB_DIR, material, comps,
                                           anchors=anc, child_components=kids, body_type=2 if name in static else 1 if name in kinematic else 0,
-                                          trigger=name in triggers)
+                                          trigger=name in triggers,
+                                          angular_damping=damping.get(name, 0.05))
             warn = "" if n == 1 else "   <-- %d bodies, should be one" % n
             print("  %-18s %3dx%-3d %s  mass %7.2f  %d loop(s)%s"
                   % (name, w, h, ("default", "wood", "ice", "metal")[material], mass, loops, warn))
+    for after in getattr(mod, "AFTER", ()):                    # assets that are not bodies
+        after()
     sheet_groups = [(group, [(n, l, f, s) for (n, l, f, s, _m, _e) in items])
                     for group, items in mod.GROUPS]
     part = modname.split("_", 1)[1].capitalize()

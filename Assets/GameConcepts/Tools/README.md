@@ -414,6 +414,91 @@ which is how props and characters are placed in a cave with no flat floors.
 Sheets land in `Assets/GameConcepts/OldRooms/` (`out_path` routes `RoomConcept_*` there;
 `Rooms/` is for the small rooms).
 
+### Designing a room
+
+S01-S39 mostly came out as one cave with a toy in the middle, a few enemies round it and
+the ways out at the sides. It looks fine and plays flat: the toy is scenery, the enemies
+stand about, you see everyone the moment you walk in, and you can skirt the lot. The rules
+below are what a room needs instead. They are about layout and placement only - there is
+still no room logic (no waves, no locks, no rewards).
+
+**1. The toy is loaded, and it is aimed at the enemies.** Not a machine stood in the middle
+but stored energy: hung on a rope, stood on a chock, stacked on an edge, parked at the end
+of its rail, powder by the stove. The enemies stand where it lands, for a reason of their
+own (working under it, guarding it, living next to it). Player -> toy -> enemies is the
+triangle every room is drawn round. Each room has one verb: cut, drop, roll, burn, blow,
+swing.
+
+**2. The way in is a look-out.** The player arrives somewhere they can read the room from -
+a ledge, a balcony, the top of a shaft - before anything has seen them (enemies have a
+field of view and need line of sight, so this is placement, not code). A couple of seconds
+to plan is what makes the toy a choice instead of an accident.
+
+**3. Dose the fight with line of sight.** From any point on the way through, one or two
+groups at most can see you. Rock, a bend, a wall, a deck, a door: anything that breaks a
+sight line splits the room. This is the rule that matters more than the shape.
+
+**4. At least three ways through.** The clever one (spring the toy), the sly one (dig or go
+round, the terrain allows it), and the loud one (walk in shooting - costly, because the
+groups cover each other).
+
+**5. The way out is past the danger.** Exits are not a pair of doors at either side of a
+corridor the fight is next to; the route to the next socket goes through the place the toy
+hits, or has to be dug.
+
+**6. What you did stays.** The room after you is wrecked: that is the reward.
+
+**Shape:** never a rectangle, and never storeys that read as galleries over a floor (see
+**Topology, not storeys**). Storeys are fine when they are *cells* - each level shut off
+from the next, so they pace the fight - which is what S43 and the buildings do.
+
+**Ways to cut a room up** (each drawn as a sheet, below): pockets in the rock tied together
+by one mechanism (S41); a ring round a solid core, so every bend hides the next group
+(S42); decks and bulkheads, a zig-zag of cells (S43); buildings stood in the cave - a house,
+a keep, a row of huts - where people are shut behind walls, doors and floors (S44-S46).
+
+**Built rooms play by three rules, borrowed from Terraria:**
+
+- *Decks are one-way.* `DeckPlank` props carry `Props.OneWayPlatform`: you come up through a
+  deck from below (levitating or on a ladder) and stand on it from above; hold S to drop
+  through it. A deck still blocks sight lines and shots.
+- *Ladders are climbed, not flown.* A `Ladder` (no collider - raycasts here hit triggers)
+  is climbed with W / S at a walk, without touching the flight meter; Space jumps off. A
+  ladder through a deck has its top at the deck's top, so climbing off it stands you on it.
+- *Doors are opened, not pushed.* A `Door` fills its doorway shut; stand by it and press E
+  and it swings open away from you (drawn edge-on against the far face of the wall, no
+  collider), E again shuts it unless someone is in the doorway. Nothing locks; a door is
+  there to break sight lines and to make every room behind one a decision. Only the player
+  opens doors - enemies' wall probes see a shut one as a wall, so they keep to their side.
+  (A hinged flap you walk through was tried first: being shoved by doors felt wrong.)
+- *Anything usable is an `Interaction.Interactable`.* The door is the first: the nearest
+  one in reach gets a one-pixel outline and a prompt at the foot of the screen ("E  Open
+  door"), and E uses it - `InteractionSystem` installs itself and needs no setup. A lever,
+  a chest or a winch handle is a subclass with a `Verb` and an `Interact`.
+
+Walls, decks and doors of a built room are props (`roomprops_structures.py`), not terrain:
+terrain only stays up while it touches rock, and a bulkhead between two decks touches none.
+
+### Pacing the fight (S41-S46)
+
+S41-S46 try those ways of letting the player meet the room a piece at a time, so that from
+anywhere on the way through only one or two groups can see you:
+
+| sheet | how the room is cut up |
+|---|---|
+| S41 `small_41_honeycomb.py` | four pockets in the rock, rock between each; one rope ties them - cleat in one, load in another |
+| S42 `small_42_rollway.py` | a ring of tunnel round a solid core, falling all the way round; a boulder on a chock at the top |
+| S43 `small_43_switchback.py` | storeys on purpose: timber decks, a bulkhead and a flap door per level, hatches at alternate ends |
+| S44 `small_44_bunkhouse.py` | a two-storey timber house on the cave floor, Terraria style - rooms behind walls, doors and floors |
+| S45 `small_45_keep.py` | a stone tower: a shut room per floor, arrow slits, an iron door, a bridge to the battlement |
+| S46 `small_46_minersrow.py` | one-storey huts on three shelves stepping down the cave - one hut, one door, one fight |
+
+The built parts they share - plank walls, decks, flap doors, trapdoors, windows, roofs,
+furniture, rope and cleat - are in `housekit.py`. Every door is a flap: a plank leaf on a
+pin at the lintel that fills the gap, so a house shuts people in without anything having
+to lock. There is no back wall in the engine, so `interior()` puts a faint warm wash over
+the inside of a building; in the game, the lamps have to do that.
+
 ### Big rooms
 
 R03-R04 are twice the linear size: a 1600x900 canvas at game scale saved x2 (3200x1800),

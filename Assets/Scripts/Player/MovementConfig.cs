@@ -53,5 +53,13 @@ namespace Player
         [Range(0f, 1.5f)] public float regenDelay = 0.15f;
         [Tooltip("Fraction of capacity that must recharge before you can levitate again after fully draining it (avoids stutter-flying on empty).")]
         [Range(0f, 1f)] public float refireThreshold = 0.15f;
+
+        [Header("Ladders & Decks")]
+        [Tooltip("Speed up and down a ladder (units/s).")]
+        [Range(0f, 8f)] public float climbSpeed = 2.6f;
+        [Tooltip("Sideways speed while on a ladder - enough to step off it.")]
+        [Range(0f, 6f)] public float climbSideSpeed = 1.4f;
+        [Tooltip("How long a deck lets you through after S, at least (seconds); after that it waits until you are clear of it.")]
+        [Range(0.05f, 1f)] public float dropThroughTime = 0.25f;
     }
 }

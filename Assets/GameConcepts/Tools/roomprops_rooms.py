@@ -214,6 +214,63 @@ def bridge_plank():
     P(0, 1, TIM_D)
     P(6, 1, TIM_M)
 
+# ═══════════════════════════════════════════════════════════════════════════
+#  S41 THE HONEYCOMB
+# ═══════════════════════════════════════════════════════════════════════════
+NET_W, NET_H = 34, 26
+ROPE_C, ROPE_CD = (150, 130, 96), (104, 88, 62)
+
+
+def cargo_net():
+    """A net of ore on a lifting eye: the four legs of the sling from the eye to the bag's
+    rim, and the bag - fist-sized lumps of ore and stone, each lit from the top left, packed
+    in tight, a diamond mesh of rope over them. Solid all through (the lumps fill it), so it
+    lands as one heavy body on whoever is under it."""
+    cx = NET_W // 2
+    eye(cx - 0.5, 0, 2.0)
+    top = 9
+    for k in range(top - 4):                              # the sling, eye to the rim
+        for leg in (-1, 1):
+            for spread in (1, 3):
+                x = cx - 1 + leg * (1 + k * spread)
+                P(x, 4 + k, ROPE_C if spread == 1 else ROPE_CD)
+
+    def half_at(y):
+        t = (y - top) / float(NET_H - top)
+        return NET_W / 2.0 - 1 - 7 * max(0.0, t - 0.55) ** 1.6 * 2.2
+
+    inside = lambda x, y: top <= y < NET_H and abs(x + 0.5 - cx) <= half_at(y)
+    for y in range(top, NET_H):                            # a dark bed, so gaps read as depth
+        for x in range(NET_W):
+            if inside(x, y):
+                P(x, y, STONE_D)
+    ores = ((ORE_G, ORE_GL), ((138, 112, 64), (190, 160, 96)), (STONE, (168, 158, 136)),
+            ((96, 92, 84), (140, 134, 120)))
+    k = 0
+    for gy in range(top + 1, NET_H, 4):
+        for gx in range(1 + (gy // 4) % 2 * 2, NET_W, 5):
+            k += 1
+            base, lit = ores[(gx * 3 + gy * 5 + k) % len(ores)]
+            r = 2 + (gx + gy + k) % 2
+            for y in range(gy - r, gy + r + 1):
+                for x in range(gx - r, gx + r + 1):
+                    if (x - gx) ** 2 + (y - gy) ** 2 <= r * r and inside(x, y):
+                        P(x, y, lit if (x - gx) + (y - gy) < -1 else base)
+            if inside(gx + 1, gy + 1):
+                P(gx + 1, gy + 1, STONE_D)
+    for y in range(top, NET_H):                            # the mesh, diamonds every 4px
+        for x in range(NET_W):
+            if inside(x, y) and ((x + y) % 4 == 0 or (x - y) % 4 == 0):
+                if (x * 3 + y) % 5:
+                    P(x, y, ROPE_CD)
+    for y in range(top, NET_H):                            # the rim of the bag
+        h = half_at(y)
+        P(int(cx - h), y, ROPE_C)
+        P(int(cx + h) - 1, y, ROPE_CD)
+    for x in range(int(cx - half_at(top)), int(cx + half_at(top))):
+        P(x, top, ROPE_C)
+
+
 GROUPS = [
     ("S03 THE COIL DOME", [
         ("TeslaCoil", "TESLA COIL", tesla_coil, (37, 65), METAL, "arc"),
@@ -229,6 +286,9 @@ GROUPS = [
     ("S07 THE ROPE BRIDGE", [
         ("BridgePlank", "BRIDGE PLANK", bridge_plank, (7, 3), WOOD, None),
     ]),
+    ("S41 THE HONEYCOMB", [
+        ("CargoNet", "CARGO NET", cargo_net, (NET_W, NET_H), DEFAULT, None),
+    ]),
 ]
 
 ANCHORS = {
@@ -236,6 +296,7 @@ ANCHORS = {
     "HungGrate": {"EyeL": (GRATE_LUGS[0] + 0.5, 2), "EyeR": (GRATE_LUGS[1] + 0.5, 2)},
     "SawCarriage": {"Arbour": (SAW_CX + 0.5, SAW_HUB + 0.5)},
     "SawBlade": {"Hub": (19.5, 19.5)},
+    "CargoNet": {"Eye": (NET_W // 2, 2)},
 }
 
 KINEMATIC = {"SawCarriage"}

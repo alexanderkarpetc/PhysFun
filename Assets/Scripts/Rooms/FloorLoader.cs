@@ -109,6 +109,10 @@ namespace Rooms
             yield return null;                         // let the rooms' Start run
 
             if (result != null) Arrive(result.Start, result.FaceRight);
+
+            // Only now: until the player stands in the new floor the fog has been looking out
+            // from wherever they were before, across a world with no terrain in it yet.
+            Vision.FogOfWar.Clear();
             Freeze(false);
             _busy = false;
         }

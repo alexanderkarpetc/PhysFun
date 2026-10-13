@@ -31,6 +31,25 @@ namespace Phys.Terrain
         public bool Anchored => anchored;
         public bool Bedrock => bedrock;
 
+        /// <summary>Every piece of terrain standing right now. For systems that look terrain
+        /// up by place rather than by collider - the fog of war reads it.</summary>
+        public static readonly HashSet<TerrainBody> Standing = new();
+
+        /// <summary>Bumped whenever <see cref="Standing"/> changes.</summary>
+        public static int StandingVersion { get; private set; }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStanding()
+        {
+            Standing.Clear();
+            StandingVersion++;
+        }
+
+        private void SetStanding(bool on)
+        {
+            if (on ? Standing.Add(this) : Standing.Remove(this)) StandingVersion++;
+        }
+
         /// <summary>True when <paramref name="go"/> is still part of the standing terrain.</summary>
         public static bool IsAnchored(GameObject go)
         {
@@ -47,6 +66,7 @@ namespace Phys.Terrain
             if (!body) body = go.AddComponent<TerrainBody>();
             body.anchored = true;
             body.bedrock = bedrock;
+            if (Application.isPlaying && body.isActiveAndEnabled) body.SetStanding(true);
 
             var rb = go.GetComponent<Rigidbody2D>();
             if (rb) rb.bodyType = RigidbodyType2D.Static;
@@ -70,6 +90,7 @@ namespace Phys.Terrain
             anchored = false;
             bedrock = false;
             TerrainSupportSystem.Unregister(this);
+            SetStanding(false);
 
             var sr = GetComponent<SpriteRenderer>();
             if (sr) sr.sortingOrder = detachedSortingOrder;
@@ -104,9 +125,15 @@ namespace Phys.Terrain
 
         private void OnEnable()
         {
-            if (anchored) TerrainSupportSystem.Register(this);
+            if (!anchored) return;
+            TerrainSupportSystem.Register(this);
+            if (Application.isPlaying) SetStanding(true);
         }
 
-        private void OnDisable() => TerrainSupportSystem.Unregister(this);
+        private void OnDisable()
+        {
+            TerrainSupportSystem.Unregister(this);
+            SetStanding(false);
+        }
     }
 }

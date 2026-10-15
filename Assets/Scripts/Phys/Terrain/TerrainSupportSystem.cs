@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Phys.Pixels;
+using Unity.Profiling;
 using UnityEngine;
 
 namespace Phys.Terrain
@@ -82,6 +83,8 @@ namespace Phys.Terrain
             public int Id;
             public int Index;                       // in NodeList
             public TerrainBody Body;
+            public GameObject Go;                   // cached: Body.gameObject is a native call
+            public int ColliderVersion;
             public Collider2D Col;
             public Bounds Bounds;
             public PixelSpriteRegistry.Record Record;
@@ -121,7 +124,7 @@ namespace Phys.Terrain
             if (!body) return;
             int id = body.GetInstanceID();
             if (Nodes.ContainsKey(id)) return;
-            var node = new Node { Id = id, Body = body, Index = NodeList.Count };
+            var node = new Node { Id = id, Body = body, Go = body.gameObject, Index = NodeList.Count };
             Nodes.Add(id, node);
             NodeList.Add(node);
             _dirty = true;
@@ -177,6 +180,17 @@ namespace Phys.Terrain
         {
             if (NodeList.Count == 0) { _dirty = false; return; }
             if (!_dirty && Time.unscaledTime < _nextPoll) return;
+
+            // The poll exists to catch shapes changed behind its back. When no shape anywhere
+            // has changed, there is nothing to catch - and walking every piece of a floor to
+            // find that out cost a 20ms hitch every PollInterval.
+            int shapes = PixelSpriteRegistry.ShapeChanges;
+            if (!_dirty && _pendingColliders == 0 && shapes == _seenShapes)
+            {
+                _nextPoll = Time.unscaledTime + PollInterval;
+                return;
+            }
+            _seenShapes = shapes;
             Recompute();
         }
 
@@ -185,8 +199,15 @@ namespace Phys.Terrain
             if (_instance == this) _instance = null;
         }
 
+        private static readonly ProfilerMarker s_recompute = new("TerrainSupport.Recompute");
+        private static readonly ProfilerMarker s_relink = new("TerrainSupport.Relink");
+
+        private static int _seenShapes = int.MinValue;
+        private static int _pendingColliders;   // nodes still waiting for a collider
+
         private void Recompute()
         {
+            using var _ = s_recompute.Auto();
             _dirty = false;
             _nextPoll = Time.unscaledTime + PollInterval;
 
@@ -202,14 +223,21 @@ namespace Phys.Terrain
                     Drop(node);
                     continue;
                 }
-                reg.TryGet(node.Body.gameObject, out var rec);
-                int version = rec != null ? rec.Version : 0;
+                reg.TryGet(node.Go, out var rec);
+                int version = rec != null ? rec.ShapeVersion : 0;
                 if (!node.Col) node.Col = node.Body.GetComponent<Collider2D>();
-                bool reshaped = node.Col && node.Col.bounds != node.Bounds;
+
+                // A tracked collider only changes shape when the registry re-traces it, and it
+                // counts those. Asking every collider for its bounds instead is a native call per
+                // piece of the floor, every poll; only bodies outside the registry still need it.
+                bool reshaped = rec != null
+                    ? rec.ColliderVersion != node.ColliderVersion
+                    : node.Col && node.Col.bounds != node.Bounds;
                 if (node.Stale || reshaped || rec != node.Record || version != node.Version)
                 {
                     node.Record = rec;
                     node.Version = version;
+                    node.ColliderVersion = rec != null ? rec.ColliderVersion : 0;
                     Stale.Add(node);
                 }
             }
@@ -221,7 +249,8 @@ namespace Phys.Terrain
             Frontier.Clear();
             foreach (var node in NodeList)
             {
-                if (!node.Body.Bedrock && !node.OnBedrock) continue;
+                // Rock a streaming floor has not built yet holds up what leans on it, like bedrock.
+                if (!node.Body.Bedrock && !node.OnBedrock && !TerrainBuilder.TouchesUnbuilt(node.Bounds)) continue;
                 node.Mark = supported;
                 Frontier.Add(node);
             }
@@ -295,6 +324,7 @@ namespace Phys.Terrain
         /// <summary>Work out the links of every stale node again.</summary>
         private static void Relink()
         {
+            using var _ = s_relink.Auto();
             // Pull them all out first, so a pair of stale neighbours is decided once, by
             // whichever of the two comes first, and nothing stays linked to an old outline.
             foreach (var node in Stale)
@@ -310,12 +340,17 @@ namespace Phys.Terrain
 
             int done = ++_stamp;
             int mask = BedrockMask;
+            _pendingColliders = 0;
             foreach (var node in Stale)
             {
                 node.Mark = done;
                 // A body whose collider is not there yet is asked about again next pass.
                 node.Stale = !node.Col;
-                if (!node.Col) continue;
+                if (!node.Col)
+                {
+                    _pendingColliders++;
+                    continue;
+                }
 
                 node.OnBedrock = mask != 0 && TouchesBedrock(node, mask);
 
@@ -329,11 +364,36 @@ namespace Phys.Terrain
                 {
                     if (!other.Col) continue;
                     if (!Overlaps(node.Bounds, other.Bounds)) continue;
-                    if (!Touching(node.Col, other.Col)) continue;
+                    if (!FullRectsTouch(node, other) && !Touching(node.Col, other.Col)) continue;
                     node.Links.Add(other);
                     other.Links.Add(node);
                 }
             }
+        }
+
+        /// <summary>
+        /// Two pieces opaque right through and standing square - most of a floor - touch
+        /// exactly when their rectangles meet, which their bounds already say. Settles the
+        /// common case without a collider distance query or a pixel scan; anything else, or
+        /// anything not plainly adjacent, goes to <see cref="Touching"/>.
+        /// </summary>
+        private static bool FullRectsTouch(Node a, Node b)
+        {
+            var ra = a.Record;
+            var rb = b.Record;
+            if (ra == null || rb == null) return false;
+            if (ra.SolidCount != ra.Width * ra.Height || rb.SolidCount != rb.Width * rb.Height) return false;
+
+            // Square to the axes: a pixel is as wide as it is tall in the bounds.
+            float pa = a.Bounds.size.x / ra.Width, pb = b.Bounds.size.x / rb.Width;
+            if (Mathf.Abs(pa - a.Bounds.size.y / ra.Height) > pa * 0.01f) return false;
+            if (Mathf.Abs(pb - b.Bounds.size.y / rb.Height) > pb * 0.01f) return false;
+
+            // Pixel-adjacent, diagonals included, as PixelsTouch counts it: no gap on either axis.
+            float slack = Mathf.Min(pa, pb) * 0.25f;
+            float gx = Mathf.Max(a.Bounds.min.x - b.Bounds.max.x, b.Bounds.min.x - a.Bounds.max.x);
+            float gy = Mathf.Max(a.Bounds.min.y - b.Bounds.max.y, b.Bounds.min.y - a.Bounds.max.y);
+            return gx <= slack && gy <= slack;
         }
 
         private static bool TouchesBedrock(Node node, int mask)

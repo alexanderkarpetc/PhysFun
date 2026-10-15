@@ -23,7 +23,9 @@ namespace Phys.Terrain
 
             public Tile(Color32[] pixels, int width, int height)
             {
-                _pixels = pixels;
+                // Opaque once, here, so a run can be block-copied rather than fixed up per pixel.
+                _pixels = (Color32[])pixels.Clone();
+                for (int i = 0; i < _pixels.Length; i++) _pixels[i].a = 255;
                 Width = Mathf.Max(1, width);
                 Height = Mathf.Max(1, height);
             }
@@ -36,6 +38,23 @@ namespace Phys.Terrain
                 var c = _pixels[Wrap(gy, Height) * Width + Wrap(gx, Width)];
                 c.a = 255;
                 return c;
+            }
+
+            /// <summary><paramref name="count"/> pixels of one row, starting at global
+            /// (<paramref name="gx"/>, <paramref name="gy"/>), the same as calling
+            /// <see cref="Sample"/> for each - but copied a tile row at a time.</summary>
+            public void CopyRun(Color32[] dst, int dstIndex, int gx, int gy, int count)
+            {
+                int row = Wrap(gy, Height) * Width;
+                int tx = Wrap(gx, Width);
+                while (count > 0)
+                {
+                    int n = Mathf.Min(count, Width - tx);
+                    System.Array.Copy(_pixels, row + tx, dst, dstIndex, n);
+                    dstIndex += n;
+                    count -= n;
+                    tx = 0;
+                }
             }
 
             private static int Wrap(int v, int n)

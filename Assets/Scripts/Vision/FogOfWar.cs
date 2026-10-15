@@ -230,6 +230,7 @@ namespace Vision
             }
 
             Vector2 eye = (Vector2)player.position + EyeOffset;
+            _sight.Prepare(eye, SightRadius + 1f);
             RevealDisc(eye, NearRadius);
 
             // An eye inside rock would see nothing past it; the near disc is enough.

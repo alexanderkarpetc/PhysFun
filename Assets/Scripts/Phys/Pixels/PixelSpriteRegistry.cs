@@ -40,6 +40,13 @@ namespace Phys.Pixels
         private static void ResetForPlayMode() => Instance = new PixelSpriteRegistry();
 
         /// <summary>
+        /// Bumped whenever any tracked shape may have changed: pixels cut, a collider re-traced,
+        /// a record added or dropped. A pass over every piece of terrain can skip itself while
+        /// this stands still.
+        /// </summary>
+        public static int ShapeChanges { get; private set; }
+
+        /// <summary>
         /// An object waits this many times the duration of its own last collider retrace
         /// (or split scan) before doing another, so each burning object costs roughly
         /// 1/40th of the frame no matter how big or ragged its sprite is. Lower = more
@@ -80,6 +87,14 @@ namespace Phys.Pixels
             /// record (the support pass's contact graph) can tell its pixels changed.</summary>
             public int Version { get; private set; }
 
+            /// <summary>Like <see cref="Version"/>, but only bumped when the opaque shape may
+            /// have changed - not for scorch or paint, which recolour without cutting.</summary>
+            public int ShapeVersion { get; private set; }
+
+            /// <summary>Bumped each time the registry re-traces this object's collider - the
+            /// only way the collider of a tracked object changes shape.</summary>
+            public int ColliderVersion { get; internal set; }
+
             // Pixel-write dirty rect (inclusive bounds).
             internal int dx0 = int.MaxValue, dy0 = int.MaxValue, dx1 = -1, dy1 = -1;
             internal bool pixelsDirty;
@@ -106,6 +121,11 @@ namespace Phys.Pixels
             {
                 pixelsDirty = true;
                 Version++;
+                if (colliderChanged || clearedPixels > 0)
+                {
+                    ShapeVersion++;
+                    ShapeChanges++;
+                }
                 if (colliderChanged) colliderDirty = true;
                 if (clearedPixels > 0)
                 {
@@ -271,7 +291,7 @@ namespace Phys.Pixels
         /// generated art like terrain chunks. The renderer on <paramref name="go"/> must
         /// already be showing a sprite built on <paramref name="tex"/>.
         /// </summary>
-        public Record Adopt(GameObject go, Texture2D tex, Color32[] pixels)
+        public Record Adopt(GameObject go, Texture2D tex, Color32[] pixels, int solidCount = -1)
         {
             if (!go || !tex || pixels == null) return null;
             if (pixels.Length != tex.width * tex.height) return null;
@@ -290,7 +310,7 @@ namespace Phys.Pixels
                 Height = tex.height,
                 Ppu = sr.sprite.pixelsPerUnit,
                 PivotPx = sr.sprite.pivot,
-                SolidCount = CountSolid(pixels),
+                SolidCount = solidCount >= 0 ? solidCount : CountSolid(pixels),
                 Owner = this,
             };
             Track(go, rec);
@@ -310,6 +330,7 @@ namespace Phys.Pixels
             DisposeRecord(rec, go.GetComponent<SpriteRenderer>());
             _records.Remove(go);
             _active.Remove(rec);
+            ShapeChanges++;
         }
 
         public void ForgetAll()
@@ -322,6 +343,7 @@ namespace Phys.Pixels
         {
             _records[go] = rec;
             if (!rec.Settled) _active.Add(rec);
+            ShapeChanges++;
         }
 
         // ─────────────────────────────────────────────────────────────────────────
@@ -551,6 +573,8 @@ namespace Phys.Pixels
             if (!rec.Go || !rec.Go.GetComponent<SpriteRenderer>()) return;
             PixelContour.ApplyCollider(rec.Go, rec.Pixels, rec.Width, rec.Height,
                                        rec.Ppu, rec.PivotPx, simplifyLevel);
+            rec.ColliderVersion++;
+            ShapeChanges++;
         }
 
         /// <summary>Free a record's texture unless the renderer is still displaying it.</summary>

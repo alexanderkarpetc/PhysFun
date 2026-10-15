@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Phys.Terrain;
+using Unity.Profiling;
 using UnityEngine;
 
 namespace Rooms
@@ -35,6 +36,11 @@ namespace Rooms
         /// <paramref name="rooms"/> are templates - prefab assets, or rooms lying switched off
         /// in an open scene - and the first one is where the floor starts.
         /// </summary>
+        private static readonly ProfilerMarker s_plan = new("Floor.Plan");
+        private static readonly ProfilerMarker s_map = new("Floor.Map");
+        private static readonly ProfilerMarker s_terrain = new("Floor.Terrain");
+        private static readonly ProfilerMarker s_rooms = new("Floor.Rooms");
+
         public static Result Build(FloorRecipe recipe, IReadOnlyList<Room> rooms, int seed)
         {
             var rng = new System.Random(seed);
@@ -55,6 +61,7 @@ namespace Rooms
             if (usable.Count == 0) { Debug.LogError("FloorBuilder: no usable rooms."); return null; }
 
             // ── plan ───────────────────────────────────────────────────────────────
+            s_plan.Begin();
             var shapes = new List<FloorLayout.RoomShape>();
             foreach (var r in usable)
             {
@@ -79,17 +86,19 @@ namespace Rooms
                 CorridorSize = recipe.CorridorSize,
                 CellSnap = 1f / ppu,
             }, rng);
+            s_plan.End();
 
             // ── terrain ────────────────────────────────────────────────────────────
+            s_map.Begin();
             var bounds = plan.Bounds;
             int w = Mathf.CeilToInt(bounds.width * ppu);
             int h = Mathf.CeilToInt(bounds.height * ppu);
             var map = ScriptableObject.CreateInstance<TerrainMap>();
             map.name = "Floor";
-            map.Resize(Vector2.zero, w, h, ppu);
+            map.Allocate(Vector2.zero, w, h, ppu);
             var cells = map.Cells;
             byte fill = (byte)map.Require(recipe.FillTile, recipe.FillMaterial);
-            for (int i = 0; i < cells.Length; i++) cells[i] = fill;
+            new System.Span<byte>(cells).Fill(fill);
 
             for (int i = 0; i < usable.Count; i++)
                 Stamp(map, cells, w, h, usable[i].Map, CellOf(plan.Rects[i].min, bounds, ppu));
@@ -107,8 +116,10 @@ namespace Rooms
             foreach (var route in plan.Corridors)
                 for (int k = 1; k < route.Count; k++)
                     Sweep(cells, w, h, route[k - 1], route[k], bore, bounds, ppu);
+            s_map.End();
 
             // ── objects ────────────────────────────────────────────────────────────
+            s_terrain.Begin();
             var root = new GameObject($"Floor (seed {seed})");
             root.transform.position = bounds.min;
             root.AddComponent<FloorGizmos>().Set(plan);
@@ -116,10 +127,19 @@ namespace Rooms
             var terrainGo = new GameObject("Terrain");
             terrainGo.SetActive(false);                 // so it builds from the map, not its defaults
             terrainGo.transform.SetParent(root.transform, false);
-            terrainGo.AddComponent<TerrainBuilder>().SetMap(map);
+            var builder = terrainGo.AddComponent<TerrainBuilder>();
+            builder.SetMap(map);
+
+            // The start room and the ground round it now; the rest of the floor only as the
+            // player comes near it. Rooms out there sleep until their ground is built.
+            var startRect = plan.Rects[0];
+            builder.StreamFrom(startRect.center, startRect);
             terrainGo.SetActive(true);
 
             AddBedrock(root.transform, bounds);
+            s_terrain.End();
+
+            s_rooms.Begin();
 
             var holder = new GameObject("Rooms");
             holder.SetActive(false);                    // nothing in a room wakes before it is in place
@@ -139,6 +159,8 @@ namespace Rooms
                 placed.Add(go.GetComponent<Room>());
             }
             holder.SetActive(true);
+            RoomSleeper.SleepUnbuilt();
+            s_rooms.End();
 
             var result = new Result { Root = root };
             var entry = placed[0].FindEntry("");
@@ -171,16 +193,13 @@ namespace Rooms
 
             var src = room.Cells;
             int rw = room.Width, rh = room.Height;
+            int x0 = Mathf.Max(0, -at.x), x1 = Mathf.Min(rw, w - at.x);
             for (int y = 0; y < rh; y++)
             {
                 int fy = at.y + y;
                 if (fy < 0 || fy >= h) continue;
-                for (int x = 0; x < rw; x++)
-                {
-                    int fx = at.x + x;
-                    if (fx < 0 || fx >= w) continue;
-                    cells[fy * w + fx] = remap[src[y * rw + x]];
-                }
+                int dst = fy * w + at.x, srcRow = y * rw;
+                for (int x = x0; x < x1; x++) cells[dst + x] = remap[src[srcRow + x]];
             }
         }
 

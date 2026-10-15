@@ -105,6 +105,15 @@ namespace Phys.Pixels
         {
             if (!go) return;
 
+            // Most terrain chunks are solid rock right through - the fill between rooms. Their
+            // outline is their rectangle; tracing and simplifying it only to arrive there was
+            // the bulk of building a floor.
+            if (AllSolid(pixels, w, h))
+            {
+                ApplyRect(go, w, h, ppu, pivotPx);
+                return;
+            }
+
             Trace(pixels, w, h, ppu, pivotPx, Scratch);
             DropPinholes(Scratch, ppu);
             var poly = go.GetComponent<PolygonCollider2D>();
@@ -127,6 +136,34 @@ namespace Phys.Pixels
             // The trace is a staircase: exact, and far denser than physics needs.
             ColliderSimplifier2D.Simplify(poly, simplifyLevel, MinSimplifyPixels / Mathf.Max(1f, ppu));
             MassRecalculator.SetMass(null, go.GetComponent<Rigidbody2D>(), poly);
+        }
+
+        private static readonly List<Vector2> RectPath = new(4);
+
+        /// <summary>The collider of a sprite that is opaque right through: its rectangle.</summary>
+        public static void ApplyRect(GameObject go, int w, int h, float ppu, Vector2 pivotPx)
+        {
+            if (!go) return;
+            var box = go.GetComponent<PolygonCollider2D>();
+            if (!box) box = go.AddComponent<PolygonCollider2D>();
+            float x0 = -pivotPx.x / ppu, y0 = -pivotPx.y / ppu;
+            float x1 = (w - pivotPx.x) / ppu, y1 = (h - pivotPx.y) / ppu;
+            RectPath.Clear();
+            RectPath.Add(new Vector2(x0, y0));
+            RectPath.Add(new Vector2(x1, y0));
+            RectPath.Add(new Vector2(x1, y1));
+            RectPath.Add(new Vector2(x0, y1));
+            box.pathCount = 1;
+            box.SetPath(0, RectPath);
+            MassRecalculator.SetMass(null, go.GetComponent<Rigidbody2D>(), box);
+        }
+
+        private static bool AllSolid(Color32[] pixels, int w, int h)
+        {
+            if (pixels == null || w <= 0 || h <= 0 || pixels.Length < w * h) return false;
+            for (int i = 0, n = w * h; i < n; i++)
+                if (pixels[i].a == 0) return false;
+            return true;
         }
 
         /// <summary>

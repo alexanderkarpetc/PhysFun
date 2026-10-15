@@ -211,6 +211,21 @@ namespace Phys.Terrain
             _cells = next;
         }
 
+        /// <summary>
+        /// Size the map from scratch, empty. Unlike <see cref="Resize"/> nothing is carried
+        /// over, so nothing is walked: a floor built at runtime is tens of millions of cells,
+        /// and copying them one by one out of the empty default map cost seconds.
+        /// </summary>
+        public void Allocate(Vector2 newOrigin, int newWidth, int newHeight, float newPixelsPerUnit)
+        {
+            origin = newOrigin;
+            width = Mathf.Clamp(newWidth, 1, 16384);
+            height = Mathf.Clamp(newHeight, 1, 16384);
+            pixelsPerUnit = Mathf.Max(1f, newPixelsPerUnit);
+            encoded = null;
+            _cells = new byte[width * height];
+        }
+
         // ─────────────────────────────────────────────────────────────────────────
         // Run-length coding
         // ─────────────────────────────────────────────────────────────────────────

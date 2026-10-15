@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Phys.Terrain;
 using UnityEngine;
 
 namespace Rooms
@@ -101,9 +102,32 @@ namespace Rooms
                 }
                 float d = Distance(room, p);
                 bool asleep = Sleeping.ContainsKey(room);
-                if (asleep && d <= WakeDistance) Wake(room);
-                else if (!asleep && d >= SleepDistance) Sleep(room);
+                bool built = TerrainBuilder.IsBuilt(WorldRect(room));
+                if (asleep && d <= WakeDistance && !built) TerrainBuilder.Request(WorldRect(room));
+                if (asleep && d <= WakeDistance && built) Wake(room);
+                else if (!asleep && (d >= SleepDistance || !built)) Sleep(room);
             }
+        }
+
+        /// <summary>
+        /// Put to sleep, now, every room whose terrain is not built yet - before the first
+        /// physics step after a floor is made, or whatever stands in them falls through the
+        /// floor that is not there. They wake once it is (see TerrainBuilder.StreamFrom).
+        /// </summary>
+        public static void SleepUnbuilt()
+        {
+            foreach (var room in Rooms)
+                if (room && !Sleeping.ContainsKey(room) && !TerrainBuilder.IsBuilt(WorldRect(room)))
+                    Sleep(room);
+        }
+
+        /// <summary>The room's template rectangle in world space, a unit wider all round so
+        /// the rock it stands on counts too.</summary>
+        private static Rect WorldRect(Room room)
+        {
+            var r = room.LocalRect;
+            Vector2 min = (Vector2)room.transform.position + r.min - Vector2.one;
+            return new Rect(min, r.size + Vector2.one * 2f);
         }
 
         private static float Distance(Room room, Vector2 p)
@@ -147,7 +171,8 @@ namespace Rooms
         private static void WakeAll()
         {
             if (Sleeping.Count == 0) return;
-            foreach (var room in new List<Room>(Sleeping.Keys)) Wake(room);
+            foreach (var room in new List<Room>(Sleeping.Keys))
+                if (TerrainBuilder.IsBuilt(WorldRect(room))) Wake(room);
         }
 
         /// <summary>Does switching this off save anything: an Animator, or a script with an

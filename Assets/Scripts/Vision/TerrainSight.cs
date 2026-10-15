@@ -21,9 +21,13 @@ namespace Vision
     /// byte map over the whole floor, a cell per <see cref="Resolution"/> units (two terrain
     /// pixels), and a check is one array read. The map is repainted only where terrain
     /// changed: a piece appearing or going (<see cref="TerrainBody.StandingVersion"/>), or its
-    /// pixels being dug or burnt (the registry record's Version), a bounded amount per frame.
+    /// pixels being dug or burnt away (the registry record's ShapeVersion), a bounded amount per frame.
     /// A native copy of it (<see cref="Map"/>) is what the fog's ray jobs read; it is only
     /// written here, on the main thread, while no job is running.
+    ///
+    /// A floor's map is millions of cells, so it is not painted when it is made - that alone
+    /// held up the start of a floor for seconds. Pieces are painted when they first come within
+    /// sight (<see cref="Prepare"/>), a few at a time as the player moves on.
     /// </summary>
     public sealed class TerrainSight
     {
@@ -39,6 +43,7 @@ namespace Vision
         private static readonly ProfilerMarker s_sync = new("Fog.Map.Sync");
         private static readonly ProfilerMarker s_build = new("Fog.Map.Build");
         private static readonly ProfilerMarker s_repaint = new("Fog.Map.Repaint");
+        private static readonly ProfilerMarker s_prepare = new("Fog.Map.Prepare");
 
         private const float Margin = 4f;
         private const float HashCell = 4f;
@@ -50,6 +55,7 @@ namespace Vision
             public int Version;
             public RectInt Area;          // map cells it covers
             public int Stamp, Seen;
+            public bool Painted;
             // World point to texture pixel: px = Ax*x + Bx*y + Cx, py = Ay*x + By*y + Cy.
             public float Ax, Bx, Cx, Ay, By, Cy;
         }
@@ -112,12 +118,51 @@ namespace Vision
             for (int i = 0; i < _pieceList.Count; i++)
             {
                 var p = _pieceList[i];
-                if (p.Rec.Version == p.Version) continue;
-                p.Version = p.Rec.Version;
-                _dirty.Add(p.Area);
+                if (p.Rec.ShapeVersion == p.Version) continue;
+                p.Version = p.Rec.ShapeVersion;
+                if (p.Painted) _dirty.Add(p.Area);   // unpainted ones are read fresh when needed
             }
 
             Repaint(RepaintBudget);
+        }
+
+        /// <summary>
+        /// Paint every piece within <paramref name="radius"/> of <paramref name="centre"/> that
+        /// has not been painted yet. Call before casting from there.
+        /// </summary>
+        public void Prepare(Vector2 centre, float radius)
+        {
+            if (_solid == null || !_native.IsCreated) return;
+
+            float inv = 1f / _res;
+            int x0 = Mathf.FloorToInt((centre.x - radius - _origin.x) * inv);
+            int y0 = Mathf.FloorToInt((centre.y - radius - _origin.y) * inv);
+            int x1 = Mathf.CeilToInt((centre.x + radius - _origin.x) * inv);
+            int y1 = Mathf.CeilToInt((centre.y + radius - _origin.y) * inv);
+            var area = Clip(new RectInt(x0, y0, x1 - x0, y1 - y0));
+            if (area.width <= 0 || area.height <= 0) return;
+
+            Gather(area);
+            bool any = false;
+            foreach (var p in _scratch)
+            {
+                if (p.Painted) continue;
+                if (!any)
+                {
+                    s_prepare.Begin();
+                    any = true;
+                }
+                p.Painted = true;
+                p.Version = p.Rec.ShapeVersion;
+
+                // Painting only ever sets cells, so other pieces already in this area stay put.
+                var r = Clip(p.Area);
+                if (r.width <= 0 || r.height <= 0) continue;
+                Paint(p, r);
+                for (int y = r.yMin; y < r.yMax; y++)
+                    NativeArray<byte>.Copy(_solid, y * _w + r.xMin, _native, y * _w + r.xMin, r.width);
+            }
+            if (any) s_prepare.End();
         }
 
         public bool Solid(Vector2 p)
@@ -210,7 +255,7 @@ namespace Vision
         private static void Bind(Piece p, PixelSpriteRegistry.Record rec)
         {
             p.Rec = rec;
-            p.Version = rec.Version;
+            p.Version = rec.ShapeVersion;
 
             // world -> local (sprite units) -> texture pixels
             var m = p.Body.transform.worldToLocalMatrix;
@@ -276,6 +321,16 @@ namespace Vision
                 min = Vector2.Min(min, b.min);
                 max = Vector2.Max(max, b.max);
             }
+
+            // A floor's terrain may still be building, a few chunks a frame: size the map to
+            // what it will cover, not to the pieces there are so far.
+            foreach (var builder in Object.FindObjectsByType<TerrainBuilder>(FindObjectsSortMode.None))
+            {
+                var r = builder.WorldRect;
+                if (r.width <= 0f || r.height <= 0f) continue;
+                min = Vector2.Min(min, r.min);
+                max = Vector2.Max(max, r.max);
+            }
             min -= Vector2.one * Margin;
             max += Vector2.one * Margin;
 
@@ -289,14 +344,12 @@ namespace Vision
             {
                 Place(p);
                 HashAdd(p);
-                p.Version = p.Rec.Version;
-                Paint(p, p.Area);
+                p.Painted = false;   // see Prepare
             }
 
             int n = _w * _h;
-            if (_native.IsCreated && _native.Length != n) _native.Dispose();
-            if (!_native.IsCreated) _native = new NativeArray<byte>(n, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
-            NativeArray<byte>.Copy(_solid, 0, _native, 0, n);
+            if (_native.IsCreated) _native.Dispose();
+            _native = new NativeArray<byte>(n, Allocator.Persistent);
         }
 
         private void Repaint(int budget)

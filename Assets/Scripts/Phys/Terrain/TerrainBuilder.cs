@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Materials;
 using Phys.Pixels;
 using Spawners;
+using Unity.Profiling;
 using UnityEngine;
 
 namespace Phys.Terrain
@@ -109,6 +110,7 @@ namespace Phys.Terrain
             public Texture2D Tex;
             public Color32[] Pixels;
             public int Width, Height;
+            public int Solid;   // opaque cells, as of the last refresh
         }
 
         // The mask currently on screen, whichever source it came from.
@@ -122,6 +124,285 @@ namespace Phys.Terrain
         private int[] _counts;   // per-chunk palette histogram, reused across refreshes
 
         public TerrainMap Map => map;
+
+        /// <summary>The region the map covers, in world space.</summary>
+        public Rect WorldRect
+        {
+            get
+            {
+                Vector2 a = transform.TransformPoint(_origin);
+                Vector2 b = transform.TransformPoint(_origin + new Vector2(_cellsWidth, _cellsHeight) / Mathf.Max(1f, _cellsPerUnit));
+                return Rect.MinMaxRect(Mathf.Min(a.x, b.x), Mathf.Min(a.y, b.y), Mathf.Max(a.x, b.x), Mathf.Max(a.y, b.y));
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────────────────
+        // Streaming (play mode)
+        // ─────────────────────────────────────────────────────────────────────────
+
+        /// <summary>Chunks within this many units of the player are built; past it the terrain
+        /// is only cells in the map. Well beyond the camera and the fog's sight.</summary>
+        public static float StreamRadius = 24f;
+
+        /// <summary>Milliseconds a frame may spend building chunks that came into range.</summary>
+        public static float StreamBudgetMs = 2f;
+
+        /// <summary>How far the player moves before what is left is sorted by distance again.</summary>
+        public static float ResortDistance = 3f;
+
+        private static readonly List<TerrainBuilder> Streaming = new();
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStreaming() => Streaming.Clear();
+
+        private bool _stream;
+        private Vector2 _focus;
+        private Rect _mustBuild;
+        private Vector2Int[] _queue;    // chunks not built yet, nearest first from _queueAt
+        private float[] _keys;          // squared distance at the last sort; -1 when asked for
+        private int _queueAt, _queueCount;
+        private bool[] _built;          // per chunk
+        private bool[] _wanted;         // per chunk: asked for ahead of its turn
+        private sbyte[] _rock;          // per chunk: any solid cell in the map? 0 = not looked yet
+        private int _cols, _rows;
+        private Vector2 _sortedAt;
+        private bool _resort;
+        private Vector2 _chunkOrigin;   // world position of chunk (0, 0)'s corner
+        private KeepInBuiltWorld _keeper;
+        private float _chunkWorld;      // a chunk's side in world units
+
+        /// <summary>
+        /// Call before the builder wakes, in play mode, to stream the terrain instead of building
+        /// all of it. Everything under <paramref name="mustBuild"/> and within
+        /// <see cref="StreamRadius"/> of <paramref name="focus"/> (world) is built at once; after
+        /// that, whatever comes within that radius of the player, a few chunks a frame. A floor is
+        /// ten thousand chunks, and building them all held the first frame up for seconds. Noita
+        /// does the same: only the world round the player is ever made real.
+        ///
+        /// Unbuilt terrain is still in the map, it just has no objects yet. Rooms over it sleep
+        /// (<see cref="IsBuilt"/>, <see cref="Request"/>), and standing terrain leans on it
+        /// (<see cref="TouchesUnbuilt"/>): it is rock, only not loaded.
+        /// </summary>
+        public void StreamFrom(Vector2 focus, Rect mustBuild)
+        {
+            _stream = true;
+            _focus = focus;
+            _mustBuild = mustBuild;
+        }
+
+        /// <summary>Is every chunk under <paramref name="worldRect"/> built?</summary>
+        public static bool IsBuilt(Rect worldRect)
+        {
+            for (int i = Streaming.Count - 1; i >= 0; i--)
+            {
+                var b = Streaming[i];
+                if (!b) { Streaming.RemoveAt(i); continue; }
+                if (!b.AreaBuilt(worldRect)) return false;
+            }
+            return true;
+        }
+
+        /// <summary>Build the chunks under <paramref name="worldRect"/> ahead of their turn - a
+        /// room the player is about to wake.</summary>
+        public static void Request(Rect worldRect)
+        {
+            foreach (var b in Streaming)
+                if (b) b.Want(worldRect);
+        }
+
+        /// <summary>
+        /// Does <paramref name="worldBounds"/> reach rock that is not built yet? The support pass
+        /// counts that as holding a piece up, the way the bedrock does: the unbuilt rock is
+        /// there, it just cannot be dug or fall until it is built.
+        /// </summary>
+        public static bool TouchesUnbuilt(Bounds worldBounds)
+        {
+            if (Streaming.Count == 0) return false;
+            var r = Rect.MinMaxRect(worldBounds.min.x - 0.05f, worldBounds.min.y - 0.05f,
+                                    worldBounds.max.x + 0.05f, worldBounds.max.y + 0.05f);
+            foreach (var b in Streaming)
+                if (b && b.AreaTouchesUnbuiltRock(r)) return true;
+            return false;
+        }
+
+        private bool ChunkRange(Rect worldRect, out int x0, out int y0, out int x1, out int y1)
+        {
+            // Standing terrain neither moves nor turns, so this is plain arithmetic - the support
+            // pass asks it about every piece on every pass.
+            float k = 1f / _chunkWorld;
+            x0 = Mathf.Max(0, Mathf.FloorToInt((worldRect.xMin - _chunkOrigin.x) * k));
+            x1 = Mathf.Min(_cols - 1, Mathf.FloorToInt((worldRect.xMax - _chunkOrigin.x) * k));
+            y0 = Mathf.Max(0, Mathf.FloorToInt((worldRect.yMin - _chunkOrigin.y) * k));
+            y1 = Mathf.Min(_rows - 1, Mathf.FloorToInt((worldRect.yMax - _chunkOrigin.y) * k));
+            return x0 <= x1 && y0 <= y1;
+        }
+
+        /// <summary>Is the ground within half a unit of <paramref name="world"/> built?</summary>
+        internal bool IsBuiltAround(Vector2 world) =>
+            AreaBuilt(new Rect(world.x - 0.5f, world.y - 0.5f, 1f, 1f));
+
+        private bool AreaBuilt(Rect worldRect)
+        {
+            if (_built == null || !ChunkRange(worldRect, out int x0, out int y0, out int x1, out int y1))
+                return true;
+            for (int y = y0; y <= y1; y++)
+            for (int x = x0; x <= x1; x++)
+                if (!_built[y * _cols + x]) return false;
+            return true;
+        }
+
+        private bool AreaTouchesUnbuiltRock(Rect worldRect)
+        {
+            if (_built == null || !ChunkRange(worldRect, out int x0, out int y0, out int x1, out int y1))
+                return false;
+            for (int y = y0; y <= y1; y++)
+            for (int x = x0; x <= x1; x++)
+                if (!_built[y * _cols + x] && HasRock(x, y)) return true;
+            return false;
+        }
+
+        private void Want(Rect worldRect)
+        {
+            if (_built == null || !ChunkRange(worldRect, out int x0, out int y0, out int x1, out int y1))
+                return;
+            for (int y = y0; y <= y1; y++)
+            for (int x = x0; x <= x1; x++)
+            {
+                int i = y * _cols + x;
+                if (_built[i] || _wanted[i]) continue;
+                _wanted[i] = true;
+                _resort = true;
+            }
+        }
+
+        /// <summary>Any solid cell in this chunk's part of the map? Looked up once, lazily.</summary>
+        private bool HasRock(int cx, int cy)
+        {
+            int i = cy * _cols + cx;
+            if (_rock[i] == 0)
+            {
+                int px0 = cx * chunkPixels, py0 = cy * chunkPixels;
+                int cw = Mathf.Min(chunkPixels, _cellsWidth - px0);
+                int chh = Mathf.Min(chunkPixels, _cellsHeight - py0);
+                int count = _palette.Count;
+                _rock[i] = -1;
+                for (int y = 0; y < chh && _rock[i] < 0; y++)
+                {
+                    int row = (py0 + y) * _cellsWidth + px0;
+                    for (int x = 0; x < cw; x++)
+                    {
+                        int id = _cells[row + x];
+                        if (id == 0 || id > count) continue;
+                        _rock[i] = 1;
+                        break;
+                    }
+                }
+            }
+            return _rock[i] > 0;
+        }
+
+        private void StartStreaming(int cols, int rows)
+        {
+            _cols = cols;
+            _rows = rows;
+            _queueCount = cols * rows;
+            _queue = new Vector2Int[_queueCount];
+            _keys = new float[_queueCount];
+            _built = new bool[_queueCount];
+            _wanted = new bool[_queueCount];
+            _rock = new sbyte[_queueCount];
+            _queueAt = 0;
+            _chunkOrigin = transform.TransformPoint(_origin);
+            _chunkWorld = Mathf.Max(1e-4f, chunkPixels / CellsPerWorldUnit);
+            for (int cy = 0, i = 0; cy < rows; cy++)
+            for (int cx = 0; cx < cols; cx++)
+                _queue[i++] = new Vector2Int(cx, cy);
+
+            Streaming.Add(this);
+            if (_mustBuild.width > 0f && _mustBuild.height > 0f) Want(_mustBuild);
+
+            _sortedAt = transform.InverseTransformPoint(_focus);
+            SortQueue(_sortedAt);
+            float r2 = StreamRadius * StreamRadius;
+            while (_queueAt < _queueCount && _keys[_queueAt] <= r2) BuildNext();
+            if (_queueAt >= _queueCount) EndStreaming();
+        }
+
+        /// <summary>Order what is left by distance from <paramref name="local"/>, nearest first,
+        /// with whatever was asked for ahead of all of it.</summary>
+        private void SortQueue(Vector2 local)
+        {
+            Vector2 f = local - _origin;
+            float size = chunkPixels / _cellsPerUnit;
+            for (int i = _queueAt; i < _queueCount; i++)
+            {
+                var c = _queue[i];
+                if (_wanted[c.y * _cols + c.x])
+                {
+                    _keys[i] = -1f;
+                    continue;
+                }
+                float dx = (c.x + 0.5f) * size - f.x, dy = (c.y + 0.5f) * size - f.y;
+                _keys[i] = dx * dx + dy * dy;
+            }
+            System.Array.Sort(_keys, _queue, _queueAt, _queueCount - _queueAt);
+        }
+
+        private void BuildNext()
+        {
+            var c = _queue[_queueAt++];
+            int i = c.y * _cols + c.x;
+            RefreshChunk(c, rebuildCollider: true);
+            _built[i] = true;
+            _wanted[i] = false;
+        }
+
+        private void Update()
+        {
+            if (_queue == null) return;
+            (_keeper ??= new KeepInBuiltWorld(this)).Tick();
+
+            var player = App.Instance.PlayerTransform;
+            Vector2 at = player ? (Vector2)transform.InverseTransformPoint(player.position) : _sortedAt;
+            if (_resort || (at - _sortedAt).sqrMagnitude >= ResortDistance * ResortDistance)
+            {
+                _resort = false;
+                _sortedAt = at;
+                SortQueue(at);
+            }
+
+            // Nothing new in range: the player is standing still, or walking over built ground.
+            float r2 = StreamRadius * StreamRadius;
+            if (_queueAt >= _queueCount || _keys[_queueAt] > r2) return;
+
+            long deadline = System.Diagnostics.Stopwatch.GetTimestamp() +
+                            (long)(StreamBudgetMs * 0.001 * System.Diagnostics.Stopwatch.Frequency);
+            do BuildNext();
+            while (_queueAt < _queueCount && _keys[_queueAt] <= r2 &&
+                   System.Diagnostics.Stopwatch.GetTimestamp() < deadline);
+
+            if (_queueAt >= _queueCount) EndStreaming();
+        }
+
+        private void EndStreaming()
+        {
+            _keeper?.ReleaseAll();
+            Streaming.Remove(this);
+            _queue = null;
+            _keys = null;
+            _built = null;
+            _wanted = null;
+            _rock = null;
+            _queueAt = _queueCount = 0;
+        }
+
+        private void OnDestroy() => EndStreaming();
+
+        private static readonly ProfilerMarker s_build = new("Terrain.Build");
+        private static readonly ProfilerMarker s_fill = new("Terrain.Chunk.Fill");
+        private static readonly ProfilerMarker s_object = new("Terrain.Chunk.Object");
+        private static readonly ProfilerMarker s_collider = new("Terrain.Chunk.Collider");
+        private static readonly ProfilerMarker s_register = new("Terrain.Chunk.Register");
 
         /// <summary>Mask cells per world unit, accounting for this object's scale.</summary>
         public float CellsPerWorldUnit
@@ -218,6 +499,7 @@ namespace Phys.Terrain
                 return;
             }
 
+            using var _ = s_build.Auto();
             chunkPixels = Mathf.Max(8, chunkPixels);
             ApplyBedrockMask();
             ResetContainer();
@@ -228,9 +510,12 @@ namespace Phys.Terrain
 
             int cols = (_cellsWidth + chunkPixels - 1) / chunkPixels;
             int rows = (_cellsHeight + chunkPixels - 1) / chunkPixels;
-            for (int cy = 0; cy < rows; cy++)
-            for (int cx = 0; cx < cols; cx++)
-                RefreshChunk(new Vector2Int(cx, cy), rebuildCollider: true);
+            EndStreaming();
+            if (_stream && Application.isPlaying) StartStreaming(cols, rows);
+            else
+                for (int cy = 0; cy < rows; cy++)
+                for (int cx = 0; cx < cols; cx++)
+                    RefreshChunk(new Vector2Int(cx, cy), rebuildCollider: true);
         }
 
         private void LoadFromMap()
@@ -466,16 +751,23 @@ namespace Phys.Terrain
             else
                 System.Array.Clear(_counts, 0, _counts.Length);
 
-            int solid = 0, dominant = 0, dominantCount = 0;
+            // Counted a run at a time: a chunk is mostly a few long runs of one id.
+            int solid = 0, dominant = 0, dominantCount = 0, paletteCount = _palette.Count;
             for (int y = 0; y < chh; y++)
             {
                 int row = (py0 + y) * _cellsWidth + px0;
-                for (int x = 0; x < cw; x++)
+                int x = 0;
+                while (x < cw)
                 {
                     byte id = _cells[row + x];
-                    if (id == 0 || id > _palette.Count) continue;
-                    solid++;
-                    if (++_counts[id] <= dominantCount) continue;
+                    int end = x + 1;
+                    while (end < cw && _cells[row + end] == id) end++;
+                    int run = end - x;
+                    x = end;
+
+                    if (id == 0 || id > paletteCount) continue;
+                    solid += run;
+                    if ((_counts[id] += run) <= dominantCount) continue;
                     dominantCount = _counts[id];
                     dominant = id;
                 }
@@ -495,7 +787,7 @@ namespace Phys.Terrain
             {
                 // Creating a chunk fills and uploads its texture on the way in — the collider
                 // is traced from those pixels, so they can't be left undefined.
-                chunk = CreateChunk(coord, px0, py0, cw, chh);
+                chunk = CreateChunk(coord, px0, py0, cw, chh, solid);
                 _chunks[coord] = chunk;
                 rebuildCollider = true;
             }
@@ -509,28 +801,44 @@ namespace Phys.Terrain
             // Collider first. Tagging the material can now attach components of its own, and a
             // chunk that never gets traced is a chunk the support pass cannot find a contact
             // for — which it reads as unsupported and drops.
-            if (rebuildCollider) RetraceCollider(chunk);
+            chunk.Solid = solid;
+            if (rebuildCollider)
+            {
+                s_collider.Begin();
+                RetraceCollider(chunk);
+                s_collider.End();
+            }
             MaterialView.Apply(chunk.Go, _palette[dominant - 1].material);
         }
 
         private void FillChunk(Chunk chunk, int px0, int py0)
         {
+            using var _ = s_fill.Auto();
             var pixels = chunk.Pixels;
+            int count = _palette.Count;
+            int w = chunk.Width;
             for (int y = 0; y < chunk.Height; y++)
             {
                 int row = (py0 + y) * _cellsWidth + px0;
-                int dst = y * chunk.Width;
-                for (int x = 0; x < chunk.Width; x++)
+                int dst = y * w;
+                int gy = py0 + y;
+
+                // Cells come in long runs of one id: each run is one block copy out of its tile.
+                int x = 0;
+                while (x < w)
                 {
-                    byte id = _cells[row + x];
-                    pixels[dst + x] = id == 0 || id > _palette.Count
-                        ? default
-                        : _palette[id - 1].tile.Sample(px0 + x, py0 + y);
+                    int id = _cells[row + x];
+                    int end = x + 1;
+                    while (end < w && _cells[row + end] == id) end++;
+
+                    if (id == 0 || id > count) System.Array.Clear(pixels, dst + x, end - x);
+                    else _palette[id - 1].tile.CopyRun(pixels, dst + x, px0 + x, gy, end - x);
+                    x = end;
                 }
             }
         }
 
-        private Chunk CreateChunk(Vector2Int coord, int px0, int py0, int cw, int chh)
+        private Chunk CreateChunk(Vector2Int coord, int px0, int py0, int cw, int chh, int solid)
         {
             var tex = new Texture2D(cw, chh, TextureFormat.ARGB32, false)
             {
@@ -553,6 +861,8 @@ namespace Phys.Terrain
             };
 
             FillChunk(chunk, px0, py0);
+
+            s_object.Begin();
             tex.SetPixels32(chunk.Pixels);
             tex.Apply(false, false);
 
@@ -568,19 +878,25 @@ namespace Phys.Terrain
                 _origin.y + (py0 + chh * 0.5f) / _cellsPerUnit,
                 0f);
 
+            // Body and collider before the renderer: a PolygonCollider2D added next to a sprite
+            // traces an outline of it straight away, only to be replaced by RetraceCollider.
+            var rb = go.AddComponent<Rigidbody2D>();
+            rb.bodyType = RigidbodyType2D.Static;
+            go.AddComponent<PolygonCollider2D>();
+
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = sprite;
             sr.sortingOrder = sortingOrder;
-
-            var rb = go.AddComponent<Rigidbody2D>();
-            rb.bodyType = RigidbodyType2D.Static;
+            s_object.End();
 
             if (Application.isPlaying)
             {
                 // Hand the pixel tools the buffer we already have, instead of letting them
                 // clone the texture the first time someone digs into this chunk.
-                PixelSpriteRegistry.Instance.Adopt(go, tex, chunk.Pixels);
+                s_register.Begin();
+                PixelSpriteRegistry.Instance.Adopt(go, tex, chunk.Pixels, solid);
                 TerrainBody.Apply(go);
+                s_register.End();
             }
             else
             {
@@ -599,8 +915,11 @@ namespace Phys.Terrain
         /// </summary>
         private Sprite MakeSprite(Texture2D tex, int cw, int chh, string name)
         {
+            // No fallback physics shape: Unity would trace one from the alpha of every chunk,
+            // and the collider is traced from the cells here anyway.
             var sprite = Sprite.Create(tex, new Rect(0, 0, cw, chh), new Vector2(0.5f, 0.5f),
-                                       _cellsPerUnit, 0, SpriteMeshType.FullRect);
+                                       _cellsPerUnit, 0, SpriteMeshType.FullRect, Vector4.zero,
+                                       generateFallbackPhysicsShape: false);
             sprite.name = name;
             sprite.hideFlags = GeneratedHideFlags;
             return sprite;
@@ -609,6 +928,16 @@ namespace Phys.Terrain
         /// <summary>Re-trace the collider from the current pixels and re-derive mass.</summary>
         private void RetraceCollider(Chunk chunk)
         {
+            var pivot = new Vector2(chunk.Width * 0.5f, chunk.Height * 0.5f);
+
+            // Solid right through - most of a floor, the rock between rooms - is a rectangle,
+            // and the cell count already says so without looking at a pixel.
+            if (chunk.Solid == chunk.Width * chunk.Height)
+            {
+                PixelContour.ApplyRect(chunk.Go, chunk.Width, chunk.Height, _cellsPerUnit, pivot);
+                return;
+            }
+
             // Outlines come from the cell mask, not from Unity's sprite tracing — that runs at
             // a tolerance nobody controls and cuts corners across whole cells of solid ground.
             PixelContour.ApplyCollider(chunk.Go, chunk.Pixels, chunk.Width, chunk.Height,

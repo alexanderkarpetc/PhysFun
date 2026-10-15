@@ -35,7 +35,8 @@ the prefab gets an empty child there - what `export_rooms.py` ties the rope's en
 `STATIC = {"TeslaCoil"}` makes those prefabs' bodies static (bolted down, still metal,
 still burnt and carved), and extra "arc" adds an ArcEmitter whose tip is ANCHORS' "Tip".
 `DAMPING = {"Name": 3.0}` sets a prefab's angular damping, extra "oneway" adds a
-Props.OneWayPlatform, "door" a Props.Door, and `AFTER = [fn]` runs exporters for assets that are not bodies
+Props.OneWayPlatform, "door" a Props.Door, "decor" / "wall" a Props.Decor (clutter, walked
+through until something hits it; "wall" hangs on the back wall), and `AFTER = [fn]` runs exporters for assets that are not bodies
 (the ladder in `roomprops_structures`). `LIGHTS = {"Name": dict(at=(x, y), color=(r, g, b),
 intensity=, radius=, flicker=)}` gives a prop a Lighting.LightSource2D whose light comes
 from `at` (pixels from the top-left: the flame, the coals) - a lamp that swings swings
@@ -54,7 +55,7 @@ import propexport as PE  # noqa: E402
 from propexport import DEFAULT, WOOD, METAL  # noqa: E402,F401
 
 PARTS = ["roomprops_hung", "roomprops_machines", "roomprops_dwellings", "roomprops_rooms",
-         "roomprops_structures"]
+         "roomprops_structures", "roomprops_decor"]
 ICON_DIR = os.path.join("Icons", "Rooms")
 SPRITE_DIR = "Sprites/Props/Rooms"
 PREFAB_DIR = "Resources/Prefabs/Props"
@@ -138,7 +139,21 @@ def _script(rel, cls):
     return make
 
 
+def _decor(on_wall):
+    """Props.Decor: clutter, asleep (static, walked through) until something hits it.
+    "wall" is clutter hung on the back wall, which needs nothing under it."""
+    def make():
+        g = _script_guid("Scripts/Props/Decor.cs")
+        if not g:
+            print("  !! Decor.cs has no .meta yet (Unity has not imported it): "
+                  "written without it - run this again once it has")
+            return None
+        return [(g, "Assembly-CSharp::Props.Decor", "  onWall: %d\n  knock: 1.2\n" % on_wall)]
+    return make
+
+
 EXTRAS = {None: lambda: None, "explosive": _explosive, "arc": _arc,
+          "decor": _decor(0), "wall": _decor(1),
           "shuttle": _script("Scripts/Hazards/RailShuttle.cs", "Hazards.RailShuttle"),
           "saw": _script("Scripts/Hazards/SawBlade.cs", "Hazards.SawBlade"),
           "oneway": _script("Scripts/Props/OneWayPlatform.cs", "Props.OneWayPlatform"),

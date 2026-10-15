@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 588735277251936004}
   - component: {fileID: 772976153894080940}
   - component: {fileID: 751719576466775505}
+  - component: {fileID: 822923360150026946}
   m_Layer: 0
   m_Name: Chest
   m_TagString: Untagged
@@ -185,3 +186,17 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::Materials.MaterialView
   materialId: 1
+--- !u!114 &822923360150026946
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 267112625778006663}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4085305b305dc6b48ae0224f3842febb, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::Props.Decor
+  onWall: 0
+  knock: 1.2

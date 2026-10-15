@@ -140,15 +140,24 @@ namespace Common
             // the allocation only happens on the frame something is actually in the way.
             RaycastHit2D[] all = Physics2D.CircleCastAll(from, radius, dir, distance, hitMask);
             float best = float.MaxValue;
+            int decor = Props.Decor.Layer;
 
             foreach (var h in all)
             {
                 if (!h.collider || h.collider.isTrigger) continue;
                 if (_owner && h.collider.transform.IsChildOf(_owner)) continue;
+                if (h.collider.gameObject.layer == decor) continue;    // knocked below, never a stop
                 if (h.distance >= best) continue;
                 best = h.distance;
                 hit = h;
             }
+
+            // Clutter never stops a round - a room full of it would be a room full of cover - but
+            // everything the round passes through on its way is woken and knocked.
+            if (decor >= 0)
+                foreach (var h in all)
+                    if (h.collider && h.collider.gameObject.layer == decor && h.distance < best)
+                        Props.Decor.Knock(h.collider, dir * impactImpulse, h.point);
 
             return hit.collider;
         }

@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 1113704679401736696}
   - component: {fileID: 186686108568582133}
   - component: {fileID: 236383706558992326}
+  - component: {fileID: 907208214115198889}
   m_Layer: 0
   m_Name: Chair
   m_TagString: Untagged
@@ -203,3 +204,17 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::Materials.MaterialView
   materialId: 1
+--- !u!114 &907208214115198889
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 906189644878749610}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4085305b305dc6b48ae0224f3842febb, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::Props.Decor
+  onWall: 0
+  knock: 1.2

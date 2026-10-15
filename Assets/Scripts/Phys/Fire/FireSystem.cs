@@ -198,6 +198,7 @@ namespace Phys.Fire
 
             var b = GetOrCreate(go, mat);
             if (b == null) return false;
+            Props.Decor.WakeObject(go);                 // a burning book does not stay on its shelf
 
             var rec = b.Rec;
             rec.WorldToPixel(worldPos, out int cx, out int cy);

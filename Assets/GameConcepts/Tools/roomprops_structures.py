@@ -4,7 +4,10 @@ doors and ladders. Not one room's: any room with a house, a keep or a set of dec
 
 * DeckPlank - 20x4 of timber floor. Static (let into the rock or nailed to the next one)
   and a Props.OneWayPlatform: come up through it from below, stand on it, hold S to drop.
-  Laid end to end into a deck; it fills its canvas, so the row reads as one floor.
+  Laid end to end into a deck; it fills its canvas, so the row reads as one floor. In a
+  house it is only the lid of a hatch, over a ladder.
+* FloorPlank - 20x6 of a house's floor, wall-thick, static and solid both ways: what a
+  house's storeys are laid of, except at the hatch.
 * WallPlank - 6x12 of upright boards, static, solid. Stacked into a bulkhead or a hut wall.
   Built rooms make walls of these rather than of terrain because terrain only stays up if
   it touches rock, and a bulkhead between two decks touches none.
@@ -32,6 +35,7 @@ TITLE = "BUILT ROOMS"
 SEED = 9800
 
 DECK_W, DECK_H = 20, 4
+FLOOR_W, FLOOR_H = 20, 6
 WALL_W, WALL_H = 6, 12
 DOOR_W, DOOR_H = 6, 30
 ROOF_W, ROOF_H = 20, 5
@@ -51,6 +55,23 @@ def deck_plank():
     P(0, 2, TIM_D)
     for x in (3, 13):
         P(x, 1, IRON_M)
+
+
+def floor_plank():
+    """A length of a house's floor, as thick as its walls: the boards on top, the joist
+    under them, nail heads where they meet. Solid both ways - a floor is only got through
+    at a hatch (a DeckPlank lid, one-way, over the ladder)."""
+    for x in range(FLOOR_W):
+        P(x, 0, TIM_L if x % 7 else TIM_M)
+        P(x, 1, TIM)
+        P(x, 2, TIM_D if x % 9 == 0 else TIM)
+        P(x, 3, TIM_D)
+        P(x, 4, TIM_M if (x // 3) % 4 else TIM)
+        P(x, 5, TIM_D)
+    P(0, 1, TIM_D)
+    P(0, 2, TIM_D)
+    for x in (4, 14):
+        P(x, 4, IRON_M)
 
 
 def wall_plank():
@@ -128,10 +149,11 @@ GROUPS = [
         ("Door", "DOOR", door, (DOOR_W, DOOR_H), WOOD, "door"),
         ("IronDoor", "IRON DOOR", iron_door, (DOOR_W, DOOR_H), METAL, "door"),
         ("RoofPlank", "ROOF PLANK", roof_plank, (ROOF_W, ROOF_H), DEFAULT, None),
+        ("FloorPlank", "FLOOR PLANK", floor_plank, (FLOOR_W, FLOOR_H), WOOD, None),
     ]),
 ]
 
-STATIC = {"DeckPlank", "WallPlank", "RoofPlank"}
+STATIC = {"DeckPlank", "WallPlank", "RoofPlank", "FloorPlank"}
 KINEMATIC = {"Door", "IronDoor"}
 
 

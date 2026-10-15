@@ -64,6 +64,8 @@ namespace Phys.Explosions
         {
             if (p == null || p.radius <= 0f) return;
 
+            // Sleeping clutter is static: wake it first, so the blast throws it like the rest.
+            Props.Decor.WakeInCircle(center, Mathf.Max(p.radius, p.carveRadius) * 1.5f);
             Gather(center, p, source);
             Damage(center, p, source);
             Push(center, p);

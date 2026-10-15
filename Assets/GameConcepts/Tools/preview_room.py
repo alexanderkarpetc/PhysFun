@@ -27,6 +27,10 @@ ASSETS = os.path.abspath(os.path.join(HERE, "..", ".."))
 CPU = 40                      # map cells per unit
 AIR = (18, 20, 26)
 FILL_TINT = 0.55              # the fill is drawn darker than the room's own rock
+# The back wall, as TerrainBackdrop draws it (keep in step with its defaults): the room's
+# Maps/<Name>_Back.asset where it has one, the floor recipe's back tile where it has not.
+BACK_TILE = "rock_hard"
+BACK_SHADE, BACK_HAZE, HAZE = 0.62, 0.22, (18, 20, 26)
 
 CHARS = {"Swat": "RiotBrute", "SoldierArmed": "Grenadier", "Shotgunner": "Pyro", "Wizard": "BloodMage",
          "Bogcap": "WizBogcap", "Bonecrown": "WizBonecrown", "Crimson": "WizCrimson",
@@ -55,6 +59,94 @@ def read_map(path):
 
 
 _tex = {}
+
+
+# The light, as Lighting.LightField draws it (keep in step with its defaults): --light
+# lays it over the preview, from every prop instance that carries a LightSource2D.
+LIGHT_CELL, LIGHT_AMBIENT, LIGHT_WALL, LIGHT_MAXR, LIGHT_MAX = 0.2, (0.17, 0.17, 0.22), 7.0, 10.0, 2.0
+
+
+def light_sources(prefab_text, insts):
+    """[(x, y, (r, g, b), intensity, radius)] for every instance whose prefab has a light."""
+    out = []
+    for src, _n, x, y, ang, sc, _m in insts:
+        if not src:
+            continue
+        t = open(src, encoding="utf-8").read()
+        if "Lighting.LightSource2D" not in t:
+            continue
+        b = "\n" + t.split("Lighting.LightSource2D\n")[1].split("--- !u!")[0]
+        f = lambda k: re.search(r"\n  %s: (.*)" % k, b).group(1)
+        c = re.search(r"r: ([\d.]+), g: ([\d.]+), b: ([\d.]+)", f("color"))
+        o = re.search(r"x: ([-\d.]+), y: ([-\d.]+)", f("offset"))
+        out.append((x + float(o.group(1)) * sc, y + float(o.group(2)) * sc,
+                    tuple(float(v) for v in c.groups()), float(f("intensity")), float(f("radius"))))
+    return out
+
+
+def apply_light(img, cells, W, H, lights):
+    """LightField's spread and gather on the room alone, then the 2x multiply in linear."""
+    import numpy as np
+    k = int(round(LIGHT_CELL * CPU))
+    gw, gh = (W + k - 1) // k, (H + k - 1) // k
+    solid = np.zeros((gh * k, gw * k), dtype=np.float32)
+    solid[:H, :W] = (np.frombuffer(bytes(cells), dtype=np.uint8).reshape(H, W) != 0)
+    opac = solid.reshape(gh, k, gw, k).mean(axis=(1, 3))          # row 0 = bottom
+    cost = 1.0 + LIGHT_WALL * opac
+    total = np.zeros((gh, gw, 3), dtype=np.float32)
+    total[:] = LIGHT_AMBIENT
+    for lx, ly, col, inten, rad in lights:
+        rad = min(rad, LIGHT_MAXR) / LIGHT_CELL
+        px, py = lx / LIGHT_CELL, ly / LIGHT_CELL
+        r = int(math.ceil(rad)) + 1
+        cx, cy = int(math.floor(px)), int(math.floor(py))
+        x0, x1, y0, y1 = max(0, cx - r), min(gw - 1, cx + r), max(0, cy - r), min(gh - 1, cy + r)
+        if x0 > x1 or y0 > y1:
+            continue
+        d = np.full((y1 - y0 + 1, x1 - x0 + 1), 1e9, dtype=np.float64)
+        for y in range(y0, y1 + 1):
+            for x in range(x0, x1 + 1):
+                dd = (x + 0.5 - px) ** 2 + (y + 0.5 - py) ** 2
+                if dd <= 2:
+                    d[y - y0, x - x0] = math.sqrt(dd)
+        c = cost[y0:y1 + 1, x0:x1 + 1]
+        h_, w_ = d.shape
+        for p in range(4):
+            fw = p % 2 == 0
+            s = 1 if fw else -1
+            ys = range(h_) if fw else range(h_ - 1, -1, -1)
+            xs = list(range(w_) if fw else range(w_ - 1, -1, -1))
+            for y in ys:
+                py_ = y - s
+                for x in xs:
+                    v, cc = d[y, x], c[y, x]
+                    px_ = x - s
+                    if 0 <= px_ < w_:
+                        v = min(v, d[y, px_] + cc)
+                    if 0 <= py_ < h_:
+                        v = min(v, d[py_, x] + cc)
+                        if x - 1 >= 0:
+                            v = min(v, d[py_, x - 1] + cc * 1.41421356)
+                        if x + 1 < w_:
+                            v = min(v, d[py_, x + 1] + cc * 1.41421356)
+                    d[y, x] = v
+        t = np.clip(d / max(1e-3, rad), 0, 1)
+        a = 1 - t * t * (3 - 2 * t)
+        total[y0:y1 + 1, x0:x1 + 1] += a[..., None] * (np.array(col) * inten)[None, None, :]
+    total = np.minimum(total, LIGHT_MAX)
+    # bilinear up to cells, as the shader samples it
+    ys = (np.arange(H) + 0.5) / k - 0.5
+    xs = (np.arange(W) + 0.5) / k - 0.5
+    y0 = np.clip(np.floor(ys).astype(int), 0, gh - 1); y1 = np.clip(y0 + 1, 0, gh - 1)
+    x0 = np.clip(np.floor(xs).astype(int), 0, gw - 1); x1 = np.clip(x0 + 1, 0, gw - 1)
+    fy = np.clip(ys - np.floor(ys), 0, 1)[:, None, None]
+    fx = np.clip(xs - np.floor(xs), 0, 1)[None, :, None]
+    L = (total[y0][:, x0] * (1 - fx) * (1 - fy) + total[y0][:, x1] * fx * (1 - fy)
+         + total[y1][:, x0] * (1 - fx) * fy + total[y1][:, x1] * fx * fy)
+    im = np.array(img, dtype=np.float32)[::-1] / 255.0              # row 0 = bottom, like L
+    lin = np.power(im, 2.2) * L
+    out = np.clip(np.power(np.clip(lin, 0, 1), 1 / 2.2) * 255 + 0.5, 0, 255).astype(np.uint8)[::-1]
+    return [[tuple(int(v) for v in px_) for px_ in row] for row in out]
 
 
 def tile_px(tile, x, y):
@@ -116,9 +208,16 @@ def main(argv):
     d = argv[argv.index("--dir") + 1] if "--dir" in argv else os.path.join(ASSETS, "Rooms")
     W, H, tiles, cells = read_map(os.path.join(d, "Maps", name + "_Map.asset"))
     img = [[AIR] * W for _ in range(H)]
+    bp = os.path.join(d, "Maps", name + "_Back.asset")
+    btiles, bcells = read_map(bp)[2:] if "--noback" not in argv and os.path.exists(bp) else ([], None)
+    k = BACK_SHADE * (1 - BACK_HAZE)
     for cy in range(H):
         for cx in range(W):
             v = cells[cy * W + cx]
+            if not v and "--noback" not in argv:
+                bv = bcells[cy * W + cx] if bcells else 0
+                c = tile_px(btiles[bv - 1] if bv else BACK_TILE, cx, cy)
+                img[H - 1 - cy][cx] = tuple(min(255, int(q * k + h * BACK_HAZE)) for q, h in zip(c, HAZE))
             if v:
                 c = tile_px(tiles[v - 1], cx, cy)
                 if tiles[v - 1] == "rock_hard":
@@ -268,6 +367,9 @@ def main(argv):
             for a in range(0, 360, 15):
                 put(x + math.cos(math.radians(a)) * 0.15, y + math.sin(math.radians(a)) * 0.15, (240, 190, 80))
 
+    if "--light" in argv:
+        img = apply_light(img, cells, W, H, light_sources(t, insts))
+
     big = []
     for row in img:
         r = []
@@ -276,7 +378,8 @@ def main(argv):
         big += [r, r]
     od = os.path.abspath(os.path.join(ASSETS, "..", "Tools", "room_previews"))
     os.makedirs(od, exist_ok=True)
-    out = os.path.join(od, name + ".png")
+    out = os.path.join(od, name + ("_noback" if "--noback" in argv else "")
+                       + ("_lit" if "--light" in argv else "") + ".png")
     write_png(out, big)
     print(out)
 

@@ -75,7 +75,20 @@ namespace Vision
         /// <summary>Art pixels per unit; the fog is drawn on that grid so it reads as pixel art.</summary>
         public static float ArtPixelsPerUnit = 20f;
 
+        /// <summary>How far round the player the sight map must be painted for the light
+        /// (Lighting.LightField sets it); 0 = only as far as the fog looks.</summary>
+        public static float LightPrepareRadius;
+
         private static FogOfWar _instance;
+
+        /// <summary>The terrain map sight is cast through, for other readers - the light. Only
+        /// current when <see cref="SightFrame"/> is this frame; written in this LateUpdate, so a
+        /// job reading it must be scheduled after it and collected in the next Update.</summary>
+        internal static TerrainSight Sight => _instance ? _instance._sight : null;
+
+        /// <summary>The frame the sight map was last brought up to date and painted round the
+        /// player.</summary>
+        internal static int SightFrame { get; private set; } = -1;
 
         private readonly TerrainSight _sight = new();
 
@@ -205,32 +218,37 @@ namespace Vision
         private void Update()
         {
             if (Input.GetKeyDown(ToggleKey)) Enabled = !Enabled;
+
+            // Last frame's jobs, collected before any LateUpdate: the sight map is repainted in
+            // ours, and other readers of it (Lighting.LightField) collect theirs in Update too.
+            Finish();
         }
 
         private void LateUpdate()
         {
-            Finish();
-
             var player = App.Instance.PlayerTransform;
             if (!_cam) _cam = Camera.main;
-            if (!Enabled || !player || !_cam || !_cam.orthographic)
-            {
-                _renderer.enabled = false;
-                return;
-            }
+            bool fog = Enabled && player && _cam && _cam.orthographic;
+            if (!fog) _renderer.enabled = false;
+
+            // The sight map is the light's too: keep it current while either one is on.
+            if (!player || (!fog && LightPrepareRadius <= 0f)) return;
 
             using var _ = s_schedule.Auto();
 
             _sight.Refresh();
             FollowMap();
+            Vector2 eye = (Vector2)player.position + EyeOffset;
+            _sight.Prepare(eye, Mathf.Max(SightRadius + 1f, LightPrepareRadius));
+            SightFrame = Time.frameCount;
+            if (!fog) return;
+
             if (!_seen.IsCreated)
             {
                 _renderer.enabled = false;   // no terrain, nothing to hide
                 return;
             }
 
-            Vector2 eye = (Vector2)player.position + EyeOffset;
-            _sight.Prepare(eye, SightRadius + 1f);
             RevealDisc(eye, NearRadius);
 
             // An eye inside rock would see nothing past it; the near disc is enough.

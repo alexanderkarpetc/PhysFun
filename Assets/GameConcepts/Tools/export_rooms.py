@@ -317,6 +317,13 @@ def prop_hooks(add, mod):
         return sheet in sheets
 
     h = {}
+    # a lamp on the sheet is a Lantern on a short rope from where the sheet hangs it - it
+    # swings, it can be shot down, and it lights the room (Lighting.LightSource2D)
+    def lantern(x, y, drop=6, *a, **k):
+        drop = max(4, int(drop))
+        add("Lantern", x + 0.5, y + drop + 5, rope=(x, y, y + drop))
+    h["lamp"] = lantern
+    h["warm_lamp"] = lantern
     h["crate_g"] = lambda x, floor, s=12: add("Crate", x + s / 2.0, floor - s / 2.0, scale=(s + 1) / 13.0)
     # the cage sprite: eye 0-4, bars to 26, floor 27-28 on the sheet's `bottom`
     h["cage"] = lambda cx, top, bottom, roof: add("HangingCage", cx + 0.5, bottom - 12.5,

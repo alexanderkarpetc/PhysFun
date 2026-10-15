@@ -36,7 +36,10 @@ the prefab gets an empty child there - what `export_rooms.py` ties the rope's en
 still burnt and carved), and extra "arc" adds an ArcEmitter whose tip is ANCHORS' "Tip".
 `DAMPING = {"Name": 3.0}` sets a prefab's angular damping, extra "oneway" adds a
 Props.OneWayPlatform, "door" a Props.Door, and `AFTER = [fn]` runs exporters for assets that are not bodies
-(the ladder in `roomprops_structures`).
+(the ladder in `roomprops_structures`). `LIGHTS = {"Name": dict(at=(x, y), color=(r, g, b),
+intensity=, radius=, flicker=)}` gives a prop a Lighting.LightSource2D whose light comes
+from `at` (pixels from the top-left: the flame, the coals) - a lamp that swings swings
+its light, and one shot down takes it with it.
 """
 import importlib
 import re
@@ -106,6 +109,22 @@ def _arc():
     return [(g, "Assembly-CSharp::Phys.Electricity.ArcEmitter", "{tip}")]
 
 
+def _light(spec, w, h):
+    """A Lighting.LightSource2D for a prop that gives light, from its LIGHTS entry."""
+    g = _script_guid("Scripts/Lighting/LightSource2D.cs")
+    if not g:
+        print("  !! LightSource2D.cs has no .meta yet: written without its light")
+        return []
+    x, y = spec["at"]
+    r, g_, b = spec.get("color", (1.0, 0.74, 0.45))
+    fields = ("  color: {r: %s, g: %s, b: %s, a: 1}\n  intensity: %s\n  radius: %s\n"
+              "  flicker: %s\n  flickerSpeed: %s\n  offset: {x: %.4f, y: %.4f}\n"
+              % (r, g_, b, spec.get("intensity", 1.0), spec.get("radius", 6.0),
+                 spec.get("flicker", 0.12), spec.get("flickerSpeed", 7.0),
+                 (x - w / 2.0) / PE.PPU, (h / 2.0 - y) / PE.PPU))
+    return [(g, "Assembly-CSharp::Lighting.LightSource2D", fields)]
+
+
 def _script(rel, cls):
     """A component of one of the game's scripts with its own defaults - for the per-room
     machines (RailShuttle, SawBlade); a room sets what differs on its instance."""
@@ -171,6 +190,7 @@ def build_part(modname):
     kinematic = getattr(mod, "KINEMATIC", set())
     triggers = getattr(mod, "TRIGGER", set())
     damping = getattr(mod, "DAMPING", {})
+    lights = getattr(mod, "LIGHTS", {})
     for g, (group, items) in enumerate(mod.GROUPS):
         for i, (name, label, fn, (w, h), material, extra) in enumerate(items):
             new_canvas(w, h, seed=seed0 + g * 101 + i * 7, bg=KEY)
@@ -187,6 +207,8 @@ def build_part(modname):
                 comps = [(g_, c_, "  _tip: {x: %.4f, y: %.4f}\n  _profile:\n    igniteChancePercent: 0\n"
                           % ((tx - w / 2.0) / PE.PPU, (h / 2.0 - ty) / PE.PPU))
                          for g_, c_, _f in comps]
+            if name in lights:
+                comps = (comps or []) + _light(lights[name], w, h)
             anc, kids = anchors.get(name), None
             if extra == "explosive":                              # its fuse, on its top
                 anc = dict(anc or {}, Fuse=(w / 2.0, 0.0))

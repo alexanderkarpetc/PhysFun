@@ -465,6 +465,7 @@ GROUPS = [
         ("Censer", "CENSER", censer, (8, 12), METAL, None),
         ("WreckingBall", "WRECKING BALL", wrecking_ball, (30, 36), METAL, None),
         ("LiftDeck", "LIFT DECK", lift_deck, (69, 11), WOOD, None),
+        ("Lantern", "LANTERN", lantern, (7, 12), METAL, None),
     ]),
     ("LOOSE", [
         ("LogLong", "LOG", log_long, (88, 10), WOOD, None),
@@ -493,6 +494,14 @@ ANCHORS = {
     "Counterweight": {"Eye": (12.5, 3.5)},
     "CandleCrown": {"Eye": (12.5, 2.5)},
     "Censer": {"Eye": (4, 2)},
+    "Lantern": {"Eye": (3.5, 1)},
     "WreckingBall": {"Eye": (14.5, 4)},
     "LiftDeck": {"EyeL": (3.5, 2.5), "EyeR": (65.5, 2.5)},
+}
+
+# what gives light, and from where (pixels from the top-left) - see roomprops.py
+LIGHTS = {
+    "Lantern": dict(at=(3.5, 8.5), color=(1.0, 0.72, 0.42), intensity=1.6, radius=7.5, flicker=0.08),
+    "CandleCrown": dict(at=(12.5, 3), color=(1.0, 0.78, 0.5), intensity=0.9, radius=6.0, flicker=0.15),
+    "Censer": dict(at=(4, 7), color=(1.0, 0.45, 0.2), intensity=0.5, radius=3.0, flicker=0.2),
 }

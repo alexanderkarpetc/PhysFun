@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 265293359549516245}
   - component: {fileID: 500301416700648105}
   - component: {fileID: 401294488605495771}
+  - component: {fileID: 377633457666999470}
   m_Layer: 0
   m_Name: CandleCrown
   m_TagString: Untagged
@@ -254,6 +255,24 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::Materials.MaterialView
   materialId: 3
+--- !u!114 &377633457666999470
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 378343556282305174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a7d2a81f5e7affc0c9c4581ec81339f, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::Lighting.LightSource2D
+  color: {r: 1.0, g: 0.78, b: 0.5, a: 1}
+  intensity: 0.9
+  radius: 6.0
+  flicker: 0.15
+  flickerSpeed: 7.0
+  offset: {x: 0.0000, y: 0.1500}
 --- !u!1 &956832675031613393
 GameObject:
   m_ObjectHideFlags: 0

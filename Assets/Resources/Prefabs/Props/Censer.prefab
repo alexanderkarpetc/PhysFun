@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 940284813681106809}
   - component: {fileID: 1029667644215813772}
   - component: {fileID: 477531259626586839}
+  - component: {fileID: 42084243464264619}
   m_Layer: 0
   m_Name: Censer
   m_TagString: Untagged
@@ -206,6 +207,24 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::Materials.MaterialView
   materialId: 3
+--- !u!114 &42084243464264619
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 680348412879563159}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a7d2a81f5e7affc0c9c4581ec81339f, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::Lighting.LightSource2D
+  color: {r: 1.0, g: 0.45, b: 0.2, a: 1}
+  intensity: 0.5
+  radius: 3.0
+  flicker: 0.2
+  flickerSpeed: 7.0
+  offset: {x: 0.0000, y: -0.0500}
 --- !u!1 &73209063798564817
 GameObject:
   m_ObjectHideFlags: 0

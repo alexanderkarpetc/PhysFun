@@ -24,6 +24,9 @@ namespace Rooms
                  "rooms' rock - only the look differs, so the eye can tell the two apart.")]
         [SerializeField] private string _fillTile = "rock_hard";
         [SerializeField] private PhysMaterialId _fillMaterial = PhysMaterialId.Default;
+        [Tooltip("Back wall everywhere a room does not give its own - behind the corridors and " +
+                 "whatever gets dug into the fill. Drawn darkened by TerrainBackdrop. Empty = none.")]
+        [SerializeField] private string _backTile = "rock_hard";
         [Tooltip("Solid fill kept round the outside of the floor, in world units.")]
         [SerializeField, Min(1f)] private float _margin = 6f;
 
@@ -47,6 +50,7 @@ namespace Rooms
         public Room StartRoom => _startRoom;
         public string FillTile => _fillTile;
         public PhysMaterialId FillMaterial => _fillMaterial;
+        public string BackTile => _backTile;
         public float Margin => _margin;
         public float Gap => _gap;
         public float Jitter => _jitter;

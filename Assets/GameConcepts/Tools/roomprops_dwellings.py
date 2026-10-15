@@ -1236,3 +1236,9 @@ ANCHORS = {
     "ClockWheelSpare": {"Axle": (22.0, 22.0)},
     "ClockWeight": {"Eye": eye_at(8, 0, 3.5)},
 }
+
+# what gives light, and from where (pixels from the top-left) - see roomprops.py
+LIGHTS = {
+    "Cresset": dict(at=(4.5, 7), color=(1.0, 0.6, 0.28), intensity=1.3, radius=7.0, flicker=0.2),
+    "CandleRack": dict(at=(9, 6), color=(1.0, 0.8, 0.52), intensity=0.8, radius=5.0, flicker=0.15),
+}

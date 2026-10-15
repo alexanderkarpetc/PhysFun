@@ -47,6 +47,13 @@ namespace Phys.Explosions
             }
         }
 
+        /// <summary>The light a blast throws, as a <see cref="Lighting.LightField.Flash"/>:
+        /// reaching this many blast radii (plus two units), dying away over this long.</summary>
+        public static Color FlashColor = new(1f, 0.78f, 0.5f, 1f);
+        public static float FlashIntensity = 2.2f;
+        public static float FlashReach = 3f;
+        public static float FlashSeconds = 0.4f;
+
         /// <summary>
         /// Set one off at <paramref name="center"/>.
         /// </summary>
@@ -65,6 +72,8 @@ namespace Phys.Explosions
             Flames(center, p);
             Sparks(center, p);
             Shake(center, p);
+            Lighting.LightField.Flash(center, FlashColor, FlashIntensity,
+                                      p.radius * FlashReach + 2f, FlashSeconds);
             Chain(center, p);
 
             Victims.Clear();

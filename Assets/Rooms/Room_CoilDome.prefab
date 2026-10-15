@@ -50,6 +50,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier:
   _map: {fileID: 11400000, guid: 7a3fbb9b61cbbf8580ad1215d621138f, type: 2}
+  _backMap: {fileID: 11400000, guid: e8edf4b25eb63f81793c9c344f4277bf, type: 2}
 --- !u!1 &228652796755513886
 GameObject:
   m_ObjectHideFlags: 0

@@ -57,6 +57,15 @@ namespace Phys.Terrain
                 }
             }
 
+            /// <summary>The same tile with every pixel passed through <paramref name="f"/> -
+            /// the back wall's darkened copy of a material.</summary>
+            public Tile Recolored(System.Func<Color32, Color32> f)
+            {
+                var px = new Color32[_pixels.Length];
+                for (int i = 0; i < px.Length; i++) px[i] = f(_pixels[i]);
+                return new Tile(px, Width, Height);
+            }
+
             private static int Wrap(int v, int n)
             {
                 int m = v % n;

@@ -22,6 +22,10 @@ namespace Rooms
     /// One TerrainBuilder then builds it, so there are no seams between rooms and the fill:
     /// you can dig from any room into any other. The floor's border is Untouchable bedrock,
     /// which the support pass hangs everything from.
+    ///
+    /// Behind it goes a second map of the same size, the back wall (<see cref="TerrainBackdrop"/>):
+    /// the recipe's back tile everywhere, each room's own back map stamped over it where it
+    /// has one. Nothing collides with it; it is what shows where the terrain is air.
     /// </summary>
     public static class FloorBuilder
     {
@@ -101,7 +105,7 @@ namespace Rooms
             new System.Span<byte>(cells).Fill(fill);
 
             for (int i = 0; i < usable.Count; i++)
-                Stamp(map, cells, w, h, usable[i].Map, CellOf(plan.Rects[i].min, bounds, ppu));
+                Stamp(map, cells, w, h, usable[i].Map, CellOf(plan.Rects[i].min, bounds, ppu), keepUnder: false);
 
             for (int i = 0; i < shapes.Count; i++)
             for (int j = 0; j < shapes[i].Sockets.Length; j++)
@@ -116,6 +120,28 @@ namespace Rooms
             foreach (var route in plan.Corridors)
                 for (int k = 1; k < route.Count; k++)
                     Sweep(cells, w, h, route[k - 1], route[k], bore, bounds, ppu);
+
+            TerrainMap back = null;
+            if (!string.IsNullOrEmpty(recipe.BackTile))
+            {
+                back = ScriptableObject.CreateInstance<TerrainMap>();
+                back.name = "Floor Back";
+                back.Allocate(Vector2.zero, w, h, ppu);
+                var backCells = back.Cells;
+                new System.Span<byte>(backCells).Fill((byte)back.Require(recipe.BackTile, recipe.FillMaterial));
+                for (int i = 0; i < usable.Count; i++)
+                {
+                    var bm = usable[i].BackMap;
+                    if (!bm) continue;
+                    if (bm.Width != usable[i].Map.Width || bm.Height != usable[i].Map.Height)
+                    {
+                        Debug.LogWarning($"FloorBuilder: room '{usable[i].name}' has a back map of another size " +
+                                         "than its map; back wall skipped.", usable[i]);
+                        continue;
+                    }
+                    Stamp(back, backCells, w, h, bm, CellOf(plan.Rects[i].min, bounds, ppu), keepUnder: true);
+                }
+            }
             s_map.End();
 
             // ── objects ────────────────────────────────────────────────────────────
@@ -135,6 +161,13 @@ namespace Rooms
             var startRect = plan.Rects[0];
             builder.StreamFrom(startRect.center, startRect);
             terrainGo.SetActive(true);
+
+            if (back)
+            {
+                var backGo = new GameObject("Backdrop");
+                backGo.transform.SetParent(root.transform, false);
+                backGo.AddComponent<TerrainBackdrop>().SetMap(back);
+            }
 
             AddBedrock(root.transform, bounds);
             s_terrain.End();
@@ -184,7 +217,11 @@ namespace Rooms
         private static Vector2Int CellOf(Vector2 p, Rect bounds, float ppu) =>
             new(Mathf.RoundToInt((p.x - bounds.xMin) * ppu), Mathf.RoundToInt((p.y - bounds.yMin) * ppu));
 
-        private static void Stamp(TerrainMap floor, byte[] cells, int w, int h, TerrainMap room, Vector2Int at)
+        /// <summary>Copy a room's map into the floor's at <paramref name="at"/>. With
+        /// <paramref name="keepUnder"/> the room's empty cells leave the floor's cell as it was
+        /// (a back map's 0 is "no wall of its own"), otherwise they are air.</summary>
+        private static void Stamp(TerrainMap floor, byte[] cells, int w, int h, TerrainMap room, Vector2Int at,
+                                  bool keepUnder)
         {
             var remap = new byte[256];
             var palette = room.Palette;
@@ -199,7 +236,13 @@ namespace Rooms
                 int fy = at.y + y;
                 if (fy < 0 || fy >= h) continue;
                 int dst = fy * w + at.x, srcRow = y * rw;
-                for (int x = x0; x < x1; x++) cells[dst + x] = remap[src[srcRow + x]];
+                if (keepUnder)
+                {
+                    for (int x = x0; x < x1; x++)
+                        if (src[srcRow + x] != 0) cells[dst + x] = remap[src[srcRow + x]];
+                }
+                else
+                    for (int x = x0; x < x1; x++) cells[dst + x] = remap[src[srcRow + x]];
             }
         }
 

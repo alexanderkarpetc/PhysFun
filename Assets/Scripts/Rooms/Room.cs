@@ -28,7 +28,13 @@ namespace Rooms
                  "corner is then the room's own origin.")]
         [SerializeField] private TerrainMap _map;
 
+        [Tooltip("The back wall behind the room (TerrainBackdrop): same size and origin as the " +
+                 "map, nothing collides with it. Cell 0 leaves the floor's own back wall showing. " +
+                 "Empty = the floor's back wall everywhere.")]
+        [SerializeField] private TerrainMap _backMap;
+
         public TerrainMap Map => _map;
+        public TerrainMap BackMap => _backMap;
 
         /// <summary>The template rectangle, relative to this object's position.</summary>
         public Rect LocalRect => _map ? _map.LocalBounds : new Rect(0f, 0f, 1f, 1f);

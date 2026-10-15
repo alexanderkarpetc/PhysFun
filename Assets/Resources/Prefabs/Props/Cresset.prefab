@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 769298349168865760}
   - component: {fileID: 845879938028967745}
   - component: {fileID: 1138955512395824273}
+  - component: {fileID: 1017005637906452577}
   m_Layer: 0
   m_Name: Cresset
   m_TagString: Untagged
@@ -208,6 +209,24 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::Materials.MaterialView
   materialId: 3
+--- !u!114 &1017005637906452577
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 750160510836817810}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a7d2a81f5e7affc0c9c4581ec81339f, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::Lighting.LightSource2D
+  color: {r: 1.0, g: 0.6, b: 0.28, a: 1}
+  intensity: 1.3
+  radius: 7.0
+  flicker: 0.2
+  flickerSpeed: 7.0
+  offset: {x: 0.0000, y: -0.0750}
 --- !u!1 &478997987062129887
 GameObject:
   m_ObjectHideFlags: 0

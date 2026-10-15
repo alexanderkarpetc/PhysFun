@@ -35,7 +35,7 @@ MonoBehaviour:
   _fillTile: rock_hard
   _fillMaterial: 0
   _margin: 6
-  _gap: 5
+  _gap: 8
   _jitter: 0.35
   _extraLinks: 1
   _corridorSize: 1.6

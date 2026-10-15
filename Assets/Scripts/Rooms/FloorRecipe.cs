@@ -44,6 +44,29 @@ namespace Rooms
         [Tooltip("Corridor bore, in world units - its height where it runs level, its width " +
                  "where it climbs. The player is a little over 1 unit tall.")]
         [SerializeField, Min(0.5f)] private float _corridorSize = 1.6f;
+        [Tooltip("How far corridors stray off the shortest way, following valleys of a noise " +
+                 "field. 0 = shortest way.")]
+        [SerializeField, Min(0f)] private float _wander = 3f;
+        [Tooltip("Extra cost of a turn, in half-unit steps. Lower = more bends.")]
+        [SerializeField, Min(0f)] private float _turnCost = 1.5f;
+        [Tooltip("Points each corridor is sent through on its way, scattered round the line " +
+                 "between its ends - up and down more than sideways, so it climbs and drops.")]
+        [SerializeField, Min(0)] private int _detours = 2;
+        [Tooltip("How far, world units, a detour point may be off that line.")]
+        [SerializeField, Min(0f)] private float _detourReach = 6f;
+        [Tooltip("How lumpy corridor ceilings and shaft walls are: 0 = cut square.")]
+        [SerializeField, Range(0f, 1f)] private float _lumps = 0.6f;
+        [Tooltip("Chance a bend of a corridor opens into a small cave.")]
+        [SerializeField, Range(0f, 1f)] private float _chambers = 0.3f;
+        [Tooltip("Climbs at least this tall, world units, get a ladder.")]
+        [SerializeField, Min(0.5f)] private float _ladderFrom = 1.1f;
+
+        [Header("Growth")]
+        [Tooltip("Moss, roots and mushrooms in the corridors: on the rock (tiles), on the back " +
+                 "wall, and as clutter props (CorridorFlora).")]
+        [SerializeField] private bool _growth = true;
+        [Tooltip("How thickly the props grow; 1 = as tuned.")]
+        [SerializeField, Min(0f)] private float _growthDensity = 1f;
 
         public IReadOnlyList<Room> Rooms => _rooms;
         public int RoomCount => _roomCount;
@@ -56,5 +79,14 @@ namespace Rooms
         public float Jitter => _jitter;
         public int ExtraLinks => _extraLinks;
         public float CorridorSize => _corridorSize;
+        public float Wander => _wander;
+        public float TurnCost => _turnCost;
+        public int Detours => _detours;
+        public float DetourReach => _detourReach;
+        public float Lumps => _lumps;
+        public float Chambers => _chambers;
+        public float LadderFrom => _ladderFrom;
+        public bool Growth => _growth;
+        public float GrowthDensity => _growthDensity;
     }
 }

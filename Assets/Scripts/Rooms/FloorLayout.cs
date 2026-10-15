@@ -13,7 +13,13 @@ namespace Rooms
     /// ended up side by side turn the tree into something with loops. Each link joins the
     /// pair of sockets that face each other best, and a corridor is routed between their
     /// mouths through the fill, around every room, by A* on a half-unit grid that charges
-    /// for turns - so corridors come out as a few straight runs, not staircases.
+    /// for turns - so corridors come out as runs, not staircases.
+    ///
+    /// They are not the shortest runs, though. The grid's step cost is a noise field
+    /// (<see cref="Settings.Wander"/>), and each corridor is sent through a few detour
+    /// points scattered round the line between its ends, up and down as much as sideways
+    /// (<see cref="Settings.Detours"/>) - so it winds, climbs and drops on its way. Ground a
+    /// corridor has taken costs the next ones more, so two of them do not run side by side.
     /// </summary>
     public sealed class FloorLayout
     {
@@ -40,6 +46,14 @@ namespace Rooms
         {
             public float Gap, Jitter, Margin, CellSnap, CorridorSize;
             public int ExtraLinks;
+            /// <summary>How much the noise field adds to a step: 0 = shortest way.</summary>
+            public float Wander;
+            /// <summary>Extra cost of a turn, in steps.</summary>
+            public float TurnCost;
+            /// <summary>Detour points per corridor.</summary>
+            public int Detours;
+            /// <summary>How far, world units, a detour point may stray off the straight line.</summary>
+            public float DetourReach;
         }
 
         /// <summary>Where each room's root goes, in floor space.</summary>
@@ -55,6 +69,7 @@ namespace Rooms
 
         private const float Step = 0.5f;        // routing grid
         private const float Clearance = 0.75f;  // corridors keep this far off other rooms
+        private const float Crowd = 3f;         // step cost added round a corridor already routed
 
         private static readonly Vector2Int[] Dirs =
             { Vector2Int.right, Vector2Int.left, Vector2Int.up, Vector2Int.down };
@@ -144,7 +159,7 @@ namespace Rooms
             var bmin = Snap(new Vector2(minX - s.Margin, minY - s.Margin), s.CellSnap);
             plan.Bounds = new Rect(bmin, new Vector2(maxX + s.Margin, maxY + s.Margin) - bmin);
 
-            var router = new Router(plan.Bounds, plan.Rects, s.CorridorSize);
+            var router = new Router(plan.Bounds, plan.Rects, s, rng);
             foreach (var (a, b) in pairs) plan.Join(rooms, a, b, at[b] - at[a], router);
             return plan;
         }
@@ -193,14 +208,30 @@ namespace Rooms
             private readonly Rect _bounds;
             private readonly int _nx, _ny;
             private readonly bool[] _blocked;
+            private readonly float[] _cost;             // what a step onto the cell costs
+            private readonly Settings _s;
+            private readonly System.Random _rng;
+            private readonly int _wear;                 // cells either side a routed corridor wears
 
-            public Router(Rect bounds, Rect[] rooms, float bore)
+            // A* state, kept between searches: a state is fresh unless it carries this search's stamp
+            private readonly float[] _g;
+            private readonly int[] _prev, _stamp;
+            private readonly bool[] _closed;
+            private int _search;
+
+            public Router(Rect bounds, Rect[] rooms, Settings s, System.Random rng)
             {
+                float bore = s.CorridorSize;
                 float half = bore * 0.5f;
                 _bounds = bounds;
+                _s = s;
+                _rng = rng;
+                _wear = Mathf.CeilToInt(bore / Step);
                 _nx = Mathf.Max(1, Mathf.CeilToInt(bounds.width / Step));
                 _ny = Mathf.Max(1, Mathf.CeilToInt(bounds.height / Step));
                 _blocked = new bool[_nx * _ny];
+                _cost = new float[_nx * _ny];
+                float ox = (float)rng.NextDouble() * 500f, oy = (float)rng.NextDouble() * 500f;
                 for (int y = 0; y < _ny; y++)
                 for (int x = 0; x < _nx; x++)
                 {
@@ -215,7 +246,19 @@ namespace Rooms
                             break;
                         }
                     if (x == 0 || y == 0 || x == _nx - 1 || y == _ny - 1) _blocked[y * _nx + x] = true;
+
+                    // Two octaves, squared, so the field has valleys a corridor follows rather
+                    // than an even fuzz it ignores.
+                    float n = 0.65f * Mathf.PerlinNoise(ox + p.x * 0.22f, oy + p.y * 0.22f)
+                            + 0.35f * Mathf.PerlinNoise(oy + p.x * 0.55f, ox + p.y * 0.55f);
+                    _cost[y * _nx + x] = 1f + s.Wander * n * n;
                 }
+
+                int states = _nx * _ny * 4;
+                _g = new float[states];
+                _prev = new int[states];
+                _stamp = new int[states];
+                _closed = new bool[states];
             }
 
             private Vector2 Center(int x, int y) =>
@@ -224,6 +267,9 @@ namespace Rooms
             private Vector2Int Cell(Vector2 p) =>
                 new(Mathf.Clamp(Mathf.FloorToInt((p.x - _bounds.xMin) / Step), 0, _nx - 1),
                     Mathf.Clamp(Mathf.FloorToInt((p.y - _bounds.yMin) / Step), 0, _ny - 1));
+
+            private bool Free(Vector2Int c) =>
+                c.x >= 0 && c.y >= 0 && c.x < _nx && c.y < _ny && !_blocked[c.y * _nx + c.x];
 
             /// <summary>The first free routing cell straight out of a socket's mouth.</summary>
             private Vector2Int Exit(Vector2 mouth, SocketSide side)
@@ -241,7 +287,23 @@ namespace Rooms
             {
                 var ea = Exit(mouthA, sideA);
                 var eb = Exit(mouthB, sideB);
-                var cells = AStar(ea, eb) ?? new List<Vector2Int> { ea, new(eb.x, ea.y), eb };
+
+                // ea -> detours -> eb, leg by leg; a detour no leg can reach is dropped. Each
+                // leg wears its ground as soon as it is laid, so the next one keeps off it
+                // rather than doubling back along it.
+                var cells = new List<Vector2Int> { ea };
+                var from = ea;
+                foreach (var stop in Detours(ea, eb))
+                {
+                    var leg = AStar(from, stop);
+                    if (leg == null) continue;
+                    Append(cells, leg);
+                    Wear(leg);
+                    from = stop;
+                }
+                var last = AStar(from, eb) ?? new List<Vector2Int> { from, new(eb.x, from.y), eb };
+                Append(cells, last);
+                Wear(last);
 
                 var pts = new List<Vector2> { mouthA };
                 AddLeg(pts, mouthA, Center(ea.x, ea.y), sideA);
@@ -249,6 +311,59 @@ namespace Rooms
                 for (int i = 1; i < corners.Count; i++) pts.Add(Center(corners[i].x, corners[i].y));
                 AddLeg(pts, Center(eb.x, eb.y), mouthB, sideB);
                 return pts;
+            }
+
+            /// <summary>Free cells along the way from a to b, each pushed off the straight line
+            /// - further up and down than sideways, so corridors climb.</summary>
+            private List<Vector2Int> Detours(Vector2Int a, Vector2Int b)
+            {
+                var stops = new List<Vector2Int>();
+                float reach = _s.DetourReach / Step;
+                for (int k = 1; k <= _s.Detours; k++)
+                {
+                    float t = k / (_s.Detours + 1f);
+                    var aim = Vector2.Lerp(a, b, t) + new Vector2(
+                        ((float)_rng.NextDouble() * 2f - 1f) * reach * 0.6f,
+                        ((float)_rng.NextDouble() * 2f - 1f) * reach);
+                    var c = new Vector2Int(Mathf.RoundToInt(aim.x), Mathf.RoundToInt(aim.y));
+                    if (Nearest(ref c)) stops.Add(c);
+                }
+                return stops;
+            }
+
+            /// <summary>Move c onto the nearest free cell a few cells round it, if there is one.</summary>
+            private bool Nearest(ref Vector2Int c)
+            {
+                for (int r = 0; r <= 8; r++)
+                for (int dy = -r; dy <= r; dy++)
+                for (int dx = -r; dx <= r; dx++)
+                {
+                    if (Mathf.Max(Mathf.Abs(dx), Mathf.Abs(dy)) != r) continue;
+                    var n = new Vector2Int(c.x + dx, c.y + dy);
+                    if (Free(n)) { c = n; return true; }
+                }
+                return false;
+            }
+
+            private static void Append(List<Vector2Int> cells, List<Vector2Int> leg)
+            {
+                foreach (var c in leg)
+                    if (cells.Count == 0 || cells[cells.Count - 1] != c) cells.Add(c);
+            }
+
+            /// <summary>A routed corridor makes its ground, and the ground round it, dearer.</summary>
+            private void Wear(List<Vector2Int> path)
+            {
+                float cap = 1f + _s.Wander + Crowd * 2f;
+                foreach (var p in path)
+                    for (int dy = -_wear; dy <= _wear; dy++)
+                    for (int dx = -_wear; dx <= _wear; dx++)
+                    {
+                        int x = p.x + dx, y = p.y + dy;
+                        if (x < 0 || y < 0 || x >= _nx || y >= _ny) continue;
+                        int i = y * _nx + x;
+                        _cost[i] = Mathf.Min(_cost[i] + Crowd, cap);
+                    }
             }
 
             /// <summary>From a mouth to its exit cell (or back): straight out first, then the
@@ -271,23 +386,25 @@ namespace Rooms
 
             private List<Vector2Int> AStar(Vector2Int from, Vector2Int to)
             {
-                int n = _nx * _ny * 4;
-                var g = new float[n];
-                var prev = new int[n];
-                var closed = new bool[n];
-                for (int i = 0; i < n; i++) { g[i] = float.MaxValue; prev[i] = -1; }
+                if (from == to) return new List<Vector2Int> { from };
+                _search++;
                 var open = new Heap();
-                int start = (from.y * _nx + from.x) * 4;
-                for (int d = 0; d < 4; d++) { g[start + d] = 0f; open.Push(start + d, H(from, to)); }
+                int origin = from.y * _nx + from.x;
+                for (int d = 0; d < 4; d++)
+                {
+                    Touch(origin * 4 + d);
+                    _g[origin * 4 + d] = 0f;
+                    open.Push(origin * 4 + d, H(from, to));
+                }
 
                 int goal = to.y * _nx + to.x;
                 while (open.Count > 0)
                 {
                     int s = open.Pop();
-                    if (closed[s]) continue;
-                    closed[s] = true;
+                    if (_closed[s]) continue;
+                    _closed[s] = true;
                     int c = s / 4, dir = s % 4;
-                    if (c == goal) return Unwind(prev, s);
+                    if (c == goal) return Unwind(s);
                     int cx = c % _nx, cy = c / _nx;
                     for (int nd = 0; nd < 4; nd++)
                     {
@@ -295,21 +412,32 @@ namespace Rooms
                         if (x < 0 || y < 0 || x >= _nx || y >= _ny) continue;
                         int nc = y * _nx + x;
                         if (_blocked[nc] && nc != goal) continue;
-                        float cost = g[s] + 1f + (nd == dir || c == from.y * _nx + from.x ? 0f : 4f);
+                        float cost = _g[s] + _cost[nc] + (nd == dir || c == origin ? 0f : _s.TurnCost);
                         int ns = nc * 4 + nd;
-                        if (cost >= g[ns]) continue;
-                        g[ns] = cost;
-                        prev[ns] = s;
+                        Touch(ns);
+                        if (cost >= _g[ns]) continue;
+                        _g[ns] = cost;
+                        _prev[ns] = s;
                         open.Push(ns, cost + H(new Vector2Int(x, y), to));
                     }
                 }
                 return null;
             }
 
-            private List<Vector2Int> Unwind(int[] prev, int s)
+            /// <summary>Reset a state the first time this search meets it.</summary>
+            private void Touch(int s)
+            {
+                if (_stamp[s] == _search) return;
+                _stamp[s] = _search;
+                _g[s] = float.MaxValue;
+                _prev[s] = -1;
+                _closed[s] = false;
+            }
+
+            private List<Vector2Int> Unwind(int s)
             {
                 var path = new List<Vector2Int>();
-                for (; s >= 0; s = prev[s])
+                for (; s >= 0; s = _prev[s])
                 {
                     int c = s / 4;
                     var p = new Vector2Int(c % _nx, c / _nx);

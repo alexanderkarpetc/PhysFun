@@ -40,7 +40,8 @@ through until something hits it; "wall" hangs on the back wall), and `AFTER = [f
 (the ladder in `roomprops_structures`). `LIGHTS = {"Name": dict(at=(x, y), color=(r, g, b),
 intensity=, radius=, flicker=)}` gives a prop a Lighting.LightSource2D whose light comes
 from `at` (pixels from the top-left: the flame, the coals) - a lamp that swings swings
-its light, and one shot down takes it with it.
+its light, and one shot down takes it with it. `SORTING_ORDER = -2` draws every prop of a
+part at that sorting order (the cave plants go behind the characters, ladders and terrain).
 """
 import importlib
 import re
@@ -55,7 +56,7 @@ import propexport as PE  # noqa: E402
 from propexport import DEFAULT, WOOD, METAL  # noqa: E402,F401
 
 PARTS = ["roomprops_hung", "roomprops_machines", "roomprops_dwellings", "roomprops_rooms",
-         "roomprops_structures", "roomprops_decor"]
+         "roomprops_structures", "roomprops_decor", "roomprops_flora"]
 ICON_DIR = os.path.join("Icons", "Rooms")
 SPRITE_DIR = "Sprites/Props/Rooms"
 PREFAB_DIR = "Resources/Prefabs/Props"
@@ -206,6 +207,7 @@ def build_part(modname):
     triggers = getattr(mod, "TRIGGER", set())
     damping = getattr(mod, "DAMPING", {})
     lights = getattr(mod, "LIGHTS", {})
+    sorting = getattr(mod, "SORTING_ORDER", 0)
     for g, (group, items) in enumerate(mod.GROUPS):
         for i, (name, label, fn, (w, h), material, extra) in enumerate(items):
             new_canvas(w, h, seed=seed0 + g * 101 + i * 7, bg=KEY)
@@ -231,7 +233,7 @@ def build_part(modname):
             path, loops, mass = PE.export(name, rows, SPRITE_DIR, PREFAB_DIR, material, comps,
                                           anchors=anc, child_components=kids, body_type=2 if name in static else 1 if name in kinematic else 0,
                                           trigger=name in triggers,
-                                          angular_damping=damping.get(name, 0.05))
+                                          angular_damping=damping.get(name, 0.05), sorting_order=sorting)
             warn = "" if n == 1 else "   <-- %d bodies, should be one" % n
             print("  %-18s %3dx%-3d %s  mass %7.2f  %d loop(s)%s"
                   % (name, w, h, ("default", "wood", "ice", "metal")[material], mass, loops, warn))

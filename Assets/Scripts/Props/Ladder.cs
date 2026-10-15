@@ -35,6 +35,13 @@ namespace Props
         // a message from inside validation). The export sets the size on each instance too.
         private void Awake() => Fit();
 
+        /// <summary>Resize a ladder placed at runtime (the floor's corridor ladders).</summary>
+        public void SetHeight(float height)
+        {
+            _height = Mathf.Max(0.1f, height);
+            Fit();
+        }
+
         private void Fit()
         {
             var sr = GetComponent<SpriteRenderer>();

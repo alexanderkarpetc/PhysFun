@@ -17,7 +17,9 @@ namespace Rooms
     /// <item>fill everywhere - Default rock under the recipe's fill tile;</item>
     /// <item>each room's map stamped in as is (its palette remapped onto the floor's);</item>
     /// <item>the stub of every socket no corridor uses filled back in;</item>
-    /// <item>the corridors cut, as a box of the corridor bore swept along each route.</item>
+    /// <item>the corridors cut, as a box of the corridor bore swept along each route, with
+    /// lumpy ceilings and the odd cave at a bend (<see cref="CorridorCarver"/>);</item>
+    /// <item>moss, root mat and fungal crust painted on the rock round the corridors.</item>
     /// </list>
     /// One TerrainBuilder then builds it, so there are no seams between rooms and the fill:
     /// you can dig from any room into any other. The floor's border is Untouchable bedrock,
@@ -26,6 +28,9 @@ namespace Rooms
     /// Behind it goes a second map of the same size, the back wall (<see cref="TerrainBackdrop"/>):
     /// the recipe's back tile everywhere, each room's own back map stamped over it where it
     /// has one. Nothing collides with it; it is what shows where the terrain is air.
+    ///
+    /// Last, the corridors get ladders up every tall climb and are strewn with growth
+    /// (<see cref="CorridorFlora"/>).
     /// </summary>
     public static class FloorBuilder
     {
@@ -89,6 +94,10 @@ namespace Rooms
                 ExtraLinks = recipe.ExtraLinks,
                 CorridorSize = recipe.CorridorSize,
                 CellSnap = 1f / ppu,
+                Wander = recipe.Wander,
+                TurnCost = recipe.TurnCost,
+                Detours = recipe.Detours,
+                DetourReach = recipe.DetourReach,
             }, rng);
             s_plan.End();
 
@@ -116,10 +125,9 @@ namespace Rooms
                 FillRect(cells, w, h, stub, bounds, ppu, from: 0, to: fill);
             }
 
-            float bore = recipe.CorridorSize;
-            foreach (var route in plan.Corridors)
-                for (int k = 1; k < route.Count; k++)
-                    Sweep(cells, w, h, route[k - 1], route[k], bore, bounds, ppu);
+            var carver = new CorridorCarver(cells, w, h, bounds, ppu, plan.Rects, seed);
+            carver.Carve(plan, recipe.CorridorSize, recipe.Lumps, recipe.Chambers, rng);
+            var ladders = carver.Ladders(plan, shapes, recipe.LadderFrom);
 
             TerrainMap back = null;
             if (!string.IsNullOrEmpty(recipe.BackTile))
@@ -142,6 +150,9 @@ namespace Rooms
                     Stamp(back, backCells, w, h, bm, CellOf(plan.Rects[i].min, bounds, ppu), keepUnder: true);
                 }
             }
+            if (recipe.Growth)
+                carver.Dress(map, fill, back, back ? (byte)back.Require(recipe.BackTile, recipe.FillMaterial) : (byte)0,
+                             recipe.FillMaterial);
             s_map.End();
 
             // ── objects ────────────────────────────────────────────────────────────
@@ -170,6 +181,13 @@ namespace Rooms
             }
 
             AddBedrock(root.transform, bounds);
+            AddLadders(root.transform, ladders);
+            if (recipe.Growth)
+            {
+                var growth = new GameObject("Growth");
+                growth.transform.SetParent(root.transform, false);
+                CorridorFlora.Grow(carver, growth.transform, ladders, recipe.GrowthDensity, seed);
+            }
             s_terrain.End();
 
             s_rooms.Begin();
@@ -257,27 +275,6 @@ namespace Rooms
                 if (cells[y * w + x] == from) cells[y * w + x] = to;
         }
 
-        /// <summary>Carve a box `bore` wide and `bore` tall standing on each point from a to b.
-        /// Level runs get a flat floor at the route's height; climbs get a shaft centred on it.</summary>
-        private static void Sweep(byte[] cells, int w, int h, Vector2 a, Vector2 b, float bore, Rect bounds, float ppu)
-        {
-            float len = Vector2.Distance(a, b);
-            int steps = Mathf.Max(1, Mathf.CeilToInt(len * ppu / 4f));
-            float half = bore * 0.5f;
-            for (int i = 0; i <= steps; i++)
-            {
-                var p = Vector2.Lerp(a, b, i / (float)steps);
-                var r = new Rect(p.x - half, p.y, bore, bore);
-                int x0 = Mathf.Max(0, Mathf.FloorToInt((r.xMin - bounds.xMin) * ppu));
-                int x1 = Mathf.Min(w - 1, Mathf.CeilToInt((r.xMax - bounds.xMin) * ppu) - 1);
-                int y0 = Mathf.Max(0, Mathf.FloorToInt((r.yMin - bounds.yMin) * ppu));
-                int y1 = Mathf.Min(h - 1, Mathf.CeilToInt((r.yMax - bounds.yMin) * ppu) - 1);
-                for (int y = y0; y <= y1; y++)
-                for (int x = x0; x <= x1; x++)
-                    cells[y * w + x] = 0;
-            }
-        }
-
         // ─────────────────────────────────────────────────────────────────────────
         // Bedrock
         // ─────────────────────────────────────────────────────────────────────────
@@ -298,6 +295,26 @@ namespace Rooms
             Box(go, new Vector2(bounds.xMax + t * 0.5f - overlap, c.y), new Vector2(t, bounds.height + 2f * t));
             Box(go, new Vector2(c.x, bounds.yMin - t * 0.5f + overlap), new Vector2(bounds.width + 2f * t, t));
             Box(go, new Vector2(c.x, bounds.yMax + t * 0.5f - overlap), new Vector2(bounds.width + 2f * t, t));
+        }
+
+        /// <summary>A Props/Ladder up each of the corridors' climbs.</summary>
+        private static void AddLadders(Transform parent, List<CorridorCarver.LadderSpot> spots)
+        {
+            if (spots.Count == 0) return;
+            var prefab = Resources.Load<Props.Ladder>("Prefabs/Props/Ladder");
+            if (!prefab)
+            {
+                Debug.LogWarning("FloorBuilder: no Resources/Prefabs/Props/Ladder - corridors left without ladders.");
+                return;
+            }
+            var holder = new GameObject("Ladders");
+            holder.transform.SetParent(parent, false);
+            foreach (var s in spots)
+            {
+                var l = Object.Instantiate(prefab, new Vector3(s.X, s.Top, 0f), Quaternion.identity, holder.transform);
+                l.name = "Ladder";
+                l.SetHeight(s.Top - s.Bottom);
+            }
         }
 
         private static void Box(GameObject go, Vector2 center, Vector2 size)

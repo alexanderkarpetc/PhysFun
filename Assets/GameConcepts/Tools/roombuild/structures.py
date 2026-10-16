@@ -42,9 +42,22 @@ _decks = []        # (x0, x1, y) floors, laid in finish() round the hatches
 _hatches = []      # (x0, x1, y) gaps in them
 _ladders = []      # (x, top y) ladders, which need a hatch over them
 
+# What a house is built of: the timber set (roomprops_structures), or another of the same
+# sizes - `use_kit(FUNGAL)` for the cult's houses of stem and cap (roomprops_fungal).
+TIMBER = dict(wall="WallPlank", floor="FloorPlank", deck="DeckPlank", door="Door", roof="RoofPlank")
+FUNGAL = dict(wall="StemWall", floor="StemFloor", deck="CapDeck", door="CapDoor", roof="CapRoof")
+KIT = dict(TIMBER)
+
+
+def use_kit(kit):
+    """Build the next room's houses of `kit` (a dict like TIMBER)."""
+    KIT.clear()
+    KIT.update(kit)
+
 
 def hooks(add, mod):
     import roomprops_structures as S
+    use_kit(getattr(mod, "HOUSE_KIT", TIMBER))
     ids = S.ladder_ids()
     _walls.clear()
     _gaps.clear()
@@ -63,7 +76,7 @@ def hooks(add, mod):
             _gaps.append((x0, y0, x1, y1))
 
     def flap_door(x, top, h=30, w=4, swung=0):
-        add("Door", x + (w + 1) / 2.0, top + 14)
+        add(KIT["door"], x + (w + 1) / 2.0, top + 14)
 
     def ladder_up(x, y0, y1):
         _ladders.append((x, y0))
@@ -83,7 +96,7 @@ def hooks(add, mod):
             for k in range(n):
                 t = min(ln - ROOF / 2.0, ROOF * (k + 0.5))
                 # the plank's top on the roof line: its centre half a thickness under it
-                add("RoofPlank", xa + ux * t, ya + uy * t + ROOF_T / 2.0, angle=ang)
+                add(KIT["roof"], xa + ux * t, ya + uy * t + ROOF_T / 2.0, angle=ang)
 
     def shed_roof(x0, x1, y_hi, y_lo, thick=4):
         _plank_line(add, x0 - 3, y_hi, x1 + 3, y_lo)
@@ -91,7 +104,7 @@ def hooks(add, mod):
     def trapdoor(x0, x1, y, open_=False):
         # a hatch left open would drop you back down the ladder you just climbed
         _hatches.append((x0, x1, y))
-        add("DeckPlank", (x0 + x1 + 1) / 2.0, y + 2)
+        add(KIT["deck"], (x0 + x1 + 1) / 2.0, y + 2)
 
     return {"deck": deck, "plank_wall": plank_wall, "window": window, "flap_door": flap_door,
             "ladder_up": ladder_up, "pitched_roof": pitched_roof, "shed_roof": shed_roof, "trapdoor": trapdoor}
@@ -105,7 +118,7 @@ def _plank_line(add, xa, ya, xb, yb):
     ux, uy = (xb - xa) / ln, (yb - ya) / ln
     for k in range(n):
         t = min(ln - ROOF / 2.0, ROOF * (k + 0.5))
-        add("RoofPlank", xa + ux * t, ya + uy * t + ROOF_T / 2.0, angle=ang)
+        add(KIT["roof"], xa + ux * t, ya + uy * t + ROOF_T / 2.0, angle=ang)
 
 
 def _open_runs(x0, y0, x1, y1):
@@ -132,7 +145,7 @@ def _lay(add, a, b, y):
     one before it rather than sticking out past a wall or into a hatch."""
     n = int(math.ceil((b - a + 1) / float(DECK)))
     for k in range(n):
-        add("FloorPlank", min(a + DECK * (k + 0.5), b + 1 - DECK / 2.0), y + FLOOR_T / 2.0)
+        add(KIT["floor"], min(a + DECK * (k + 0.5), b + 1 - DECK / 2.0), y + FLOOR_T / 2.0)
 
 
 def _lay_floors(add):
@@ -147,7 +160,7 @@ def _lay_floors(add):
                 continue
             hx0, hx1 = lx - HATCH // 2, lx + HATCH // 2 - 1
             holes.append((hx0, hx1))
-            add("DeckPlank", (hx0 + hx1 + 1) / 2.0, y + 2)
+            add(KIT["deck"], (hx0 + hx1 + 1) / 2.0, y + 2)
         holes.sort()
         a = x0
         for hx0, hx1 in holes:
@@ -174,4 +187,4 @@ def finish(add):
                 cy = b + 1 - WALL * (k + 0.5)
                 if k == n - 1 and h >= WALL:
                     cy = max(cy, a + WALL / 2.0)
-                add("WallPlank", cx, cy)
+                add(KIT["wall"], cx, cy)

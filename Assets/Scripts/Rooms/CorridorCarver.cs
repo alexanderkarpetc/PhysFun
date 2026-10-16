@@ -13,6 +13,15 @@ namespace Rooms
         Dry,        // dead grass, thorns, roots
     }
 
+    /// <summary>What a floor recipe asks its corridors to be: one mood throughout, or Mixed.</summary>
+    public enum CorridorMood
+    {
+        Mixed,
+        Green,
+        Fungal,
+        Dry,
+    }
+
     /// <summary>
     /// Cuts a floor's corridors into its map and dresses them: what <see cref="FloorBuilder"/>
     /// does between stamping the rooms and building the terrain.
@@ -48,6 +57,7 @@ namespace Rooms
         private readonly float _ppu;
         private readonly Rect[] _rooms;
         private readonly Vector2 _o1, _o2, _o3, _mood1, _mood2;
+        private readonly CorridorMood _mood;
 
         /// <summary>Blocks of <see cref="BlockCells"/> cells something was cut in.</summary>
         public readonly HashSet<Vector2Int> Blocks = new();
@@ -57,8 +67,10 @@ namespace Rooms
         public float Ppu => _ppu;
         public Rect Bounds => _bounds;
 
-        public CorridorCarver(byte[] cells, int w, int h, Rect bounds, float ppu, Rect[] rooms, int seed)
+        public CorridorCarver(byte[] cells, int w, int h, Rect bounds, float ppu, Rect[] rooms, int seed,
+                              CorridorMood mood = CorridorMood.Mixed)
         {
+            _mood = mood;
             _cells = cells;
             _w = w;
             _h = h;
@@ -130,6 +142,12 @@ namespace Rooms
 
         public CaveMood MoodAt(Vector2 p)
         {
+            switch (_mood)
+            {
+                case CorridorMood.Green: return CaveMood.Green;
+                case CorridorMood.Fungal: return CaveMood.Fungal;
+                case CorridorMood.Dry: return CaveMood.Dry;
+            }
             if (Mathf.PerlinNoise(_mood1.x + p.x * 0.03f, _mood1.y + p.y * 0.03f) > 0.56f) return CaveMood.Fungal;
             if (Mathf.PerlinNoise(_mood2.x + p.x * 0.04f, _mood2.y + p.y * 0.04f) > 0.6f) return CaveMood.Dry;
             return CaveMood.Green;

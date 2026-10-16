@@ -291,9 +291,13 @@ def build_room(sheet, force):
     W, H, tiles, fore = read_map(os.path.join(X.OUT, "Maps", name + "_Map.asset"))
     b = Brush(W, H)
 
-    # The cave: the room's rock behind everything that is not the fill round it.
-    rock = b.index(ROCK)
-    fill = tiles.index(FILL) + 1 if FILL in tiles else -1
+    # The cave: the room's rock behind everything that is not the fill round it. A sheet's
+    # `TILES` may make its rock and fill other tiles (the fungal rooms), and `BACK_ROCK`
+    # what is behind its cave.
+    rt = X.room_tiles(mod)
+    rock = b.index(getattr(mod, "BACK_ROCK", rt["rock"][0]))
+    fill_tile = rt["fill"][0]
+    fill = tiles.index(fill_tile) + 1 if fill_tile in tiles else -1
     for i, v in enumerate(fore):
         if v != fill:
             b.cells[i] = rock
@@ -301,6 +305,8 @@ def build_room(sheet, force):
     rb = X.room_module(mod)
     if rb and hasattr(rb, "backwall"):
         rb.backwall(b, mod)
+    elif hasattr(mod, "backwall"):                            # a kit's (fungalkit)
+        mod.backwall(b, mod)
     else:
         print("  (roombuild has no backwall(): the cave only)")
 

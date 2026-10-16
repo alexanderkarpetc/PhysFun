@@ -499,6 +499,79 @@ pin at the lintel that fills the gap, so a house shuts people in without anythin
 to lock. There is no back wall in the engine, so `interior()` puts a faint warm wash over
 the inside of a building; in the game, the lamps have to do that.
 
+### The fungal deep (S47-S66)
+
+A second biome for variety: the same rules (a toy aimed at the enemies, a look-out way
+in, three ways through, a different shape per room), grown instead of built. The cult
+(`WizBogcap` and friends) farms the crop, prays to it and keeps a larder; the spiders keep
+theirs.
+
+| sheet | shape | verb |
+|---|---|---|
+| S47 `small_47_capforest.py` | a bowl with three giant mushrooms; their caps are a road to the chimney | FELL: burn a stem, the cap drops on the harvest |
+| S48 `small_48_sporechapel.py` | round: a dome round the idol, a spiral of shelf fungus, a crypt under the floor | BLOW: the stack of spore kegs by the altar |
+| S49 `small_49_rotchute.py` | at an angle: one slanted throat, landing at the top, camp at the foot | ROLL: a keg sends the rotten logs down the chute |
+| S50 `small_50_growhall.py` | four pockets of farm joined by crawls | DROP: cut the stalk cords of the caps hung over the table |
+| S51 `small_51_cocoonlarder.py` | a tall throat climbed on brackets, niches off it, a bowl at the bottom | CUT: the cocoons hung over the spiders |
+| S52 `small_52_puffballslope.py` | a hill in a cave: terrace, slope, camp | ROLL + BLOW: puffballs over the lip go up at the bottom |
+| S53 `small_53_tinderring.py` | round: a dome with a floor of dry mycelium | BURN: a burst pod sets the mat alight under the dance |
+| S54 `small_54_leaningcap.py` | a pit with a mushroom grown across it out of the wall | FELL: burn the root and the bridge drops into the pit |
+| S55 `small_55_sporefoam.py` | a lattice of crawls round islands of rock, a nest of sacs at every junction | BLOW: one burst sac sets off the next, round the lattice |
+| S56 `small_56_caphamlet.py` | three Terraria-style houses under giant mushrooms (stem a wall or the middle post, cap the roof), a loft, two storeys | BLOW the store; FELL a stem and its roof drops on the loft |
+| S57 `small_57_stalktower.py` | a four-storey tower built round one stem, two rooms a storey, ladders zig-zagging, a shrine under the cap | climb it room by room, go up the cave wall, or blow the kegs at its foot |
+| S58 `small_58_hanginghouses.py` | a chasm with two mushrooms grown down from the roof, a house grown on each cap (`hanging_shroom`, `grown_house`: all terrain) | FELL: burn a stem and cap, house and people drop into the nest |
+| S59 `small_59_burrows.py` | a terraced hillside, a home dug under each terrace behind a stem-slab front, a crawl inside the hill, a cellar | ROLL a puffball off the garden against the door below |
+| S60 `small_60_stilthouses.py` | three grown houses on stilts of stem (`slab`) over a floor of tinder, steps porch to porch | BURN: the mat goes up, the fire climbs the stilts, the houses come down |
+| S61 `small_61_livingcap.py` | one mushroom lived in like a Terraria living tree (`living_shroom`): five rooms up the stem, hatches zig-zagging, a hall in the cap | BLOW the store under the hall, or set the stem alight |
+| S62 `small_62_sealedvault.py` | after Noita's Fungal Caverns: tight crawls, steel beams (`slab(mat="steel")`), two cells sealed with brick, an inverted-triangle altar | BLOW the plugs with the fungi growing by them |
+| S63 `small_63_descent.py` | after Hollow Knight's Mantis Village: a long drop with a warning at the top, pod-houses on its walls, three champions in an arena at the foot | DROP the caps hung over the arena, or leave halfway |
+| S64 `small_64_xenogrove.py` | after Deep Rock Galactic's Fungus Bogs: a cavern crossed on the tops of fungi, plates out of the walls, glowing giants (`cap="glowcap"`, GillGlow) | CHAIN: one shot sets the nest's exploding plants off in turn |
+| S65 `small_65_mushtreecamp.py` | after Don't Starve's mushtree forests: a camp in the one light under the big tree, planters, a tent, spiders in the dark | FELL the big tree's cap onto the camp |
+| S66 `small_66_glowinghollow.py` | after Terraria's Glowing Mushroom biome: glowing giants and a house by the book - doors, a floor of platforms, table, chair, light | BLOW the hermit's spores on his guards |
+
+They are drawn with `fungalkit.py` (on housekit), which is what makes them export without
+a roombuild module each:
+
+* `prop()` / `hang()` / `bracket()` / `sprinkle()` paste the **game's own prop sprites**
+  (`Sprites/Props/Rooms`) onto the sheet, and the same calls are `PROP_HOOKS`, so each
+  prefab instance lands where the sheet shows it (hung ones on a rope to their Eye);
+  `ladder_up()` becomes a Props/Ladder as in the built rooms.
+* `giant_shroom()` and `wall_shroom()` are **terrain**: a stem of `stem` and a cap of `cap`
+  (`fungaltiles.py`, both burning like wood), standing on nothing but their root, so the
+  support pass drops them when the root goes. `myc_mound()` is a heap of `mycel`, or of
+  `tinder` (the same tile as wood: it burns). `terrain_extras` writes them into the map,
+  and puts a crust of mycelium under every floor of the room.
+* **Houses** (S56, S57) are built like S44-S46: the sheet's `plank_wall`, `deck`, `flap_door`,
+  `trapdoor`, `ladder_up` (fungalkit draws them in stem and cap) are laid by
+  `roombuild.structures` from `HOUSE_KIT` - StemWall, StemFloor, CapDeck, CapDoor, CapRoof,
+  the timber set's sizes - so a house is the same walls, doors, solid storeys and hatches,
+  grown. Build them against or round a `giant_shroom`: its stem is a wall or the middle
+  post, its cap the roof. Each needs the usual two-line roombuild module (B.hooks /
+  B.finish); `fungalkit.house_back` boards the back wall inside with `back_stem`. Put a hatch
+  against a wall or the stem, or leave 20px of floor past it: a shorter run is laid as one
+  whole plank that overlaps the hatch.
+* `hanging_shroom()` grows a mushroom down from the roof, its cap a floor in mid-air;
+  `grown_house()` is a house of terrain (stem walls, arch doorways, windows, a cap roof,
+  pitched or lean-to) - for a house that must fall with what it stands on, where a house
+  of props would hang in the air. `BACK_HOUSES` boards its inside with back_stem.
+* `slab()` is a block of terrain (a stilt, a floor slab); `living_shroom()` a mushroom of
+  terrain with rooms, hatches, windows and a door carved out of it.
+* `TILES` makes the room's rock `fungal_rock` and its fill `fungal_hard`; `BACK_ROCK` puts
+  `back_mycelium` behind the cave and `BACK_PATCHES` crusts of `back_caps`; `fungal_sheet()`
+  repaints the sheet's rock in the biome's colours.
+
+```bash
+python Assets/GameConcepts/Tools/fungaltiles.py                         # the tiles
+python Assets/GameConcepts/Tools/roomprops.py roomprops_fungal           # the props
+python Assets/GameConcepts/Tools/build.py small_47_capforest             # a sheet
+python Assets/GameConcepts/Tools/export_rooms.py small_47_capforest      # its prefab
+python Assets/GameConcepts/Tools/backwalls.py small_47_capforest         # its back wall
+```
+
+`Assets/Rooms/FloorFungal.asset` is the biome's floor: those rooms, fungal fill, and every
+corridor in the Fungal mood (`FloorRecipe.CorridorMood`). `Floor.asset` lists it under
+`_otherFloors`, so the F2 menu offers "New floor: FloorFungal".
+
 ### Big rooms
 
 R03-R04 are twice the linear size: a 1600x900 canvas at game scale saved x2 (3200x1800),
@@ -558,7 +631,8 @@ python Assets/GameConcepts/Tools/roomprops.py roomprops_hung     # one part
 
 The S-series sheets draw their bells, cages, gas bottles and idols straight onto the room.
 These are the same objects as **game assets**: each part (`roomprops_hung`,
-`roomprops_machines`, `roomprops_dwellings`) is a catalogue in the mineprops format plus a
+`roomprops_machines`, `roomprops_dwellings`, ... `roomprops_flora` - the corridor growth
+`Rooms/CorridorFlora` strews - and `roomprops_fungal` - the fungal deep's) is a catalogue in the mineprops format plus a
 material and an optional extra, and for every entry `propexport.py` writes
 
 | file | what |

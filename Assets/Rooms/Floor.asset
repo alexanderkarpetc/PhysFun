@@ -39,3 +39,5 @@ MonoBehaviour:
   _jitter: 0.35
   _extraLinks: 1
   _corridorSize: 1.6
+  _otherFloors:
+  - {fileID: 11400000, guid: 4bdc760d6c2c4147fb5e93a984a18b38, type: 2}

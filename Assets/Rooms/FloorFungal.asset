@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91ea44979a630e34ca283054159bae0c, type: 3}
+  m_Name: FloorFungal
+  m_EditorClassIdentifier: Assembly-CSharp::Rooms.FloorRecipe
+  _rooms:
+  - {fileID: 28242220666873918, guid: af037917662844ee90f0215432a66be8, type: 3}
+  - {fileID: 16758051059579559, guid: fc780755fdcfb07dcb0a0f0696057356, type: 3}
+  - {fileID: 1052418669579348796, guid: 20abfa5430d453aa7f17009eff19ed57, type: 3}
+  - {fileID: 690957460150692144, guid: ddbec0a65e7bcdcb57376cd785ff336d, type: 3}
+  - {fileID: 1730396935686320, guid: b0107aa6fd37763af69719fb19eb2216, type: 3}
+  - {fileID: 973145193018341433, guid: e5c65b944fb3f4176d06c11c37d404f0, type: 3}
+  - {fileID: 1022622872421569544, guid: 5be96c1a6eab05a22b7fecd1b6d33516, type: 3}
+  - {fileID: 393341404012375351, guid: 7e9efd773fbc174d321884a2853ba60e, type: 3}
+  - {fileID: 672989129086260708, guid: 80c504512cff0c2a42db1ffd06a13965, type: 3}
+  - {fileID: 995148187466874975, guid: c6226fa93a2c68845c110edd8e56eb8f, type: 3}
+  - {fileID: 1089454027536867987, guid: a966c2d34b55b74639d3c470b7bd7be2, type: 3}
+  - {fileID: 264020511873107816, guid: abfd46d9c955816dca17d9c0d1c57b2f, type: 3}
+  - {fileID: 452901097086825263, guid: c84a650c53ba6d31d8cc4b480dc072d9, type: 3}
+  - {fileID: 462793160085875415, guid: 114263c8e7e592379b5176f5dee6670a, type: 3}
+  - {fileID: 422139830848474292, guid: 030a871fca2652a0ede2132b045b2562, type: 3}
+  - {fileID: 962756296102703890, guid: c82fd5571c5f5f8ce0e8ccee375af8a0, type: 3}
+  - {fileID: 966166382390401624, guid: e53a31a0768d9c04eeda9f5a3fc61166, type: 3}
+  - {fileID: 314223268757335718, guid: 6e3bddd6205ea656849757713e42d6b8, type: 3}
+  - {fileID: 90326577899083872, guid: 23f71d51d88bc5a38ce048bc84c1bba1, type: 3}
+  - {fileID: 823896973894262436, guid: 4a52ea9d2db9bd5fc81b345bfe1be758, type: 3}
+  _roomCount: 12
+  _startRoom: {fileID: 28242220666873918, guid: af037917662844ee90f0215432a66be8, type: 3}
+  _fillTile: fungal_hard
+  _fillMaterial: 0
+  _backTile: fungal_hard
+  _margin: 6
+  _gap: 8
+  _jitter: 0.35
+  _extraLinks: 2
+  _corridorSize: 1.6
+  _wander: 3
+  _turnCost: 1.5
+  _detours: 2
+  _detourReach: 6
+  _lumps: 0.7
+  _chambers: 0.4
+  _ladderFrom: 1.1
+  _growth: 1
+  _growthDensity: 1.3
+  _corridorMood: 2
+  _otherFloors: []

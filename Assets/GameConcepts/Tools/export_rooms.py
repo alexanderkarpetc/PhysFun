@@ -60,7 +60,21 @@ MATERIALS = {
     "brick": ("templebrick", 0),
     "firebrick": ("brick", 0),
     "coal": ("coal", 0),
+    # the fungal deep (fungaltiles.py)
+    "cap": ("fungal_cap", 1),       # giant cap flesh: burns like wood
+    "stem": ("fungal_stem", 1),     # giant stem
+    "mycel": ("mycelium", 0),       # soil shot with threads
+    "tinder": ("mycelium", 1),      # the same gone dry: burns
+    "glowcap": ("fungal_glowcap", 1),   # a glowing cap
 }
+
+
+def room_tiles(mod):
+    """The palette for one room: MATERIALS, with whatever the sheet's `TILES` swaps - a
+    fungal room's own rock and fill are other tiles than the mine's."""
+    t = dict(MATERIALS)
+    t.update(getattr(mod, "TILES", {}))
+    return t
 
 # concept sprite -> prefab under Resources/Prefabs/Enemies (closest thing that exists)
 ENEMIES = {
@@ -488,8 +502,8 @@ def encode(cells):
     return out.hex()
 
 
-def write_map(name, g):
-    keys = [k for k in MATERIALS if any(v == k for v in g.m.values())]
+def write_map(name, g, tiles=MATERIALS):
+    keys = [k for k in tiles if any(v == k for v in g.m.values())]
     index = {k: i + 1 for i, k in enumerate(keys)}
     W, H = g.w * CELLS, g.h * CELLS
     cells = bytearray(W * H)
@@ -499,7 +513,7 @@ def write_map(name, g):
         for cx in range(W):
             v = g.m[(cx // CELLS, y)]
             cells[row + cx] = index[v] if v else 0
-    palette = "".join("  - tile: %s\n    physMaterial: %d\n" % MATERIALS[k] for k in keys)
+    palette = "".join("  - tile: %s\n    physMaterial: %d\n" % tiles[k] for k in keys)
     asset = f"""%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
@@ -1012,7 +1026,9 @@ def main(argv):
         rb = room_module(mod)
         if rb and hasattr(rb, "extras"):
             rb.extras(g, mod)
-        asset, meta = write_map(name, g)
+        if hasattr(mod, "terrain_extras"):                   # a kit's terrain (fungalkit)
+            mod.terrain_extras(g, mod)
+        asset, meta = write_map(name, g, room_tiles(mod))
         put(os.path.join(OUT, "Maps", name + "_Map.asset"), asset, force)
         put(os.path.join(OUT, "Maps", name + "_Map.asset.meta"), meta, force)
         prefab, pmeta, room_cid = build_prefab(name, mod, g, spawns)

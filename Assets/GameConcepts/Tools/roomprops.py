@@ -56,7 +56,7 @@ import propexport as PE  # noqa: E402
 from propexport import DEFAULT, WOOD, METAL  # noqa: E402,F401
 
 PARTS = ["roomprops_hung", "roomprops_machines", "roomprops_dwellings", "roomprops_rooms",
-         "roomprops_structures", "roomprops_decor", "roomprops_flora"]
+         "roomprops_structures", "roomprops_decor", "roomprops_flora", "roomprops_fungal"]
 ICON_DIR = os.path.join("Icons", "Rooms")
 SPRITE_DIR = "Sprites/Props/Rooms"
 PREFAB_DIR = "Resources/Prefabs/Props"

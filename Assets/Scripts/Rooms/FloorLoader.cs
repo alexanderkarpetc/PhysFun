@@ -22,7 +22,9 @@ namespace Rooms
     /// room switches itself off and loads Game, and the floor is built from that room alone -
     /// that is how a room is tried out on its own.
     ///
-    /// F2 opens a menu: a new floor, or the same one again.
+    /// F2 opens a menu: a new floor, or the same one again - or a new floor from one of the
+    /// recipe's <see cref="FloorRecipe.OtherFloors"/> (another biome), which then stays the
+    /// one new floors come from until another is picked.
     /// </summary>
     [DefaultExecutionOrder(-200)]
     public sealed class FloorLoader : MonoBehaviour
@@ -41,6 +43,7 @@ namespace Rooms
         [SerializeField] private KeyCode _menuKey = KeyCode.F2;
 
         private Scene _floor;
+        private FloorRecipe _active;                    // what floors are built from now
         private bool _busy;
         private bool _menu;
         private int _currentSeed;
@@ -67,6 +70,7 @@ namespace Rooms
         private IEnumerator Start()
         {
             yield return null;                         // let a room scene finish switching its room off
+            _active = _recipe;
 
             foreach (var room in FindObjectsByType<Room>(FindObjectsInactive.Include, FindObjectsSortMode.None))
                 if (room.gameObject.scene != gameObject.scene && !room.gameObject.activeSelf)
@@ -80,10 +84,12 @@ namespace Rooms
             yield return Generate(_seed != 0 ? _seed : NewSeed());
         }
 
-        /// <summary>Throw the current floor away and build another from <paramref name="seed"/>.</summary>
-        public void Regenerate(int seed)
+        /// <summary>Throw the current floor away and build another from <paramref name="seed"/> -
+        /// from <paramref name="recipe"/> if one is given, from now on.</summary>
+        public void Regenerate(int seed, FloorRecipe recipe = null)
         {
             if (_busy) return;
+            if (recipe) _active = recipe;
             StartCoroutine(Generate(seed));
         }
 
@@ -104,7 +110,7 @@ namespace Rooms
             SceneManager.SetActiveScene(_floor);
             _currentSeed = seed;
 
-            var recipe = _recipe ? _recipe : ScriptableObject.CreateInstance<FloorRecipe>();
+            var recipe = _active ? _active : _recipe ? _recipe : ScriptableObject.CreateInstance<FloorRecipe>();
             var result = FloorBuilder.Build(recipe, PickRooms(new System.Random(seed)), seed);
             yield return null;                         // let the rooms' Start run
 
@@ -123,16 +129,17 @@ namespace Rooms
         {
             if (_testRooms.Count > 0) return new List<Room>(_testRooms);
 
+            var recipe = _active ? _active : _recipe;
             var pool = new List<Room>();
-            foreach (var r in _recipe.Rooms)
+            foreach (var r in recipe.Rooms)
                 if (r && !pool.Contains(r)) pool.Add(r);
             for (int i = pool.Count - 1; i > 0; i--)
             {
                 int j = rng.Next(i + 1);
                 (pool[i], pool[j]) = (pool[j], pool[i]);
             }
-            if (_recipe.StartRoom && pool.Remove(_recipe.StartRoom)) pool.Insert(0, _recipe.StartRoom);
-            if (pool.Count > _recipe.RoomCount) pool.RemoveRange(_recipe.RoomCount, pool.Count - _recipe.RoomCount);
+            if (recipe.StartRoom && pool.Remove(recipe.StartRoom)) pool.Insert(0, recipe.StartRoom);
+            if (pool.Count > recipe.RoomCount) pool.RemoveRange(recipe.RoomCount, pool.Count - recipe.RoomCount);
             return pool;
         }
 
@@ -226,12 +233,28 @@ namespace Rooms
         private void OnGUI()
         {
             if (!_menu) return;
-            GUILayout.BeginArea(new Rect(12f, 12f, 260f, 120f), GUI.skin.box);
+            int others = _recipe && _testRooms.Count == 0 ? _recipe.OtherFloors.Count : 0;
+            GUILayout.BeginArea(new Rect(12f, 12f, 260f, 120f + 26f * (others + (others > 0 ? 1 : 0))), GUI.skin.box);
             GUILayout.Label($"Floor seed {_currentSeed}   ({_menuKey} to close)");
             if (_testRooms.Count > 0) GUILayout.Label($"Trying room: {_testRooms[0].name}");
+            else if (_active) GUILayout.Label($"Recipe: {_active.name}");
             GUI.enabled = !_busy;
             if (GUILayout.Button("New floor")) { _menu = false; Regenerate(NewSeed()); }
             if (GUILayout.Button("Same floor again")) { _menu = false; Regenerate(_currentSeed); }
+            if (others > 0)
+            {
+                if (_active != _recipe && GUILayout.Button($"New floor: {_recipe.name}"))
+                {
+                    _menu = false;
+                    Regenerate(NewSeed(), _recipe);
+                }
+                foreach (var other in _recipe.OtherFloors)
+                    if (other && other != _active && GUILayout.Button($"New floor: {other.name}"))
+                    {
+                        _menu = false;
+                        Regenerate(NewSeed(), other);
+                    }
+            }
             GUI.enabled = true;
             GUILayout.EndArea();
         }

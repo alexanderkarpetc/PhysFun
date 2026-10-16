@@ -125,7 +125,7 @@ namespace Rooms
                 FillRect(cells, w, h, stub, bounds, ppu, from: 0, to: fill);
             }
 
-            var carver = new CorridorCarver(cells, w, h, bounds, ppu, plan.Rects, seed);
+            var carver = new CorridorCarver(cells, w, h, bounds, ppu, plan.Rects, seed, recipe.CorridorMood);
             carver.Carve(plan, recipe.CorridorSize, recipe.Lumps, recipe.Chambers, rng);
             var ladders = carver.Ladders(plan, shapes, recipe.LadderFrom);
 

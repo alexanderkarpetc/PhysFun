@@ -67,6 +67,12 @@ namespace Rooms
         [SerializeField] private bool _growth = true;
         [Tooltip("How thickly the props grow; 1 = as tuned.")]
         [SerializeField, Min(0f)] private float _growthDensity = 1f;
+        [Tooltip("What every corridor is like. Mixed = it changes along the way (noise).")]
+        [SerializeField] private CorridorMood _corridorMood = CorridorMood.Mixed;
+
+        [Header("Menu")]
+        [Tooltip("Other recipes the F2 menu offers to build a floor from - another biome.")]
+        [SerializeField] private List<FloorRecipe> _otherFloors = new();
 
         public IReadOnlyList<Room> Rooms => _rooms;
         public int RoomCount => _roomCount;
@@ -88,5 +94,7 @@ namespace Rooms
         public float LadderFrom => _ladderFrom;
         public bool Growth => _growth;
         public float GrowthDensity => _growthDensity;
+        public CorridorMood CorridorMood => _corridorMood;
+        public IReadOnlyList<FloorRecipe> OtherFloors => _otherFloors;
     }
 }
